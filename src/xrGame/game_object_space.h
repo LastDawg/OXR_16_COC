@@ -69,6 +69,7 @@ enum ECallbackType : u32
     eOnWeaponMagazineEmpty,
     // Actor
     eActorBeforeDeath,
+    eOnFootStep,
     // vehicle
     eAttachVehicle,
     eDetachVehicle,

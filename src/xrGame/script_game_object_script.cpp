@@ -107,6 +107,7 @@ void CScriptGameObject::script_register(lua_State* luaState)
                 value("controller_hold", int(GameObject::eControllerHold)),
                 // Actor
                 value("actor_before_death", int(GameObject::eActorBeforeDeath)),
+                value("on_foot_step", int(GameObject::eOnFootStep)),
                 // Vehicle
                 value("on_attach_vehicle", int(GameObject::eAttachVehicle)),
                 value("on_detach_vehicle", int(GameObject::eDetachVehicle)),

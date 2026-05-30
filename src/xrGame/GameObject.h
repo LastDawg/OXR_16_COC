@@ -369,6 +369,8 @@ public:
     // UsableScriptObject functions
     virtual bool use(IGameObject* obj) override;
 
+    void FootStepCallback(float power, bool b_play, bool b_on_ground, bool b_hud_view);
+
     //строчка появляющаяся при наведении на объект (если NULL, то нет)
     virtual LPCSTR tip_text() override;
     virtual void set_tip_text(LPCSTR new_text) override;

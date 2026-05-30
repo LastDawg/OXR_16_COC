@@ -1522,6 +1522,11 @@ bool CGameObject::use(IGameObject* obj)
     return true;
 }
 
+void CGameObject::FootStepCallback(float power, bool b_play, bool b_on_ground, bool b_hud_view)
+{
+    this->callback(GameObject::eOnFootStep)(this->lua_game_object(), power, b_play, b_on_ground, b_hud_view);
+}
+
 LPCSTR CGameObject::tip_text() { return m_sTipText.c_str(); }
 void CGameObject::set_tip_text(LPCSTR new_text) { m_sTipText = new_text; }
 void CGameObject::set_tip_text_default() { m_sTipText = nullptr; }
