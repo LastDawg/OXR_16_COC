@@ -55,7 +55,7 @@ void HUD_SOUND_ITEM::LoadSound(LPCSTR section, LPCSTR line, ref_sound& snd, int 
         }
     }
 
-	if (freq != NULL)
+	if (freq != nullptr)
     {
         *freq = 1.f;
         if (count > 2)
@@ -69,9 +69,9 @@ void HUD_SOUND_ITEM::LoadSound(LPCSTR section, LPCSTR line, ref_sound& snd, int 
     if (delay != nullptr)
     {
         *delay = 0;
-        if (count > 2)
+        if (count > 3)
         {
-            _GetItem(str, 2, buf_str);
+            _GetItem(str, 3, buf_str);
             if (xr_strlen(buf_str) > 0)
                 *delay = (float)atof(buf_str);
         }
