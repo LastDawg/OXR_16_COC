@@ -70,44 +70,6 @@ void CWeaponMagazined::Load(LPCSTR section)
 {
     inherited::Load(section);
 
-// Проверяем наличие анимаций
-    SetAnimFlag(ANM_SHOW_EMPTY, "anm_show_empty");
-    SetAnimFlag(ANM_HIDE_EMPTY, "anm_hide_empty");
-    SetAnimFlag(ANM_IDLE_EMPTY, "anm_idle_empty");
-    SetAnimFlag2(ANM_AIM_EMPTY, "anm_idle_aim_empty");
-    SetAnimFlag2(ANM_AIM_START, "anm_idle_aim_start");
-    SetAnimFlag2(ANM_AIM_START_EMPTY, "anm_idle_aim_start_empty");
-    SetAnimFlag2(ANM_AIM_END, "anm_idle_aim_end");
-    SetAnimFlag2(ANM_AIM_END_EMPTY, "anm_idle_aim_end_empty");
-    SetAnimFlag2(ANM_AIM_START_G, "anm_idle_aim_start_g");
-    SetAnimFlag2(ANM_AIM_START_G_EMPTY, "anm_idle_aim_start_g_empty");
-    SetAnimFlag2(ANM_AIM_END_G, "anm_idle_aim_end_g");
-    SetAnimFlag2(ANM_AIM_END_G_EMPTY, "anm_idle_aim_end_g_empty");
-    SetAnimFlag2(ANM_AIM_START_W_GL, "anm_idle_aim_start_g");
-    SetAnimFlag2(ANM_AIM_START_W_GL_EMPTY, "anm_idle_aim_start_g_empty");
-    SetAnimFlag2(ANM_AIM_END_W_GL, "anm_idle_aim_end_g");
-    SetAnimFlag2(ANM_AIM_END_W_GL_EMPTY, "anm_idle_aim_end_g_empty");
-    SetAnimFlag(ANM_BORE_EMPTY, "anm_bore_empty");
-    SetAnimFlag(ANM_SHOT_EMPTY, "anm_shot_l");
-    SetAnimFlag(ANM_SPRINT_EMPTY, "anm_idle_sprint_empty");
-    SetAnimFlag(ANM_MOVING_EMPTY, "anm_idle_moving_empty");
-    SetAnimFlag(ANM_RELOAD_EMPTY, "anm_reload_empty");
-    SetAnimFlag(ANM_MISFIRE, "anm_reload_misfire");
-    SetAnimFlag(ANM_SHOT_AIM, "anm_shots_when_aim");
-    SetAnimFlag(ANM_SHOT_AIM_EMPTY, "anm_shot_when_aim_l");
-    SetAnimFlag(ANM_OPEN_EMPTY, "anm_open_empty");
-    SetAnimFlag(ANM_CLOSE_EMPTY, "anm_close_empty");
-    SetAnimFlag(ANM_ADD_CART_EMPTY, "anm_add_cartridge_empty");
-    SetAnimFlag2(ANM_FIREMODE, "anm_firemode");
-    SetAnimFlag2(ANM_FIREMODE_EMPTY, "anm_firemode_empty");
-    SetAnimFlag2(ANM_FIREMODE_G, "anm_firemode_g");
-    SetAnimFlag2(ANM_FIREMODE_G_EMPTY, "anm_firemode_g_empty");
-    // Для SPAS-12
-    SetAnimFlag(ANM_SHOT_AUTO, "anm_shots_auto");
-    SetAnimFlag(ANM_SHOT_AUTO_EMPTY, "anm_shot_auto_l");
-    SetAnimFlag(ANM_SHOT_AUTO_AIM, "anm_shots_auto_when_aim");
-    SetAnimFlag(ANM_SHOT_AUTO_AIM_EMPTY, "anm_shots_auto_when_aim_l");
-
     // Sounds
     m_sounds.LoadSound(section, "snd_draw", "sndShow", true, m_eSoundShow);
     m_sounds.LoadSound(section, "snd_holster", "sndHide", true, m_eSoundHide);
