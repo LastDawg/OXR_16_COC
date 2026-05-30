@@ -1026,3 +1026,51 @@ int CWeaponMagazinedWGrenade::GetAmmoCount2(u8 ammo2_type) const
 
     return GetAmmoCount_forType(m_ammoTypes2[ammo2_type]);
 }
+
+void CWeaponMagazinedWGrenade::switch2_Unmis()
+{
+    if (m_bGrenadeMode || !ParentIsActor())
+    {
+        m_bNeedBulletInGun = false;
+        return;
+    }
+    VERIFY(GetState() == eUnMisfire);
+    if (GrenadeLauncherAttachable() && IsGrenadeLauncherAttached())
+    {
+        if (m_sounds_enabled)
+        {
+            if (m_sounds.FindSoundItem("sndReloadMisfire", false) && psWpnAnimsFlag.test(ANM_MISFIRE_GL))
+                PlaySound("sndReloadMisfire", get_LastFP());
+            else if (m_sounds.FindSoundItem("sndReloadEmpty", false) && psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL))
+                PlaySound("sndReloadEmpty", get_LastFP());
+            else
+                PlaySound("sndReload", get_LastFP());
+        }
+
+        if (psWpnAnimsFlag.test(ANM_MISFIRE_GL))
+            PlayHUDMotion("anm_reload_misfire_w_gl", TRUE, this, GetState());
+        else if (psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL))
+            PlayHUDMotion("anm_reload_empty_w_gl", TRUE, this, GetState());
+        else
+            PlayHUDMotion("anm_reload_w_gl", TRUE, this, GetState());
+    }
+    else
+        inherited::switch2_Unmis();
+}
+
+void CWeaponMagazinedWGrenade::CheckMagazine()
+{
+    if (m_bGrenadeMode)
+        return;
+
+    if ((psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL) || psWpnAnimsFlag.test(ANM_RELOAD_EMPTY)) &&
+        iAmmoElapsed >= 1 && m_bNeedBulletInGun == false)
+    {
+        m_bNeedBulletInGun = true;
+    }
+    else if ((psWpnAnimsFlag.test(ANM_RELOAD_EMPTY_GL) || psWpnAnimsFlag.test(ANM_RELOAD_EMPTY)) &&
+        iAmmoElapsed == 0 && m_bNeedBulletInGun == true)
+    {
+        m_bNeedBulletInGun = false;
+    }
+}

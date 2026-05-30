@@ -104,12 +104,14 @@ public:
         eMisfire,
         eMagEmpty,
         eSwitch,
+        eUnMisfire,
     };
     enum EWeaponSubStates
     {
         eSubstateReloadBegin = 0,
         eSubstateReloadInProcess,
         eSubstateReloadEnd,
+        eSubstateUnMisfire,
     };
     enum
     {
@@ -126,7 +128,10 @@ public:
     BOOL AutoSpawnAmmo() const { return m_bAutoSpawnAmmo; };
     bool IsTriStateReload() const { return m_bTriStateReload; }
     EWeaponSubStates GetReloadState() const { return (EWeaponSubStates)m_sub_state; }
+    bool IsMisfireOneCartRemove() const { return m_bMisfireOneCartRemove; }
+
 protected:
+    bool m_bMisfireOneCartRemove;
     bool m_bTriStateReload;
 
     // a misfire happens, you'll need to rearm weapon

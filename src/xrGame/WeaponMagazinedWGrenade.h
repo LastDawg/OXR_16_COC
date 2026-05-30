@@ -9,6 +9,11 @@ class CWeaponMagazinedWGrenade : public CWeaponMagazined, public CRocketLauncher
     typedef CWeaponMagazined inherited;
 
 public:
+    // Новые параметры
+    virtual void switch2_Unmis();
+    virtual void CheckMagazine();
+
+public:
     CWeaponMagazinedWGrenade(ESoundTypes eSoundType = SOUND_TYPE_WEAPON_SUBMACHINEGUN);
     virtual ~CWeaponMagazinedWGrenade();
 

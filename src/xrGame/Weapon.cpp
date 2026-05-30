@@ -266,6 +266,12 @@ void CWeapon::Load(LPCSTR section)
     inherited::Load(section);
     CShootingObject::Load(section);
 
+    // Дропается ли патрон при расклине?
+    if (pSettings->line_exist(section, "misfire_one_cartridge_remove"))
+    {
+        m_bMisfireOneCartRemove = !!pSettings->r_bool(section, "misfire_one_cartridge_remove");
+    }
+
     if (pSettings->line_exist(section, "flame_particles_2"))
         m_sFlameParticles2 = pSettings->r_string(section, "flame_particles_2");
 

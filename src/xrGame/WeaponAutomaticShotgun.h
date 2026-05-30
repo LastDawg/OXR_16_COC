@@ -17,11 +17,13 @@ public:
 
     virtual void Reload();
     void switch2_StartReload();
+    void switch2_UnMisfire();
     void switch2_AddCartgidge();
     void switch2_EndReload();
 
     virtual void PlayAnimOpenWeapon();
     virtual void PlayAnimAddOneCartridgeWeapon();
+    virtual void PlayAnimUnMisfire();
     void PlayAnimCloseWeapon();
 
     virtual bool Action(u16 cmd, u32 flags);
