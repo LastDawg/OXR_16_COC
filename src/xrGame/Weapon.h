@@ -105,6 +105,8 @@ public:
         eMagEmpty,
         eSwitch,
         eUnMisfire,
+        eFiremodePrev,
+        eFiremodeNext,
     };
     enum EWeaponSubStates
     {

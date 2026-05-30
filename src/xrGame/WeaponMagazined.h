@@ -62,6 +62,8 @@ public:
     // Новые параметры
     virtual void CheckMagazine();
     virtual void switch2_Unmis();
+    virtual void switch2_ChangeFireMode();
+    virtual void PlayAnimFireMode();
     bool m_bNeedBulletInGun;
 
 protected:
