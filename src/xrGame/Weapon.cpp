@@ -129,6 +129,8 @@ CWeapon::CWeapon()
     m_activation_speed_is_overriden = false;
     m_cur_scope = 0;
     m_bRememberActorNVisnStatus = false;
+
+    m_bMisfireOneCartRemove = false;
 }
 
 CWeapon::~CWeapon()
@@ -267,10 +269,7 @@ void CWeapon::Load(LPCSTR section)
     CShootingObject::Load(section);
 
     // Дропается ли патрон при расклине?
-    if (pSettings->line_exist(section, "misfire_one_cartridge_remove"))
-    {
-        m_bMisfireOneCartRemove = !!pSettings->r_bool(section, "misfire_one_cartridge_remove");
-    }
+    m_bMisfireOneCartRemove = READ_IF_EXISTS(pSettings, r_bool, section, "misfire_one_cartridge_remove", false);
 
     if (pSettings->line_exist(section, "flame_particles_2"))
         m_sFlameParticles2 = pSettings->r_string(section, "flame_particles_2");

@@ -50,22 +50,6 @@ CWeaponMagazined::~CWeaponMagazined()
     // sounds
 }
 
-void CWeaponMagazined::SetAnimFlag(u32 flag, LPCSTR anim_name)
-{
-    if (pSettings->line_exist(hud_sect, anim_name))
-        psWpnAnimsFlag.set(flag, TRUE);
-    else
-        psWpnAnimsFlag.set(flag, FALSE);
-}
-
-void CWeaponMagazined::SetAnimFlag2(u32 flag, LPCSTR anim_name)
-{
-    if (pSettings->line_exist(hud_sect, anim_name))
-        psWpnAnimsFlag.set(flag, TRUE);
-    else
-        psWpnAnimsFlag.set(flag, FALSE);
-}
-
 void CWeaponMagazined::net_Destroy() { inherited::net_Destroy(); }
 
 //AVO: for custom added sounds check if sound exists
@@ -180,8 +164,6 @@ void CWeaponMagazined::Load(LPCSTR section)
         m_iPrefferedFireMode = READ_IF_EXISTS(pSettings, r_s16, section, "preffered_fire_mode", -1);
 
 	    m_bNeedBulletInGun = false;
-
-	    psWpnAnimsFlag = {0};
     }
     else
     {
@@ -269,13 +251,13 @@ bool CWeaponMagazined::TryReload()
 
         m_pCurrentAmmo = smart_cast<CWeaponAmmo*>(m_pInventory->GetAny(m_ammoTypes[m_ammoType].c_str()));
 
-        if (IsMisfire() && iAmmoElapsed && psWpnAnimsFlag.test(ANM_MISFIRE))
+        if (IsMisfire() && iAmmoElapsed && isHUDAnimationExist("anm_reload_misfire"))
         {
             SetPending(true);
             SwitchState(eUnMisfire);
             return true;
         }
-        else if (IsMisfire() && iAmmoElapsed && !psWpnAnimsFlag.test(ANM_MISFIRE))
+        else if (IsMisfire() && iAmmoElapsed && !isHUDAnimationExist("anm_reload_misfire"))
         {
             SetPending(true);
             SwitchState(eReload);
@@ -764,7 +746,7 @@ void CWeaponMagazined::OnAnimationEnd(u32 state)
     case eUnMisfire: {
         bMisfire = false;
         // Здесь -1 патрон при расклине, ставим в условие опцию из конфига, чтобы имелось оружие, не сбрасывающее патрон
-        if (IsMisfireOneCartRemove() && iAmmoElapsed > 0 && psWpnAnimsFlag.test(ANM_MISFIRE))
+        if (IsMisfireOneCartRemove() && iAmmoElapsed > 0 && isHUDAnimationExist("anm_reload_misfire"))
         {
             --iAmmoElapsed;
             m_magazine.pop_back();
@@ -885,17 +867,17 @@ void CWeaponMagazined::switch2_Unmis()
 
     if (m_sounds_enabled)
     {
-        if (m_sounds.FindSoundItem("sndReloadMisfire", false) && psWpnAnimsFlag.test(ANM_MISFIRE))
+        if (m_sounds.FindSoundItem("sndReloadMisfire", false) && isHUDAnimationExist("anm_reload_misfire"))
             PlaySound("sndReloadMisfire", get_LastFP());
-        else if (m_sounds.FindSoundItem("sndReloadEmpty", false) && psWpnAnimsFlag.test(ANM_RELOAD_EMPTY))
+        else if (m_sounds.FindSoundItem("sndReloadEmpty", false) && isHUDAnimationExist("anm_reload_empty"))
             PlaySound("sndReloadEmpty", get_LastFP());
         else
             PlaySound("sndReload", get_LastFP());
     }
 
-    if (psWpnAnimsFlag.test(ANM_MISFIRE))
+    if (isHUDAnimationExist("anm_reload_misfire"))
         PlayHUDMotion("anm_reload_misfire", TRUE, this, GetState());
-    else if (psWpnAnimsFlag.test(ANM_RELOAD_EMPTY))
+    else if (isHUDAnimationExist("anm_reload_empty"))
         PlayHUDMotion("anm_reload_empty", TRUE, this, GetState());
     else
         PlayHUDMotion("anm_reload", TRUE, this, GetState());
@@ -1682,11 +1664,11 @@ void CWeaponMagazined::CheckMagazine() // Остаётся ли патрон в 
         return;
     }
 
-    if (psWpnAnimsFlag.test(ANM_RELOAD_EMPTY) && iAmmoElapsed >= 1 && m_bNeedBulletInGun == false)
+    if (isHUDAnimationExist("anm_reload_empty") && iAmmoElapsed >= 1 && m_bNeedBulletInGun == false)
     {
         m_bNeedBulletInGun = true;
     }
-    else if (psWpnAnimsFlag.test(ANM_RELOAD_EMPTY) && iAmmoElapsed == 0 && m_bNeedBulletInGun == true)
+    else if (isHUDAnimationExist("anm_reload_empty") && iAmmoElapsed == 0 && m_bNeedBulletInGun == true)
     {
         m_bNeedBulletInGun = false;
     }

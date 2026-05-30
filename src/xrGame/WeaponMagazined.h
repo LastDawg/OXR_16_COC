@@ -187,60 +187,6 @@ protected:
     HUD_SOUND_COLLECTION_LAYERED m_layered_sounds;
     //-Alundaio
 
-    // Флаги анимаций
-
-    virtual void SetAnimFlag(u32 flag, LPCSTR anim_name);
-
-	enum
-    {
-        ANM_SHOW_EMPTY = (1 << 0),
-        ANM_HIDE_EMPTY = (1 << 1),
-        ANM_BORE_EMPTY = (1 << 2),
-        ANM_SHOT_EMPTY = (1 << 3),
-        ANM_SPRINT_EMPTY = (1 << 4),
-        ANM_MOVING_EMPTY = (1 << 5),
-        ANM_RELOAD_EMPTY = (1 << 6),
-        ANM_RELOAD_EMPTY_GL = (1 << 7),
-        ANM_SHOT_AIM = (1 << 8),
-        ANM_SHOT_AIM_GL = (1 << 9),
-        ANM_MISFIRE = (1 << 10),
-        ANM_MISFIRE_GL = (1 << 11),
-        ANM_IDLE_EMPTY = (1 << 12),
-        ANM_OPEN_EMPTY = (1 << 13),
-        ANM_CLOSE_EMPTY = (1 << 14),
-        ANM_ADD_CART_EMPTY = (1 << 15),
-        ANM_SHOT_AIM_EMPTY = (1 << 16),
-        ANM_SHOT_AUTO = (1 << 17),
-        ANM_SHOT_AUTO_EMPTY = (1 << 18),
-        ANM_SHOT_AUTO_AIM = (1 << 19),
-        ANM_SHOT_AUTO_AIM_EMPTY = (1 << 20),
-    };
-
-    virtual void SetAnimFlag2(u32 flag, LPCSTR anim_name);
-
-	enum
-    {
-        ANM_AIM_EMPTY = (1 << 0),
-        ANM_AIM_START = (1 << 1),
-        ANM_AIM_START_EMPTY = (1 << 2),
-        ANM_AIM_END = (1 << 3),
-        ANM_AIM_END_EMPTY = (1 << 4),
-        ANM_AIM_START_G = (1 << 5),
-        ANM_AIM_START_G_EMPTY = (1 << 6),
-        ANM_AIM_END_G = (1 << 7),
-        ANM_AIM_END_G_EMPTY = (1 << 8),
-        ANM_AIM_START_W_GL = (1 << 9),
-        ANM_AIM_START_W_GL_EMPTY = (1 << 10),
-        ANM_AIM_END_W_GL = (1 << 11),
-        ANM_AIM_END_W_GL_EMPTY = (1 << 12),
-        ANM_FIREMODE = (1 << 13),
-        ANM_FIREMODE_EMPTY = (1 << 14),
-        ANM_FIREMODE_G = (1 << 15),
-        ANM_FIREMODE_G_EMPTY = (1 << 16),
-    };
-
-	Flags32 psWpnAnimsFlag;
-
 private:
     DECLARE_SCRIPT_REGISTER_FUNCTION(CWeapon);
 };

@@ -92,7 +92,7 @@ void CWeaponAutomaticShotgun::Reload()
 
 void CWeaponAutomaticShotgun::TriStateReload()
 {
-    if (psWpnAnimsFlag.test(ANM_MISFIRE))
+    if (isHUDAnimationExist("anm_reload_misfire"))
     {
         if (IsMisfire() && iAmmoElapsed == 0 || !IsMisfire())
         {
@@ -111,7 +111,7 @@ void CWeaponAutomaticShotgun::TriStateReload()
     if (m_magazine.size() == (u32)iMagazineSize || !HaveCartridgeInInventory(1))
         return;
 
-    if (!psWpnAnimsFlag.test(ANM_MISFIRE))
+    if (!isHUDAnimationExist("anm_reload_misfire"))
     {
         CWeapon::Reload();
         m_sub_state = eSubstateReloadBegin;
@@ -150,7 +150,7 @@ void CWeaponAutomaticShotgun::OnStateSwitch(u32 S, u32 oldState)
         switch2_EndReload(); 
         break;
     case eSubstateUnMisfire:
-        if (IsMisfire() && iAmmoElapsed > 0 && psWpnAnimsFlag.test(ANM_MISFIRE))
+        if (IsMisfire() && iAmmoElapsed > 0 && isHUDAnimationExist("anm_reload_misfire"))
             switch2_UnMisfire();
         break;
     };
@@ -174,7 +174,7 @@ void CWeaponAutomaticShotgun::switch2_UnMisfire()
 {
     if (m_sounds_enabled)
     {
-        if (m_sounds.FindSoundItem("sndReloadMisfire", false) && psWpnAnimsFlag.test(ANM_MISFIRE))
+        if (m_sounds.FindSoundItem("sndReloadMisfire", false) && isHUDAnimationExist("anm_reload_misfire"))
             PlaySound("sndReloadMisfire", get_LastFP());
         else
             PlaySound("sndAddCartridge", get_LastFP());
@@ -211,7 +211,7 @@ void CWeaponAutomaticShotgun::PlayAnimUnMisfire()
 {
     VERIFY(GetState() == eUnMisfire);
 
-    if (psWpnAnimsFlag.test(ANM_MISFIRE) && iAmmoElapsed > 0)
+    if (isHUDAnimationExist("anm_reload_misfire") && iAmmoElapsed > 0)
         PlayHUDMotion("anm_reload_misfire", TRUE, this, GetState());
     else
         PlayHUDMotion("anm_add_cartridge", FALSE, this, GetState());
