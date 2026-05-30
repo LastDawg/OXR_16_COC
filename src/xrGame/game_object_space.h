@@ -67,6 +67,7 @@ enum ECallbackType : u32
     eOnWeaponZoomOut,
     eOnWeaponJammed,
     eOnWeaponMagazineEmpty,
+    eOnWeaponFired,
     // Actor
     eActorBeforeDeath,
     eOnFootStep,

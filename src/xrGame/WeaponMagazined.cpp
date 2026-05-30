@@ -715,6 +715,10 @@ void CWeaponMagazined::OnShot()
     //дым из ствола
     ForceUpdateFireParticles();
     StartSmokeParticles(get_LastFP(), vel);
+
+	IGameObject	*object = smart_cast<IGameObject*>(H_Parent());
+	if (object)
+        object->callback(GameObject::eOnWeaponFired)(object->lua_game_object(), this->lua_game_object(), iAmmoElapsed, m_ammoType);
 }
 
 void CWeaponMagazined::OnEmptyClick() { PlaySound("sndEmptyClick", get_LastFP()); }

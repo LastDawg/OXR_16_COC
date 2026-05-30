@@ -113,6 +113,7 @@ void CScriptGameObject::script_register(lua_State* luaState)
                 value("on_detach_vehicle", int(GameObject::eDetachVehicle)),
                 value("on_use_vehicle", int(GameObject::eUseVehicle)),
                 // Weapon
+                value("weapon_fired", int(GameObject::eOnWeaponFired)),
                 value("weapon_jammed", int(GameObject::eOnWeaponJammed)),
                 value("weapon_zoom_in", int(GameObject::eOnWeaponZoomIn)),
                 value("weapon_zoom_out", int(GameObject::eOnWeaponZoomOut)),
