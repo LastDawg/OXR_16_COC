@@ -33,10 +33,7 @@ void CWeaponRevolver::PlayAnimShow()
 {
     VERIFY(GetState()==eShowing);
 
-    if (iAmmoElapsed == 0)
-        PlayHUDMotion("anm_show_empty", false, this, GetState());
-    else
-        inherited::PlayAnimShow();
+    inherited::PlayAnimShow();
 }
 
 void CWeaponRevolver::PlayAnimBore()
@@ -49,18 +46,12 @@ void CWeaponRevolver::PlayAnimBore()
 
 void CWeaponRevolver::PlayAnimIdleSprint()
 {
-    if (iAmmoElapsed == 0)
-        PlayHUDMotion("anm_idle_sprint_empty", true, nullptr, GetState());
-    else
-        inherited::PlayAnimIdleSprint();
+    inherited::PlayAnimIdleSprint();
 }
 
 void CWeaponRevolver::PlayAnimIdleMoving()
 {
-    if (iAmmoElapsed == 0)
-        PlayHUDMotion("anm_idle_moving_empty", true, nullptr, GetState());
-    else
-        inherited::PlayAnimIdleMoving();
+    inherited::PlayAnimIdleMoving();
 }
 
 
@@ -68,18 +59,12 @@ void CWeaponRevolver::PlayAnimIdle()
 {
     if (TryPlayAnimIdle()) return;
 
-    if (iAmmoElapsed == 0)
-        PlayHUDMotion("anm_idle_empty", true, nullptr, GetState());
-    else
-        inherited::PlayAnimIdle();
+    inherited::PlayAnimIdle();
 }
 
 void CWeaponRevolver::PlayAnimAim()
 {
-    if (iAmmoElapsed == 0)
-        PlayHUDMotion("anm_idle_aim_empty", true, nullptr, GetState());
-    else
-        inherited::PlayAnimAim();
+    inherited::PlayAnimAim();
 }
 
 void CWeaponRevolver::PlayAnimReload()

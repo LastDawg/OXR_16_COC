@@ -80,6 +80,13 @@ void player_hud_motion_container::load(IKinematicsAnimated* model, const shared_
                     xr_sprintf(buff, "%s%d", pm.m_base_name.c_str(), i);
 
                 MotionID motion_ID = model->ID_Cycle_Safe(buff);
+
+
+				if (!motion_ID.valid() && i == 0)
+                {
+                    motion_ID = model->ID_Cycle_Safe("hand_idle_doun");
+                }
+
                 if (motion_ID.valid())
                 {
                     pm.m_animations.emplace_back(motion_descr{ std::move(motion_ID), buff });
@@ -88,7 +95,7 @@ void player_hud_motion_container::load(IKinematicsAnimated* model, const shared_
 #endif // #ifdef DEBUG
                 }
             }
-            R_ASSERT2(!pm.m_animations.empty(), make_string("motion not found [%s]", pm.m_base_name.c_str()).c_str());
+            VERIFY2(pm->m_animations.size(), make_string("motion not found [%s]", pm->m_base_name.c_str()).c_str());
 
             m_anims.emplace(name, std::move(pm));
         }

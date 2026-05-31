@@ -49,9 +49,24 @@ void CWeaponBM16::PlayAnimBore()
 {
     switch (m_magazine.size())
     {
-    case 0: PlayHUDMotion("anm_bore_0", "anim_idle", TRUE, this, GetState()); break;
-    case 1: PlayHUDMotion("anm_bore_1", "anim_idle_1", TRUE, this, GetState()); break;
-    case 2: PlayHUDMotion("anm_bore_2", "anim_idle_2", TRUE, this, GetState()); break;
+    case 0: 
+        {
+        if (isHUDAnimationExist("anm_bore_0"))
+            PlayHUDMotion("anm_bore_0", TRUE, this, GetState()); 
+        }
+        break;
+    case 1: 
+        {
+        if (isHUDAnimationExist("anm_bore_1"))
+            PlayHUDMotion("anm_bore_1", TRUE, this, GetState()); 
+        }
+        break;
+    case 2: 
+        {
+        if (isHUDAnimationExist("anm_bore_2"))
+            PlayHUDMotion("anm_bore_2", TRUE, this, GetState()); 
+        }
+        break;
     }
 }
 
@@ -122,5 +137,35 @@ void CWeaponBM16::PlayAnimIdle()
         }
         break;
         };
+    }
+}
+
+void CWeaponBM16::PlayAnimSprintStart()
+{
+    const std::string size = std::to_string(m_magazine.size());
+    const char* anm_name = IsMisfire() ? "anm_idle_sprint_start_jammed_" : "anm_idle_sprint_start_";
+    const std::string result = anm_name + size;
+
+    if (isHUDAnimationExist(result.c_str()))
+        PlayHUDMotion(result.c_str(), true, nullptr, GetState());
+    else
+    {
+        SprintType = true;
+        SwitchState(eIdle);
+    }
+}
+
+void CWeaponBM16::PlayAnimSprintEnd()
+{
+    const std::string size = std::to_string(m_magazine.size());
+    const char* anm_name = IsMisfire() ? "anm_idle_sprint_end_jammed_" : "anm_idle_sprint_end_";
+    const std::string result = anm_name + size;
+
+    if (isHUDAnimationExist(result.c_str()))
+        PlayHUDMotion(result.c_str(), true, nullptr, GetState());
+    else
+    {
+        SprintType = false;
+        SwitchState(eIdle);
     }
 }

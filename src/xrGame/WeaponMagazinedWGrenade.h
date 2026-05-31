@@ -88,8 +88,6 @@ public:
     int iMagazineSize2;
     xr_vector<CCartridge> m_magazine2;
 
-    bool m_bGrenadeMode;
-
     CCartridge m_DefaultCartridge2;
     u8 iAmmoElapsed2;
 

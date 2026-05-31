@@ -20,6 +20,8 @@ protected:
     virtual void PlayAnimShow();
     virtual void PlayAnimHide();
     virtual void PlayAnimBore();
+    virtual void PlayAnimSprintStart() override;
+    virtual void PlayAnimSprintEnd() override;
 
 private:
     DECLARE_SCRIPT_REGISTER_FUNCTION(CWeaponShotgun);

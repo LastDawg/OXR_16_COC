@@ -127,6 +127,18 @@ void CHudItem::OnStateSwitch(u32 S, u32 oldState)
 
     switch (S)
     {
+    case eSprintStart: 
+        SetPending(FALSE);
+
+        PlayAnimSprintStart();
+    break;
+
+    case eSprintEnd: 
+        SetPending(FALSE);
+
+        PlayAnimSprintEnd();
+    break;
+
     case eBore:
         SetPending(FALSE);
 
@@ -151,8 +163,22 @@ void CHudItem::OnAnimationEnd(u32 state)
     }
     switch (state)
     {
-    case eBore: { SwitchState(eIdle);
-    }
+        case eBore: 
+        { 
+            SwitchState(eIdle);
+        }
+        break;
+        case eSprintStart: 
+        {
+            SprintType = true;
+            SwitchState(eIdle);
+        }
+        break;
+        case eSprintEnd: 
+        {
+            SprintType = false;
+            SwitchState(eIdle);
+        }
     break;
     }
 }
@@ -269,7 +295,7 @@ void CHudItem::on_a_hud_attach()
     }
 }
 
-u32 CHudItem::PlayHUDMotion(const shared_str& M, BOOL bMixIn, CHudItem* W, u32 state)
+u32 CHudItem::PlayHUDMotion(const shared_str& M, bool bMixIn, CHudItem* W, u32 state)
 {
     u32 anim_time = PlayHUDMotion_noCB(M, bMixIn);
     if (anim_time > 0)
@@ -286,7 +312,7 @@ u32 CHudItem::PlayHUDMotion(const shared_str& M, BOOL bMixIn, CHudItem* W, u32 s
     return anim_time;
 }
 
-u32 CHudItem::PlayHUDMotion(const shared_str& M, const shared_str& M2, BOOL bMixIn, CHudItem* W, u32 state)
+u32 CHudItem::PlayHUDMotion(const shared_str& M, const shared_str& M2, bool bMixIn, CHudItem* W, u32 state)
 {
     u32 time = 0;
 
@@ -298,7 +324,42 @@ u32 CHudItem::PlayHUDMotion(const shared_str& M, const shared_str& M2, BOOL bMix
     return time;
 }
 
-u32 CHudItem::PlayHUDMotion_noCB(const shared_str& motion_name, BOOL bMixIn)
+u32 CHudItem::PlayHUDMotionNew(const shared_str& M, const bool bMixIn, const u32 state, const bool randomAnim)
+{
+    // Msg("~~[%s] Playing motion [%s] for [%s]", __FUNCTION__, M.c_str(), HudSection().c_str());
+    u32 anim_time = PlayHUDMotion_noCB(M, bMixIn);
+    if (anim_time > 0)
+    {
+        m_bStopAtEndAnimIsRunning = true;
+        m_dwMotionStartTm = Device.dwTimeGlobal;
+        m_dwMotionCurrTm = m_dwMotionStartTm;
+        m_dwMotionEndTm = m_dwMotionStartTm + anim_time;
+        m_startedMotionState = state;
+    }
+    else
+        m_bStopAtEndAnimIsRunning = false;
+
+    return anim_time;
+}
+
+u32 CHudItem::PlayHUDMotionIfExists(std::initializer_list<const char*> Ms, const bool bMixIn, const u32 state, const bool randomAnim)
+{
+    for (const auto* M : Ms)
+        if (isHUDAnimationExist(M))
+            return PlayHUDMotionNew(M, bMixIn, state, randomAnim);
+
+    std::string dbg_anim_name;
+    for (const auto* M : Ms)
+    {
+        dbg_anim_name += M;
+        dbg_anim_name += ", ";
+    }
+    Msg("~~[%s] Motions [%s] not found for [%s]", __FUNCTION__, dbg_anim_name.c_str(), HudSection().c_str());
+
+    return 0;
+}
+
+u32 CHudItem::PlayHUDMotion_noCB(const shared_str& motion_name, bool bMixIn, const bool randomAnim)
 {
     m_current_motion = motion_name;
 
@@ -346,6 +407,32 @@ void CHudItem::PlayAnimIdle()
     PlayHUDMotion("anm_idle", "anim_idle", TRUE, NULL, GetState());
 }
 
+void CHudItem::PlayAnimSprintStart()
+{
+	auto wpn = smart_cast<CWeapon*>(this);
+	string128 guns_sprint_start_anm;
+	xr_strconcat(guns_sprint_start_anm, "anm_idle_sprint_start", (wpn && wpn->IsMisfire()) ? "_jammed" : ((wpn && ((wpn->GetAmmoElapsed() == 0 && !wpn->m_bGrenadeMode) || (wpn->GetAmmoElapsed() == 0 && wpn->m_bGrenadeMode))) ? "_empty" : ""), (wpn && wpn->IsGrenadeLauncherAttached()) ? (wpn && wpn->m_bGrenadeMode ? "_g" : "_w_gl") : "");
+    if (isHUDAnimationExist(guns_sprint_start_anm))
+        PlayHUDMotion(guns_sprint_start_anm, true, nullptr, GetState());
+	else {
+		SprintType = true;
+		SwitchState(eIdle);
+	}
+}
+
+void CHudItem::PlayAnimSprintEnd()
+{
+	auto wpn = smart_cast<CWeapon*>(this);
+	string128 guns_sprint_end_anm;
+	xr_sprintf(guns_sprint_end_anm, "anm_idle_sprint_end", (wpn && wpn->IsMisfire()) ? "_jammed" : ((wpn && ((wpn->GetAmmoElapsed() == 0 && !wpn->m_bGrenadeMode) || (wpn->GetAmmoElapsed() == 0 && wpn->m_bGrenadeMode))) ? "_empty" : ""), (wpn && wpn->IsGrenadeLauncherAttached()) ? (wpn && wpn->m_bGrenadeMode ? "_g" : "_w_gl") : "");
+    if (isHUDAnimationExist(guns_sprint_end_anm))
+        PlayHUDMotion(guns_sprint_end_anm, true, nullptr, GetState());
+	else {
+		SprintType = false;
+		SwitchState(eIdle);
+	}
+}
+
 bool CHudItem::TryPlayAnimIdle()
 {
     if (MovingAnimAllowedNow())
@@ -357,17 +444,29 @@ bool CHudItem::TryPlayAnimIdle()
             pActor->g_State(st);
             if (st.bSprint)
             {
+                if (!SprintType)
+                {
+                    SwitchState(eSprintStart);
+                    return true;
+                }
                 PlayAnimIdleSprint();
                 return true;
             }
+            else 
+                if (SprintType)
+                {
+                    SwitchState(eSprintEnd);
+                    return true;
+                }
+
             if (pActor->AnyMove())
             {
-                if (!st.bCrouch && isHUDAnimationExist("anm_idle_moving"))
+                if (!st.bCrouch)
                 {
                     PlayAnimIdleMoving();
                     return true;
                 }
-                if (st.bCrouch && isHUDAnimationExist("anm_idle_moving_crouch"))
+                if (st.bCrouch)
                 {
                     PlayAnimIdleMovingCrouch();
                     return true;
@@ -414,15 +513,28 @@ pcstr CHudItem::WhichHUDAnimationExist(pcstr anim_name, pcstr anim_name2, bool s
     return nullptr;
 }
 
-void CHudItem::PlayAnimIdleMovingCrouch() { PlayHUDMotion("anm_idle_moving_crouch", "anim_idle", true, nullptr, GetState()); }
-void CHudItem::PlayAnimIdleMoving() { PlayHUDMotion("anm_idle_moving", "anim_idle", true, nullptr, GetState()); }
-
-void CHudItem::PlayAnimIdleSprint()
-{
-    if (cpcstr anim_name = WhichHUDAnimationExist("anm_idle_sprint", "anim_idle_sprint"))
-        PlayHUDMotion(anim_name, true, nullptr, GetState());
+void CHudItem::PlayAnimIdleMoving() 
+{ 
+    if (IsMisfireNow() && isHUDAnimationExist("anm_idle_moving_jammed"))
+        PlayHUDMotion("anm_idle_moving_jammed", true, nullptr, GetState());
     else
-        PlayHUDMotion("anm_idle", "anim_idle", true, nullptr, GetState());
+        PlayHUDMotion("anm_idle_moving", true, nullptr, GetState()); 
+}
+
+void CHudItem::PlayAnimIdleMovingCrouch()
+{
+    if (IsMisfireNow() && isHUDAnimationExist("anm_idle_moving_crouch_jammed"))
+        PlayHUDMotion("anm_idle_moving_crouch_jammed", true, nullptr, GetState());
+    else if (!IsMisfireNow() && isHUDAnimationExist("anm_idle_moving_crouch"))
+        PlayHUDMotion("anm_idle_moving_crouch", true, nullptr, GetState());
+}
+
+void CHudItem::PlayAnimIdleSprint() 
+{ 
+    if (IsMisfireNow() && isHUDAnimationExist("anm_idle_sprint_jammed"))
+        PlayHUDMotion("anm_idle_sprint_jammed", true, nullptr, GetState());
+    else
+        PlayHUDMotion("anm_idle_sprint", true, nullptr, GetState()); 
 }
 
 void CHudItem::OnMovementChanged(ACTOR_DEFS::EMoveCommand cmd)

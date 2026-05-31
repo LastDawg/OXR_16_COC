@@ -21,6 +21,7 @@ public:
     virtual void PlayAnimShow();
     virtual void PlayAnimIdle();
     virtual void PlayAnimIdleMoving();
+    virtual void PlayAnimIdleMovingCrouch();
     virtual void PlayAnimIdleSprint();
     virtual void PlayAnimHide();
     virtual void PlayAnimShoot();
@@ -31,5 +32,4 @@ public:
 
 protected:
     virtual bool AllowFireWhileWorking() { return true; }
-    ESoundTypes m_eSoundClose;
 };

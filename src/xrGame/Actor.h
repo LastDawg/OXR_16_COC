@@ -795,6 +795,9 @@ private:
     bool m_inventory_disabled;
     // static CPhysicsShell		*actor_camera_shell;
 
+public:
+    IC u32 get_state() const { return this->mstate_real; }
+
 private:
     DECLARE_SCRIPT_REGISTER_FUNCTION(CGameObject);
 };

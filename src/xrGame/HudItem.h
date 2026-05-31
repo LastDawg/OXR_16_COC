@@ -20,6 +20,8 @@ public:
     {
         eHidden = 0,
         eIdle,
+        eSprintStart,
+        eSprintEnd,
         eShowing,
         eHiding,
         eBore,
@@ -76,6 +78,7 @@ protected:
     u32 m_startedMotionState;
     u8 m_started_rnd_anim_idx;
     bool m_bStopAtEndAnimIsRunning;
+    bool SprintType{};
 
 public:
     virtual void Load(LPCSTR section);
@@ -121,7 +124,10 @@ public:
     bool TryPlayAnimIdle();
     virtual bool MovingAnimAllowedNow() { return true; }
     virtual void PlayAnimIdleMoving();
+    virtual void PlayAnimIdleMovingCrouch();
     virtual void PlayAnimIdleSprint();
+    virtual void PlayAnimSprintStart();
+    virtual void PlayAnimSprintEnd();
 
     virtual void UpdateCL();
     virtual void renderable_Render(u32 context_id, IRenderable* root);
@@ -130,9 +136,11 @@ public:
 
     virtual void UpdateXForm() = 0;
 
-    u32 PlayHUDMotion(const shared_str& M, BOOL bMixIn, CHudItem* W, u32 state);
-    u32 PlayHUDMotion(const shared_str& M, const shared_str& M2, BOOL bMixIn, CHudItem* W, u32 state);
-    u32 PlayHUDMotion_noCB(const shared_str& M, BOOL bMixIn);
+    u32 PlayHUDMotion(const shared_str& M, bool bMixIn, CHudItem* W, u32 state);
+    u32 PlayHUDMotion(const shared_str& M, const shared_str& M2, bool bMixIn, CHudItem* W, u32 state);
+    u32 PlayHUDMotionNew(const shared_str& M, const bool bMixIn, const u32 state, const bool randomAnim = true);
+    u32 PlayHUDMotionIfExists(std::initializer_list<const char*>, const bool bMixIn, const u32 state, const bool randomAnim = true);
+    u32 PlayHUDMotion_noCB(const shared_str& M, const bool bMixIn, const bool randomAnim = true);
     void StopCurrentAnimWithoutCallback();
 
     IC void RenderHud(BOOL B) { m_huditem_flags.set(fl_renderhud, B); }
@@ -183,7 +191,7 @@ public:
     virtual void on_renderable_Render(u32 context_id, IRenderable* root) = 0;
 
     virtual CHudItem* cast_hud_item() { return this; }
-    void PlayAnimIdleMovingCrouch(); //AVO: new crouch idle animation
     bool isHUDAnimationExist(pcstr anim_name, bool silent = false) const;
+    virtual bool IsMisfireNow() { return false; }
     pcstr WhichHUDAnimationExist(pcstr anim_name, pcstr anim_name2, bool silent = false) const;
 };

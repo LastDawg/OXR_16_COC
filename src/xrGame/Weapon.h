@@ -129,12 +129,18 @@ public:
 
     BOOL AutoSpawnAmmo() const { return m_bAutoSpawnAmmo; };
     bool IsTriStateReload() const { return m_bTriStateReload; }
+    bool IsOpenWeaponEmptyCartridge() const { return m_bOpenWeaponEmptyCartridge; }
+    bool IsOpenWeaponCartridge() const { return m_bOpenWeaponCartridge; }
+    bool IsDiffShotModes() const { return m_bDiffShotModes; }
     EWeaponSubStates GetReloadState() const { return (EWeaponSubStates)m_sub_state; }
     bool IsMisfireOneCartRemove() const { return m_bMisfireOneCartRemove; }
 
 protected:
     bool m_bMisfireOneCartRemove;
     bool m_bTriStateReload;
+    bool m_bOpenWeaponEmptyCartridge;
+    bool m_bOpenWeaponCartridge;
+    bool m_bDiffShotModes;
 
     // a misfire happens, you'll need to rearm weapon
     bool bMisfire;
@@ -241,6 +247,7 @@ public:
     virtual float CurrentZoomFactor();
     //показывает, что оружие находится в соостоянии поворота для приближенного прицеливания
     bool IsRotatingToZoom() const { return (m_zoom_params.m_fZoomRotationFactor < 1.f); }
+    bool IsRotatingFromZoom() const { return (m_zoom_params.m_fZoomRotationFactor > 0.f); }
     virtual u8 GetCurrentHudOffsetIdx();
 
     virtual float Weight() const;
@@ -325,6 +332,7 @@ protected:
     virtual bool MovingAnimAllowedNow();
     virtual void OnStateSwitch(u32 S, u32 oldState);
     virtual void OnAnimationEnd(u32 state);
+    virtual bool IsMisfireNow() { return IsMisfire(); }
 
     //трассирование полета пули
     virtual void FireTrace(const Fvector& P, const Fvector& D);
@@ -441,6 +449,8 @@ protected:
     virtual bool IsNecessaryItem(const shared_str& item_sect);
 
 public:
+    bool m_bGrenadeMode;
+
     xr_vector<shared_str> m_ammoTypes;
     /*
         struct SScopes

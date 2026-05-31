@@ -101,6 +101,7 @@ CWeapon::CWeapon()
     iAmmoElapsed = -1;
     iMagazineSize = -1;
     m_ammoType = 0;
+    m_bGrenadeMode = false;
 
     eHandDependence = hdNone;
 
@@ -438,6 +439,8 @@ void CWeapon::Load(LPCSTR section)
 
     vLoadedFirePoint = pSettings->r_fvector3(section, "fire_point");
     vLoadedFirePoint2 = pSettings->read_if_exists<Fvector3>(section, "fire_point2", vLoadedFirePoint);
+
+    m_bDiffShotModes = READ_IF_EXISTS(pSettings, r_bool, section, "different_shot_modes", false);
 
     // hands
     eHandDependence = EHandDependence(pSettings->r_s32(section, "hand_dependence"));
@@ -861,7 +864,14 @@ void CWeapon::OnH_B_Chield()
     m_set_next_ammoType_on_reload = undefined_ammo_type;
 }
 
-bool CWeapon::AllowBore() { return true; }
+bool CWeapon::AllowBore() 
+{ 
+    if (isHUDAnimationExist("anm_bore") || isHUDAnimationExist("anm_bore_0") && isHUDAnimationExist("anm_bore_1") && isHUDAnimationExist("anm_bore_2"))
+        return true; 
+    else
+        return false;
+}
+
 void CWeapon::UpdateCL()
 {
     inherited::UpdateCL();
@@ -1255,7 +1265,7 @@ BOOL CWeapon::CheckForMisfire()
 
     float rnd = ::Random.randF(0.f, 1.f);
     float mp = GetConditionMisfireProbability();
-    if (rnd < mp)
+    if (rnd < mp && iAmmoElapsed > 0)
     {
         FireEnd();
 
