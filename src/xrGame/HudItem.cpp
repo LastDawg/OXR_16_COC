@@ -414,7 +414,8 @@ void CHudItem::PlayAnimSprintStart()
 	xr_strconcat(guns_sprint_start_anm, "anm_idle_sprint_start", (wpn && wpn->IsMisfire()) ? "_jammed" : ((wpn && ((wpn->GetAmmoElapsed() == 0 && !wpn->m_bGrenadeMode) || (wpn->GetAmmoElapsed() == 0 && wpn->m_bGrenadeMode))) ? "_empty" : ""), (wpn && wpn->IsGrenadeLauncherAttached()) ? (wpn && wpn->m_bGrenadeMode ? "_g" : "_w_gl") : "");
     if (isHUDAnimationExist(guns_sprint_start_anm))
         PlayHUDMotion(guns_sprint_start_anm, true, nullptr, GetState());
-	else {
+	else 
+    {
 		SprintType = true;
 		SwitchState(eIdle);
 	}
@@ -424,10 +425,11 @@ void CHudItem::PlayAnimSprintEnd()
 {
 	auto wpn = smart_cast<CWeapon*>(this);
 	string128 guns_sprint_end_anm;
-	xr_sprintf(guns_sprint_end_anm, "anm_idle_sprint_end", (wpn && wpn->IsMisfire()) ? "_jammed" : ((wpn && ((wpn->GetAmmoElapsed() == 0 && !wpn->m_bGrenadeMode) || (wpn->GetAmmoElapsed() == 0 && wpn->m_bGrenadeMode))) ? "_empty" : ""), (wpn && wpn->IsGrenadeLauncherAttached()) ? (wpn && wpn->m_bGrenadeMode ? "_g" : "_w_gl") : "");
+	xr_strconcat(guns_sprint_end_anm, "anm_idle_sprint_end", (wpn && wpn->IsMisfire()) ? "_jammed" : ((wpn && ((wpn->GetAmmoElapsed() == 0 && !wpn->m_bGrenadeMode) || (wpn->GetAmmoElapsed() == 0 && wpn->m_bGrenadeMode))) ? "_empty" : ""), (wpn && wpn->IsGrenadeLauncherAttached()) ? (wpn && wpn->m_bGrenadeMode ? "_g" : "_w_gl") : "");
     if (isHUDAnimationExist(guns_sprint_end_anm))
         PlayHUDMotion(guns_sprint_end_anm, true, nullptr, GetState());
-	else {
+	else 
+    {
 		SprintType = false;
 		SwitchState(eIdle);
 	}

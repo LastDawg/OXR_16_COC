@@ -533,7 +533,9 @@ void CWeaponMagazined::UpdateCL()
             clamp(fShotTimeCounter, 0.0f, flt_max);
         }
         break;
-        case eFire: { state_Fire(dt);
+        case eFire: 
+        { 
+            state_Fire(dt);
         }
         break;
         case eMisfire: state_Misfire(dt); break;
@@ -586,7 +588,10 @@ void CWeaponMagazined::state_Fire(float dt)
         d.set(get_LastFD());
 
         if (!H_Parent())
+        {
+            StopShooting();
             return;
+        }
         if (smart_cast<CMPPlayersBag*>(H_Parent()) != nullptr)
         {
             Msg("! WARNING: state_Fire of object [%d][%s] while parent is CMPPlayerBag...", ID(), cNameSect().c_str());
@@ -696,6 +701,9 @@ void CWeaponMagazined::state_MagEmpty(float dt) {}
 void CWeaponMagazined::SetDefaults() { CWeapon::SetDefaults(); }
 void CWeaponMagazined::OnShot()
 {
+    if (SprintType)
+        SprintType = false;
+
     // Sound
     //Alundaio: LAYERED_SND_SHOOT
     m_layered_sounds.PlaySound(m_sSndShotCurrent.c_str(), get_LastFP(), H_Root(), !!GetHUDmode(), false, (u8)-1);
@@ -822,45 +830,31 @@ void CWeaponMagazined::switch2_ChangeFireMode()
 
 void CWeaponMagazined::PlayAnimFireMode()
 {
-    if (!IsMisfire() && IsGrenadeLauncherAttached() && iAmmoElapsed > 0)
-        PlayHUDMotion("anm_changefiremode_w_gl", true, this, GetState());
-    if (!IsMisfire() && IsGrenadeLauncherAttached() && iAmmoElapsed == 0)
-        PlayHUDMotion("anm_changefiremode_empty_w_gl", true, this, GetState());
+    if (!isHUDAnimationExist("anm_changefiremode")) // Если нет базовой анимации, не виснем в состоянии
+        SwitchState(eIdle);
 
-    if (!IsMisfire() && !IsGrenadeLauncherAttached() && iAmmoElapsed > 0)
-        PlayHUDMotion("anm_changefiremode", true, this, GetState());
-    if (!IsMisfire() && !IsGrenadeLauncherAttached() && iAmmoElapsed == 0)
-        PlayHUDMotion("anm_changefiremode_empty", true, this, GetState());
+    if (isHUDAnimationExist("anm_changefiremode"))
+    {
+        if (!IsMisfire() && !IsGrenadeLauncherAttached() && iAmmoElapsed > 0)
+            PlayHUDMotion("anm_changefiremode", true, this, GetState());
+        if (isHUDAnimationExist("anm_changefiremode_empty") && !IsMisfire() && !IsGrenadeLauncherAttached() && iAmmoElapsed == 0)
+            PlayHUDMotion("anm_changefiremode_empty", true, this, GetState());
 
-    if (!IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed > 0)
-        PlayHUDMotion("anm_changefiremode_jammed", true, this, GetState());
-    if (!IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed == 0)
-        PlayHUDMotion("anm_changefiremode_empty_jammed", true, this, GetState());
+        if (isHUDAnimationExist("anm_changefiremode_w_gl") && !IsMisfire() && IsGrenadeLauncherAttached() && iAmmoElapsed > 0)
+            PlayHUDMotion("anm_changefiremode_w_gl", true, this, GetState());
+        if (isHUDAnimationExist("anm_changefiremode_empty_w_gl") && !IsMisfire() && IsGrenadeLauncherAttached() && iAmmoElapsed == 0)
+            PlayHUDMotion("anm_changefiremode_empty_w_gl", true, this, GetState());
 
-    if (IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed > 0)
-        PlayHUDMotion("anm_changefiremode_jammed_w_gl", true, this, GetState());
-    if (IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed == 0)
-        PlayHUDMotion("anm_changefiremode_empty_jammed_w_gl", true, this, GetState());
+        if (isHUDAnimationExist("anm_changefiremode_jammed") && !IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed > 0)
+            PlayHUDMotion("anm_changefiremode_jammed", true, this, GetState());
+        if (isHUDAnimationExist("anm_changefiremode_empty_jammed") && !IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed == 0)
+            PlayHUDMotion("anm_changefiremode_empty_jammed", true, this, GetState());
 
-    if (!IsMisfire() && IsGrenadeLauncherAttached() && iAmmoElapsed > 0)
-        PlayHUDMotion("anm_changefiremode_w_gl", true, this, GetState());
-    if (!IsMisfire() && IsGrenadeLauncherAttached() && iAmmoElapsed == 0)
-        PlayHUDMotion("anm_changefiremode_w_gl_empty", true, this, GetState());
-
-    if (!IsMisfire() && !IsGrenadeLauncherAttached() && iAmmoElapsed > 0)
-        PlayHUDMotion("anm_changefiremode", true, this, GetState());
-    if (!IsMisfire() && !IsGrenadeLauncherAttached() && iAmmoElapsed == 0)
-        PlayHUDMotion("anm_changefiremode_empty", true, this, GetState());
-
-    if (!IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed > 0)
-        PlayHUDMotion("anm_changefiremode_jammed", true, this, GetState());
-    if (!IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed == 0)
-        PlayHUDMotion("anm_changefiremode_empty_jammed", true, this, GetState());
-
-    if (IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed > 0)
-        PlayHUDMotion("anm_changefiremode_w_gl_jammed", true, this, GetState());
-    if (IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed == 0)
-        PlayHUDMotion("anm_changefiremode_w_gl_empty_jammed", true, this, GetState());
+        if (isHUDAnimationExist("anm_changefiremode_jammed_w_gl") && IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed > 0)
+            PlayHUDMotion("anm_changefiremode_jammed_w_gl", true, this, GetState());
+        if (isHUDAnimationExist("anm_changefiremode_empty_jammed_w_gl") && IsGrenadeLauncherAttached() && IsMisfire() && iAmmoElapsed == 0)
+            PlayHUDMotion("anm_changefiremode_empty_jammed_w_gl", true, this, GetState());
+    }
 }
 
 #ifdef DEBUG
@@ -1504,59 +1498,62 @@ void CWeaponMagazined::PlayAnimShoot()
     {
         // В зуме
         if (IsZoomed())
-            if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_when_aim_l"))
+        {
+            if (isHUDAnimationExist("anm_shot_when_aim_l") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shot_when_aim_l", false, nullptr, GetState());
-            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_aim_l"))
+            else if (isHUDAnimationExist("anm_shots_aim_l") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shots_aim_l", false, nullptr, GetState());
-            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_l"))
-                PlayHUDMotion("anm_shot_l", false, nullptr, GetState());
-            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_l"))
-                PlayHUDMotion("anm_shots_l", false, nullptr, GetState());
-            else if (isHUDAnimationExist("anm_shots_when_aim"))
+            else if (isHUDAnimationExist("anm_shots_l_aim") && iAmmoElapsed == 1)
+                PlayHUDMotion("anm_shots_l_aim", false, nullptr, GetState());
+            else if (isHUDAnimationExist("anm_shots_when_aim") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shots_when_aim", false, nullptr, GetState());
-            else if (IsZoomed() && isHUDAnimationExist("anm_shots_aim"))
+            else if (isHUDAnimationExist("anm_shots_aim"))
                 PlayHUDMotion("anm_shots_aim", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shoot"))
                 PlayHUDMotion("anm_shoot", false, nullptr, GetState());
             else
                 PlayHUDMotion("anm_shots", false, nullptr, GetState());
+        }
         // От бедра
-        else if (!IsZoomed())
-            if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_l"))
+        else
+        {
+            if (isHUDAnimationExist("anm_shot_l") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shot_l", false, nullptr, GetState());
-            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_l"))
+            else if (isHUDAnimationExist("anm_shots_l") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shots_l", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shoot"))
                 PlayHUDMotion("anm_shoot", false, nullptr, GetState());
             else
                 PlayHUDMotion("anm_shots", false, nullptr, GetState());
+        }
     }
     // Если IsDiffShotModes и авторежим стрельбы (для SPAS-12).
     if (IsDiffShotModes() && GetCurrentFireMode() == -1)
     {
         // В зуме
         if (IsZoomed())
-            if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_auto_when_aim_l"))
+        {
+            if (isHUDAnimationExist("anm_shot_auto_when_aim_l") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shot_auto_when_aim_l", false, nullptr, GetState());
-            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_auto_aim_l"))
+            else if (isHUDAnimationExist("anm_shots_auto_aim_l") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shots_auto_aim_l", false, nullptr, GetState());
-            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_auto_l"))
-                PlayHUDMotion("anm_shot_auto_l", false, nullptr, GetState());
-            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_auto_l"))
-                PlayHUDMotion("anm_shots_auto_l", false, nullptr, GetState());
+            else if (isHUDAnimationExist("anm_shots_auto_l_aim") && iAmmoElapsed == 1)
+                PlayHUDMotion("anm_shots_auto_l_aim", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shots_auto_when_aim"))
                 PlayHUDMotion("anm_shots_auto_when_aim", false, nullptr, GetState());
-            else if (IsZoomed() && isHUDAnimationExist("anm_shots_auto_aim"))
+            else if (isHUDAnimationExist("anm_shots_auto_aim"))
                 PlayHUDMotion("anm_shots_auto_aim", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shoot"))
                 PlayHUDMotion("anm_shoot", false, nullptr, GetState());
             else
                 PlayHUDMotion("anm_shots", false, nullptr, GetState());
+        }
         // От бедра
-        else if (!IsZoomed())
-            if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_auto_l"))
+        else
+        {
+            if (isHUDAnimationExist("anm_shot_auto_l") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shot_auto_l", false, nullptr, GetState());
-            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_auto_l"))
+            else if (isHUDAnimationExist("anm_shots_auto_l") && iAmmoElapsed == 1)
                 PlayHUDMotion("anm_shots_auto_l", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shoot_auto"))
                 PlayHUDMotion("anm_shoot_auto", false, nullptr, GetState());
@@ -1564,6 +1561,7 @@ void CWeaponMagazined::PlayAnimShoot()
                 PlayHUDMotion("anm_shots_auto", false, nullptr, GetState());
             else
                 PlayHUDMotion("anm_shots", false, nullptr, GetState());
+        }
     }
 }
 

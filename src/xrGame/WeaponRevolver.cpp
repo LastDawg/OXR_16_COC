@@ -38,10 +38,7 @@ void CWeaponRevolver::PlayAnimShow()
 
 void CWeaponRevolver::PlayAnimBore()
 {
-    if (iAmmoElapsed == 0)
-        PlayHUDMotion("anm_bore_empty", true, this, GetState());
-    else
-        inherited::PlayAnimBore();
+    inherited::PlayAnimBore();
 }
 
 void CWeaponRevolver::PlayAnimIdleSprint()
@@ -89,22 +86,15 @@ void CWeaponRevolver::PlayAnimReload()
 void CWeaponRevolver::PlayAnimHide()
 {
     VERIFY(GetState()==eHiding);
-    if (iAmmoElapsed == 0)
-    {
-        PlaySound("sndClose", get_LastFP());
-        PlayHUDMotion("anm_hide_empty", true, this, GetState());
-    }
-    else
-        inherited::PlayAnimHide();
+
+    inherited::PlayAnimHide();
 }
 
 void CWeaponRevolver::PlayAnimShoot()
 {
     VERIFY(GetState()==eFire);
-    if (iAmmoElapsed > 1)
-        PlayHUDMotion("anm_shots", false, this, GetState());
-    else
-        PlayHUDMotion("anm_shot_l", false, this, GetState());
+
+    inherited::PlayAnimShoot();
 }
 
 
