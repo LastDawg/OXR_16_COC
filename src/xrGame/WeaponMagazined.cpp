@@ -1499,13 +1499,13 @@ void CWeaponMagazined::PlayAnimShoot()
         // В зуме
         if (IsZoomed())
         {
-            if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shot_when_aim_l"))
+            if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_when_aim_l"))
                 PlayHUDMotion("anm_shot_when_aim_l", false, nullptr, GetState());
-            else if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shots_aim_l"))
+            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_aim_l"))
                 PlayHUDMotion("anm_shots_aim_l", false, nullptr, GetState());
-            else if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shots_l_aim"))
+            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_l_aim"))
                 PlayHUDMotion("anm_shots_l_aim", false, nullptr, GetState());
-            else if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shots_when_aim"))
+            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_when_aim"))
                 PlayHUDMotion("anm_shots_when_aim", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shots_aim"))
                 PlayHUDMotion("anm_shots_aim", false, nullptr, GetState());
@@ -1517,9 +1517,9 @@ void CWeaponMagazined::PlayAnimShoot()
         // От бедра
         else
         {
-            if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shot_l"))
+            if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_l"))
                 PlayHUDMotion("anm_shot_l", false, nullptr, GetState());
-            else if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shots_l"))
+            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_l"))
                 PlayHUDMotion("anm_shots_l", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shoot"))
                 PlayHUDMotion("anm_shoot", false, nullptr, GetState());
@@ -1533,11 +1533,11 @@ void CWeaponMagazined::PlayAnimShoot()
         // В зуме
         if (IsZoomed())
         {
-            if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shot_auto_when_aim_l"))
+            if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_auto_when_aim_l"))
                 PlayHUDMotion("anm_shot_auto_when_aim_l", false, nullptr, GetState());
-            else if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shots_auto_aim_l"))
+            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_auto_aim_l"))
                 PlayHUDMotion("anm_shots_auto_aim_l", false, nullptr, GetState());
-            else if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shots_auto_l_aim"))
+            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_auto_l_aim"))
                 PlayHUDMotion("anm_shots_auto_l_aim", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shots_auto_when_aim"))
                 PlayHUDMotion("anm_shots_auto_when_aim", false, nullptr, GetState());
@@ -1551,9 +1551,9 @@ void CWeaponMagazined::PlayAnimShoot()
         // От бедра
         else
         {
-            if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shot_auto_l"))
+            if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shot_auto_l"))
                 PlayHUDMotion("anm_shot_auto_l", false, nullptr, GetState());
-            else if (iAmmoElapsed < 2 && isHUDAnimationExist("anm_shots_auto_l"))
+            else if (iAmmoElapsed == 1 && isHUDAnimationExist("anm_shots_auto_l"))
                 PlayHUDMotion("anm_shots_auto_l", false, nullptr, GetState());
             else if (isHUDAnimationExist("anm_shoot_auto"))
                 PlayHUDMotion("anm_shoot_auto", false, nullptr, GetState());
