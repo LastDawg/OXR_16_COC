@@ -132,6 +132,7 @@ CWeapon::CWeapon()
     m_bRememberActorNVisnStatus = false;
 
     m_bMisfireOneCartRemove = false;
+    m_bOutScopeAfterShot = false;
 }
 
 CWeapon::~CWeapon()
@@ -271,6 +272,8 @@ void CWeapon::Load(LPCSTR section)
 
     // Дропается ли патрон при расклине?
     m_bMisfireOneCartRemove = READ_IF_EXISTS(pSettings, r_bool, section, "misfire_one_cartridge_remove", false);
+
+    m_bOutScopeAfterShot = READ_IF_EXISTS(pSettings, r_bool, section, "out_scope_after_shot", false);
 
     if (pSettings->line_exist(section, "flame_particles_2"))
         m_sFlameParticles2 = pSettings->r_string(section, "flame_particles_2");
@@ -1035,7 +1038,10 @@ bool CWeapon::Action(u16 cmd, u32 flags)
                         if (!IsPending())
                         {
                             if (GetState() != eIdle)
-                                SwitchState(eIdle);
+                                    if (IsOutScopeAfterShot() && GetState() != eFire) // Чтобы не глючила для продолжительных анимаций, не знаю зачем тут этот стейт
+                                    {
+                                        SwitchState(eIdle);
+                                    }
                             OnZoomIn();
                         }
                     }
@@ -1050,8 +1056,11 @@ bool CWeapon::Action(u16 cmd, u32 flags)
                     if (!IsZoomed() && !IsPending())
                     {
                         if (GetState() != eIdle)
-                            SwitchState(eIdle);
-                        OnZoomIn();
+                            if (IsOutScopeAfterShot() && GetState() != eFire) // Чтобы не глючила для продолжительных анимаций, не знаю зачем тут этот стейт
+                            {
+                                SwitchState(eIdle);
+                            }
+                       OnZoomIn();
                     }
                 }
                 else if (IsZoomed())

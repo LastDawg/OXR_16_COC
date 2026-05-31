@@ -67,6 +67,7 @@ public:
     virtual void switch2_ChangeFireMode();
     virtual void PlayAnimFireMode();
     bool m_bNeedBulletInGun;
+    bool m_bCartridgeInTheChamber;
 
 protected:
     virtual void ReloadMagazine();

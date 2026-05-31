@@ -148,6 +148,8 @@ void CWeaponMagazined::Load(LPCSTR section)
         m_bHasDifferentFireModes = false;
     }
     LoadSilencerKoeffs();
+
+    m_bCartridgeInTheChamber = READ_IF_EXISTS(pSettings, r_bool, section, "CartridgeInTheChamberEnabled", true);
 }
 
 void CWeaponMagazined::FireStart()
@@ -701,6 +703,9 @@ void CWeaponMagazined::state_MagEmpty(float dt) {}
 void CWeaponMagazined::SetDefaults() { CWeapon::SetDefaults(); }
 void CWeaponMagazined::OnShot()
 {
+    if (IsOutScopeAfterShot()) // Принудительно выходим из зума, если out_scope_after_shot = true (для болтовок)
+        OnZoomOut();
+
     if (SprintType)
         SprintType = false;
 
@@ -1962,7 +1967,7 @@ void CWeaponMagazined::CheckMagazine() // Остаётся ли патрон в 
         return;
     }
 
-    if (isHUDAnimationExist("anm_reload_empty") && iAmmoElapsed >= 1 && m_bNeedBulletInGun == false)
+    if (m_bCartridgeInTheChamber == true && isHUDAnimationExist("anm_reload_empty") && iAmmoElapsed >= 1 && m_bNeedBulletInGun == false)
     {
         m_bNeedBulletInGun = true;
     }

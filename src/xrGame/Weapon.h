@@ -134,9 +134,11 @@ public:
     bool IsDiffShotModes() const { return m_bDiffShotModes; }
     EWeaponSubStates GetReloadState() const { return (EWeaponSubStates)m_sub_state; }
     bool IsMisfireOneCartRemove() const { return m_bMisfireOneCartRemove; }
+    bool IsOutScopeAfterShot() const { return m_bOutScopeAfterShot; }
 
 protected:
     bool m_bMisfireOneCartRemove;
+    bool m_bOutScopeAfterShot;
     bool m_bTriStateReload;
     bool m_bOpenWeaponEmptyCartridge;
     bool m_bOpenWeaponCartridge;

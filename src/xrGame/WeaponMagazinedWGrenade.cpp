@@ -1246,7 +1246,7 @@ void CWeaponMagazinedWGrenade::CheckMagazine()
     if (m_bGrenadeMode)
         return;
 
-    if ((isHUDAnimationExist("anm_reload_empty_w_gl") || isHUDAnimationExist("anm_reload_empty")) &&
+    if (m_bCartridgeInTheChamber == true && (isHUDAnimationExist("anm_reload_empty_w_gl") || isHUDAnimationExist("anm_reload_empty")) &&
         iAmmoElapsed >= 1 && m_bNeedBulletInGun == false)
     {
         m_bNeedBulletInGun = true;
