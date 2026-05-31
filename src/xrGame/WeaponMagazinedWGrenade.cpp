@@ -142,7 +142,7 @@ void CWeaponMagazinedWGrenade::OnShot()
 bool CWeaponMagazinedWGrenade::CanSwitchToGL()
 {
     bool bUsefulStateToSwitch =
-        ((eIdle == GetState()) || (eHidden == GetState()) || (eMisfire == GetState()) || (eMagEmpty == GetState())) &&
+        ((eIdle == GetState()) || (eHidden == GetState()) || (eMisfire == GetState()) || (eBroken == GetState()) || (eMagEmpty == GetState())) &&
         (!IsPending());
 
     return bUsefulStateToSwitch && IsGrenadeLauncherAttached();

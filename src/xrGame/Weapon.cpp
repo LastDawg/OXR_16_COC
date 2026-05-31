@@ -440,6 +440,9 @@ void CWeapon::Load(LPCSTR section)
     conditionDecreasePerShot = pSettings->r_float(section, "condition_shot_dec");
     conditionDecreasePerQueueShot = pSettings->read_if_exists<float>(section, "condition_queue_shot_dec", conditionDecreasePerShot);
 
+    // При достижении этого порога оружие ломается
+    fConditionToBroke = READ_IF_EXISTS(pSettings, r_float, section, "condition_to_broke", 0.f);
+
     vLoadedFirePoint = pSettings->r_fvector3(section, "fire_point");
     vLoadedFirePoint2 = pSettings->read_if_exists<Fvector3>(section, "fire_point2", vLoadedFirePoint);
 
@@ -979,6 +982,7 @@ void CWeapon::SetDefaults()
 
     m_flags.set(FUsingCondition, TRUE);
     bMisfire = false;
+    bWeaponBroken = false;
     m_flagsAddOnState = 0;
     m_zoom_params.m_bIsZoomModeNow = false;
 }
@@ -1289,8 +1293,41 @@ BOOL CWeapon::CheckForMisfire()
     }
 }
 
-BOOL CWeapon::IsMisfire() const { return bMisfire; }
-void CWeapon::Reload() { OnZoomOut(); }
+BOOL CWeapon::CheckForBroken()
+{
+    if (OnClient())
+        return FALSE;
+
+    if (this->GetCondition() <= fConditionToBroke)
+    {
+        FireEnd();
+
+        bWeaponBroken = true;
+        SwitchState(eBroken);
+
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+BOOL CWeapon::IsMisfire() const 
+{ 
+    return bMisfire; 
+}
+
+BOOL CWeapon::IsBroken() const 
+{ 
+    return bWeaponBroken; 
+}
+
+void CWeapon::Reload() 
+{ 
+    OnZoomOut(); 
+}
+
 bool CWeapon::IsGrenadeLauncherAttached() const
 {
     return (ALife::eAddonAttachable == m_eGrenadeLauncherStatus &&

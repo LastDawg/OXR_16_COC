@@ -76,6 +76,8 @@ public:
     virtual void OnHiddenItem();
     virtual void SendHiddenItem(); // same as OnHiddenItem but for client... (sends message to a server)...
 
+    float fConditionToBroke; // При достижении этого порога оружие ломается
+
 public:
     virtual bool can_kill() const;
     virtual CInventoryItem* can_kill(CInventory* inventory) const;
@@ -107,6 +109,7 @@ public:
         eUnMisfire,
         eFiremodePrev,
         eFiremodeNext,
+        eBroken,
     };
     enum EWeaponSubStates
     {
@@ -125,7 +128,9 @@ public:
     BOOL IsUpdating();
 
     BOOL IsMisfire() const;
+    BOOL IsBroken() const;
     BOOL CheckForMisfire();
+    BOOL CheckForBroken();
 
     BOOL AutoSpawnAmmo() const { return m_bAutoSpawnAmmo; };
     bool IsTriStateReload() const { return m_bTriStateReload; }
@@ -146,6 +151,8 @@ protected:
 
     // a misfire happens, you'll need to rearm weapon
     bool bMisfire;
+    // Only repair
+    bool bWeaponBroken;
 
     BOOL m_bAutoSpawnAmmo;
     virtual bool AllowBore();

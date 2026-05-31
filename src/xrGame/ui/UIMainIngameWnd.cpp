@@ -43,7 +43,7 @@
 #include "UIActorMenu.h"
 #include "xrUICore/ProgressBar/UIProgressShape.h"
 #include "UIArtefactPanel.h"
-
+#include "WeaponKnife.h"
 #include "Include/xrRender/Kinematics.h"
 
 using namespace InventoryUtilities;
@@ -781,6 +781,7 @@ void CUIMainIngameWnd::UpdateMainIndicators()
             if (weapon)
             {
                 const float condition = weapon->GetCondition();
+                float broken = weapon->GetCondition() <= weapon->fConditionToBroke;
                 const float start_misf_cond = weapon->GetMisfireStartCondition();
                 const float end_misf_cond = weapon->GetMisfireEndCondition();
                 if (condition < start_misf_cond)
@@ -790,7 +791,7 @@ void CUIMainIngameWnd::UpdateMainIndicators()
                         m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_green");
                     else if (condition > end_misf_cond)
                         m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_yellow");
-                    else
+                    else if (broken)
                         m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_red");
                 }
             }
