@@ -601,11 +601,11 @@ bool CEntityCondition::ApplyInfluence(const SMedicineInfluenceValues& V, const s
     ChangeHealth(V.fHealth);
     ChangePower(V.fPower);
     ChangeSatiety(V.fSatiety);
+    ChangeThirst(V.fThirst);
     ChangeRadiation(V.fRadiation);
     ChangeBleeding(V.fWoundsHeal);
     SetMaxPower(GetMaxPower() + V.fMaxPowerUp);
     ChangeAlcohol(V.fAlcohol);
-    ChangeThirst(V.fThirst);
     return true;
 }
 

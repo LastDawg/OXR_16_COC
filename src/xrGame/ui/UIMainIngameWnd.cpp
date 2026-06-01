@@ -173,7 +173,7 @@ void CUIMainIngameWnd::Init()
         UIArtefactIcon->Show(false);
     }
 
-    const static shared_str warningStrings[8] = {"jammed", "radiation", "wounds", "starvation", "thirst", "fatigue",
+    const static shared_str warningStrings[7] = {"jammed", "radiation", "wounds", "starvation", "fatigue",
         "invincible", "artefact"};
 
     // Загружаем пороговые значения для индикаторов
@@ -730,20 +730,23 @@ void CUIMainIngameWnd::UpdateMainIndicators()
     }
 
 	// Thirst icon
-    float thirst = pActor->conditions().GetThirst();
-    float thirst_critical = pActor->conditions().ThirstCritical();
-    float thirst_koef = (thirst - thirst_critical) / (thirst >= thirst_critical ? 1 - thirst_critical : thirst_critical);
-    if (thirst_koef > 0.5)
-        m_ind_thirst->Show(false);
-    else
+    if (m_ind_thirst)
     {
-        m_ind_thirst->Show(true);
-        if (thirst_koef > 0.0f)
-            m_ind_thirst->InitTexture("ui_inGame2_circle_thirst_green");
-        else if (thirst_koef > -0.5f)
-            m_ind_thirst->InitTexture("ui_inGame2_circle_thirst_yellow");
+        float thirst = pActor->conditions().GetThirst();
+        float thirst_critical = pActor->conditions().ThirstCritical();
+        float thirst_koef = (thirst - thirst_critical) / (thirst >= thirst_critical ? 1 - thirst_critical : thirst_critical);
+        if (thirst_koef > 0.5)
+            m_ind_thirst->Show(false);
         else
-            m_ind_thirst->InitTexture("ui_inGame2_circle_thirst_red");
+        {
+            m_ind_thirst->Show(true);
+            if (thirst_koef > 0.0f)
+                m_ind_thirst->InitTexture("ui_inGame2_circle_thirst_green");
+            else if (thirst_koef > -0.5f)
+                m_ind_thirst->InitTexture("ui_inGame2_circle_thirst_yellow");
+            else
+                m_ind_thirst->InitTexture("ui_inGame2_circle_thirst_red");
+        }
     }
 
     // Armor broken icon
@@ -766,6 +769,7 @@ void CUIMainIngameWnd::UpdateMainIndicators()
             }
         }
     }
+
     // Helmet broken icon
     if (m_ind_helmet_broken)
     {
