@@ -64,7 +64,7 @@ bool CUIBoosterInfo::InitFromXml(CUIXml& xml)
     m_booster_thirst = xr_new<UIBoosterInfoItem>();
     m_booster_thirst->Init(xml, "boost_thirst");
     m_booster_thirst->SetAutoDelete(false);
-    LPCSTR name = StringTable().translate("ui_inv_thirst").c_str();
+    name = StringTable().translate("ui_inv_thirst").c_str();
     m_booster_thirst->SetCaption(name);
     xml.SetLocalRoot(base_node);
 

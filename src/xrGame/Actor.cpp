@@ -1882,9 +1882,9 @@ void CActor::UpdateArtefactsOnBeltAndOutfit()
         update_time = 0.0f;
     }
 
-    const auto artefact = smart_cast<CArtefact*>(it);
     for (auto& it : inventory().m_belt)
     {
+        const auto artefact = smart_cast<CArtefact*>(it);
         if (artefact)
         {
             const float art_cond = artefact->GetCondition();
@@ -1908,12 +1908,11 @@ void CActor::UpdateArtefactsOnBeltAndOutfit()
     CCustomOutfit* outfit = GetOutfit();
     if (outfit)
     {
-        const float art_cond = artefact->GetCondition();
         conditions().ChangeBleeding(outfit->m_fBleedingRestoreSpeed * f_update_time);
         conditions().ChangeHealth(outfit->m_fHealthRestoreSpeed * f_update_time);
         conditions().ChangePower(outfit->m_fPowerRestoreSpeed * f_update_time);
         conditions().ChangeSatiety(outfit->m_fSatietyRestoreSpeed * f_update_time);
-        conditions().ChangeThirst(artefact->m_fThirstRestoreSpeed * art_cond * f_update_time);
+        conditions().ChangeThirst(outfit->m_fThirstRestoreSpeed * f_update_time);
         conditions().ChangeRadiation(outfit->m_fRadiationRestoreSpeed * f_update_time);
     }
     else
