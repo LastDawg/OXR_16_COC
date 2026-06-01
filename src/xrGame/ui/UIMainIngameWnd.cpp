@@ -798,7 +798,6 @@ void CUIMainIngameWnd::UpdateMainIndicators()
             if (weapon)
             {
                 const float condition = weapon->GetCondition();
-                float broken = weapon->GetCondition() <= weapon->fConditionToBroke;
                 const float start_misf_cond = weapon->GetMisfireStartCondition();
                 const float end_misf_cond = weapon->GetMisfireEndCondition();
                 if (condition < start_misf_cond)
@@ -808,7 +807,7 @@ void CUIMainIngameWnd::UpdateMainIndicators()
                         m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_green");
                     else if (condition > end_misf_cond)
                         m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_yellow");
-                    else if (broken)
+                    else
                         m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_red");
                 }
             }
