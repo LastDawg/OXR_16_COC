@@ -311,12 +311,14 @@ luabind::class_<CScriptGameObject>& script_register_game_object2(luabind::class_
         .def("get_artefact_health", &CScriptGameObject::GetArtefactHealthRestoreSpeed)
         .def("get_artefact_radiation", &CScriptGameObject::GetArtefactRadiationRestoreSpeed)
         .def("get_artefact_satiety", &CScriptGameObject::GetArtefactSatietyRestoreSpeed)
+        .def("get_artefact_thirst", &CScriptGameObject::GetArtefactThirstRestoreSpeed)
         .def("get_artefact_power", &CScriptGameObject::GetArtefactPowerRestoreSpeed)
         .def("get_artefact_bleeding", &CScriptGameObject::GetArtefactBleedingRestoreSpeed)
 
         .def("set_artefact_health", &CScriptGameObject::SetArtefactHealthRestoreSpeed)
         .def("set_artefact_radiation", &CScriptGameObject::SetArtefactRadiationRestoreSpeed)
         .def("set_artefact_satiety", &CScriptGameObject::SetArtefactSatietyRestoreSpeed)
+        .def("set_artefact_thirst", &CScriptGameObject::SetArtefactThirstRestoreSpeed)
         .def("set_artefact_power", &CScriptGameObject::SetArtefactPowerRestoreSpeed)
         .def("set_artefact_bleeding", &CScriptGameObject::SetArtefactBleedingRestoreSpeed)
 

@@ -81,6 +81,7 @@ luabind::class_<CScriptGameObject>& script_register_game_object1(luabind::class_
         .property("radiation", &CScriptGameObject::GetRadiation, &CScriptGameObject::SetRadiation)
         .property("morale", &CScriptGameObject::GetMorale, &CScriptGameObject::SetMorale)
         .property("bleeding", &CScriptGameObject::GetBleeding, &CScriptGameObject::SetBleeding)
+        .property("thirst", &CScriptGameObject::GetThirst, &CScriptGameObject::ChangeThirst)
 
         .def("get_bleeding", &CScriptGameObject::GetBleeding)
         .def("center", &CScriptGameObject::Center)

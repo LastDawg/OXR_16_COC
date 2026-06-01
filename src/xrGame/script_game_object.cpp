@@ -90,16 +90,16 @@ BIND_FUNCTION01(&object(), CScriptGameObject::SetPower, CEntityAlive, conditions
 BIND_FUNCTION01(&object(), CScriptGameObject::ChangeSatiety, CEntityAlive, conditions().ChangeSatiety, float, float);
 BIND_FUNCTION01(&object(), CScriptGameObject::SetRadiation, CEntityAlive, conditions().ChangeRadiation, float, float);
 BIND_FUNCTION01(&object(), CScriptGameObject::SetBleeding, CEntityAlive, conditions().ChangeBleeding, float, float);
-BIND_FUNCTION01(
-    &object(), CScriptGameObject::SetCircumspection, CEntityAlive, conditions().ChangeCircumspection, float, float);
+BIND_FUNCTION01(&object(), CScriptGameObject::SetCircumspection, CEntityAlive, conditions().ChangeCircumspection, float, float);
 BIND_FUNCTION01(&object(), CScriptGameObject::SetMorale, CEntityAlive, conditions().ChangeEntityMorale, float, float);
-BIND_FUNCTION02(
-    &object(), CScriptGameObject::SetScriptControl, CScriptEntity, SetScriptControl, bool, LPCSTR, bool, shared_str);
+BIND_FUNCTION02(&object(), CScriptGameObject::SetScriptControl, CScriptEntity, SetScriptControl, bool, LPCSTR, bool, shared_str);
 BIND_FUNCTION10(&object(), CScriptGameObject::GetScriptControl, CScriptEntity, GetScriptControl, bool, false);
 BIND_FUNCTION10(&object(), CScriptGameObject::GetScriptControlName, CScriptEntity, GetScriptControlName, LPCSTR, "");
 BIND_FUNCTION10(&object(), CScriptGameObject::GetEnemyStrength, CScriptEntity, get_enemy_strength, int, 0);
 BIND_FUNCTION10(&object(), CScriptGameObject::GetActionCount, CScriptEntity, GetActionCount, u32, 0);
 BIND_FUNCTION10(&object(), CScriptGameObject::can_script_capture, CScriptEntity, can_script_capture, bool, 0);
+BIND_FUNCTION10(&object(), CScriptGameObject::GetThirst, CEntityAlive, conditions().GetThirst, float, -1);
+BIND_FUNCTION01(&object(), CScriptGameObject::ChangeThirst, CEntityAlive, conditions().ChangeThirst, float, float);
 
 u32 CScriptGameObject::level_vertex_id() const { return (object().ai_location().level_vertex_id()); }
 u32 CScriptGameObject::game_vertex_id() const { return (object().ai_location().game_vertex_id()); }
