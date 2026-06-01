@@ -248,7 +248,7 @@ void ui_actor_state_wnd::UpdateActorInfo(CInventoryOwner* owner)
     }
     // wound protection progress bar
     {
-        const float max_power = conditions.GetMaxWoundProtection();
+        const float max_power = getProtection(woun_value, ALife::eHitTypeWound);
         update_round_states(stt_wound, woun_value, max_power);
     }
     // shock protection progress bar
@@ -258,7 +258,7 @@ void ui_actor_state_wnd::UpdateActorInfo(CInventoryOwner* owner)
     }
     // fire wound protection progress bar
     {
-        const float max_power = conditions.GetMaxFireWoundProtection();
+        const float max_power = getProtection(fwou_value, ALife::eHitTypeFireWound);
         update_round_states(stt_fire_wound, fwou_value, max_power);
     }
     // power restore speed progress bar
