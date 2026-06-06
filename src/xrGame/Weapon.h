@@ -294,7 +294,7 @@ protected:
     virtual void UpdateFireDependencies_internal();
     virtual void UpdatePosition(const Fmatrix& transform); //.
     virtual void UpdateXForm();
-    virtual void UpdateHudAdditonal(Fmatrix&);
+    virtual void UpdateHudAdditional(Fmatrix&);
     IC void UpdateFireDependencies()
     {
         if (dwFP_Frame == Device.dwFrame)
