@@ -213,11 +213,8 @@ void CWeaponMagazined::FireStart()
     }
     else if (IsBroken())
     {
-        if (smart_cast<CActor*>(this->H_Parent()) && (Level().CurrentViewEntity() == H_Parent()) &&
-            !m_sounds.FindSoundItem("sndWpnJam", false))
+        if (smart_cast<CActor*>(this->H_Parent()) && (Level().CurrentViewEntity() == H_Parent()) && !m_sounds.FindSoundItem("sndWpnJam", false))
             CurrentGameUI()->AddCustomStatic("gun_broken", true);
-        if (m_sounds.FindSoundItem("sndWpnJam", false))
-            PlaySound("sndWpnJam", get_LastFP());
     }
 }
 
@@ -778,7 +775,18 @@ void CWeaponMagazined::OnShot()
         object->callback(GameObject::eOnWeaponFired)(object->lua_game_object(), this->lua_game_object(), iAmmoElapsed, m_ammoType);
 }
 
-void CWeaponMagazined::OnEmptyClick() { PlaySound("sndEmptyClick", get_LastFP()); }
+void CWeaponMagazined::OnEmptyClick() 
+{ 
+    float random_voice;
+    random_voice = Random.randF(0.0f, 1.0f);
+
+    PlaySound("sndEmptyClick", get_LastFP()); // Рычаг спуска вхолостую
+
+    if (m_sounds.FindSoundItem("sndWpnJam", false) && bMisfire) // С шансом в 30% играем фразу при клине оружия
+        if (random_voice > 0.7f)
+            PlaySound("sndWpnJam", get_LastFP());
+}
+
 void CWeaponMagazined::OnAnimationEnd(u32 state)
 {
     switch (state)
