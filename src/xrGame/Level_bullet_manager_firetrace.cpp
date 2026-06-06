@@ -76,15 +76,23 @@ bool CBulletManager::test_callback(const collide::ray_defs& rd, IGameObject* obj
                         // попали в актера
                         float hpf = 1.f;
                         float ahp = actor->HitProbability();
+                        float scope_factor = 1.f;
 #if 1
 #if 0
                         IGameObject					*weapon_object = Level().Objects.net_Find	(bullet->weapon_id);
-                        if (weapon_object) {
+                        if (weapon_object) 
+                        {
                             CWeapon				*weapon = smart_cast<CWeapon*>(weapon_object);
-                            if (weapon) {
-                                float fly_dist		= bullet->fly_dist+dist;
-                                float dist_factor	= _min(1.f,fly_dist/Level().BulletManager().m_fHPMaxDist);
-                                ahp					= dist_factor*weapon->hit_probability() + (1.f-dist_factor)*1.f;
+							if (weapon) 
+                            {
+                                bool scope          = weapon->IsScopeAttached(); // Учтём прицел
+								float fly_dist		= bullet->fly_dist + dist;
+								float dist_factor	= _min(1.f, fly_dist / Level().BulletManager().m_fHPMaxDist);
+
+                                if (scope) // Если на оружии прицел, плавно увеличиваем его точность 
+                                    scope_factor * fly_dist / 1000; // Возьмём за образец 1000 метров, дальше никто не работает
+
+								ahp					= (dist_factor * actor->HitProbability() + (1.f-dist_factor) * 1.f) * scope_factor;
                             }
                         }
 #else
@@ -100,13 +108,17 @@ bool CBulletManager::test_callback(const collide::ray_defs& rd, IGameObject* obj
                             CWeapon* weapon = smart_cast<CWeapon*>(weapon_object);
                             if (weapon)
                             {
-                                game_difficulty_hit_probability = weapon->hit_probability();
-                                float fly_dist = bullet->fly_dist + dist;
-                                dist_factor = _min(1.f, fly_dist / Level().BulletManager().m_fHPMaxDist);
+                                bool scope                          = weapon->IsScopeAttached(); // Учтём прицел
+                                game_difficulty_hit_probability     = actor->HitProbability();
+                                float fly_dist                      = bullet->fly_dist + dist;
+                                dist_factor                         = _min(1.f, fly_dist / Level().BulletManager().m_fHPMaxDist);
+
+                                if (scope) // Если на оружии прицел, плавно увеличиваем его точность 
+                                    scope_factor += fly_dist / 1000; // Возьмём за образец 1000 метров, дальше никто не стреляет
                             }
                         }
 
-                        ahp = dist_factor * game_difficulty_hit_probability + (1.f - dist_factor) * 1.f;
+                        ahp = (dist_factor * game_difficulty_hit_probability + (1.f - dist_factor) * 1.f) * scope_factor;
 #endif
 #else
                         CAI_Stalker* i_stalker = smart_cast<CAI_Stalker*>(initiator);
@@ -119,7 +131,7 @@ bool CBulletManager::test_callback(const collide::ray_defs& rd, IGameObject* obj
                             ahp = dist_factor * actor->HitProbability() + (1.f - dist_factor) * 1.f;
                         }
 #endif
-                        if (Random.randF(0.f, 1.f) > (ahp * hpf))
+                        if (Random.randF(0.f, 1.f) > (ahp * hpf)) // Если рандомное число от 0 до 1 больше помноженной точности, пуля в актора не попадает
                         {
                             bRes = FALSE; // don't hit actor
                             play_whine = true; // play whine sound

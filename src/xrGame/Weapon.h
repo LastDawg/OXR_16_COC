@@ -534,12 +534,6 @@ protected:
     virtual bool install_upgrade_impl(LPCSTR section, bool test);
 
 private:
-    float m_hit_probability[egdCount];
-
-public:
-    const float& hit_probability() const;
-
-private:
     Fvector m_overriden_activation_speed;
     bool m_activation_speed_is_overriden;
     virtual bool ActivationSpeedOverriden(Fvector& dest, bool clear_override);

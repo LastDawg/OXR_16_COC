@@ -530,13 +530,6 @@ void CWeapon::Load(LPCSTR section)
     m_bHasTracers = !!READ_IF_EXISTS(pSettings, r_bool, section, "tracers", true);
     m_u8TracerColorID = READ_IF_EXISTS(pSettings, r_u8, section, "tracers_color_ID", u8(-1));
 
-    string256 temp;
-    for (u32 i = egdNovice; i < egdCount; ++i)
-    {
-        strconcat(temp, "hit_probability_", get_token_name(difficulty_type_token, static_cast<int>(i)));
-        m_hit_probability[i] = READ_IF_EXISTS(pSettings, r_float, section, temp, 1.f);
-    }
-
     m_zoom_params.m_bUseDynamicZoom = READ_IF_EXISTS(pSettings, r_bool, section, "scope_dynamic_zoom", false);
     m_zoom_params.m_sUseZoomPostprocess = nullptr;
     m_zoom_params.m_sUseBinocularVision = nullptr;
@@ -1939,12 +1932,6 @@ BOOL CWeapon::ParentIsActor()
         return FALSE;
 
     return EA->cast_actor() != nullptr;
-}
-
-const float& CWeapon::hit_probability() const
-{
-    VERIFY((g_SingleGameDifficulty >= egdNovice) && (g_SingleGameDifficulty <= egdMaster));
-    return (m_hit_probability[egdNovice]);
 }
 
 void CWeapon::OnStateSwitch(u32 S, u32 oldState)
