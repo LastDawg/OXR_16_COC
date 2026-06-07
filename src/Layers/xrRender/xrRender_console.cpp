@@ -126,6 +126,11 @@ Flags32 ps_r__common_flags = { RFLAG_ACTOR_SHADOW }; // All renders
 //int ps_r__Supersample = 1;
 int ps_r__LightSleepFrames = 10;
 
+// Raindrops
+float ps_r2_rain_drops_intensity = 0.00025f;
+float ps_r2_rain_drops_speed     = 1.25f;
+Flags32 ps_r2_rain_drops_flags = {R2FLAG_RAIN_DROPS};
+
 float ps_r__Detail_l_ambient = 0.9f;
 float ps_r__Detail_l_aniso = 0.25f;
 float ps_r__Detail_density = 0.3f;
@@ -930,6 +935,11 @@ void xrRender_initconsole()
     CMD3(CCC_Mask, "r2_detail_bump", &ps_r2_ls_flags, R2FLAG_DETAIL_BUMP);
 
     CMD3(CCC_Token, "r2_sun_quality", &ps_r_sun_quality, qsun_quality_token);
+
+    // Raindrops
+    CMD3(CCC_Mask, "r2_raindrops", &ps_r2_rain_drops_flags, R2FLAG_RAIN_DROPS);
+    CMD4(CCC_Float, "r2_rain_drops_intensity", &ps_r2_rain_drops_intensity, 0.f, 1.f);
+    CMD4(CCC_Float, "r2_rain_drops_speed", &ps_r2_rain_drops_speed, 0.8f, 5.f);
 
     //Igor: need restart
     CMD3(CCC_Mask, "r2_soft_water", &ps_r2_ls_flags, R2FLAG_SOFT_WATER);

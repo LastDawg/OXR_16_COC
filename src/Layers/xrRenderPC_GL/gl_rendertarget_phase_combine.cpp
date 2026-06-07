@@ -280,6 +280,12 @@ void CRenderTarget::phase_combine()
     // HOLGER - HACK
     PP_Complex = TRUE;
 
+	if (!_menu_pp)
+    {
+        if (ps_r2_rain_drops_flags.test(R2FLAG_RAIN_DROPS))
+            PhaseRainDrops();
+    }
+
     // Combine everything + perform AA
     if (RImplementation.o.msaa)
     {

@@ -168,6 +168,8 @@ private:
     ref_shader s_combine;
     ref_shader s_combine_msaa[8];
     ref_shader s_combine_volumetric;
+    ref_geom   g_rain_drops;
+    ref_shader s_rain_drops;
 
 public:
     ref_shader s_postprocess;
@@ -258,6 +260,7 @@ public:
     void phase_hdao();
     void phase_downsamp();
     void phase_wallmarks();
+    void PhaseRainDrops();
 
     void phase_smap_direct(CBackend& cmd_list, light *L, u32 sub_phase);
     void phase_smap_direct_tsh(CBackend& cmd_list, light *L, u32 sub_phase);

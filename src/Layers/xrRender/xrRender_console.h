@@ -161,6 +161,10 @@ extern ECORE_API float ps_r3_dyn_wet_surf_near; // 10.0f
 extern ECORE_API float ps_r3_dyn_wet_surf_far; // 30.0f
 extern ECORE_API int ps_r3_dyn_wet_surf_sm_res; // 256
 
+// Raindrops
+extern ECORE_API float ps_r2_rain_drops_intensity;
+extern ECORE_API float ps_r2_rain_drops_speed;
+
 enum
 {
     R2FLAG_SUN = (1 << 0),
@@ -222,6 +226,13 @@ enum
     R2FLAGEXT_SUN_OLD = (1 << 9),
     R3FLAGEXT_SSR_HALF_DEPTH = (1 << 10),
     R3FLAGEXT_SSR_JITTER = (1 << 11),
+};
+
+extern ECORE_API Flags32 ps_r2_rain_drops_flags;
+
+enum
+{
+    R2FLAG_RAIN_DROPS = (1 << 0),
 };
 
 extern void xrRender_initconsole();

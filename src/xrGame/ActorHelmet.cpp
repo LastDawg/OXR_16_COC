@@ -14,9 +14,14 @@ CHelmet::CHelmet()
         m_HitTypeProtection[i] = 1.0f;
 
     m_boneProtection = xr_new<SBoneProtections>();
+    m_b_HasGlass = false;
 }
 
-CHelmet::~CHelmet() { xr_delete(m_boneProtection); }
+CHelmet::~CHelmet() 
+{ 
+    xr_delete(m_boneProtection); 
+}
+
 void CHelmet::Load(LPCSTR section)
 {
     inherited::Load(section);
@@ -67,6 +72,8 @@ void CHelmet::Load(LPCSTR section)
 
     // Added by Axel, to enable optional condition use on any item
     m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", true));
+
+    m_b_HasGlass = !!READ_IF_EXISTS(pSettings, r_bool, section, "has_glass", FALSE);
 }
 
 void CHelmet::ReloadBonesProtection()

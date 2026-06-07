@@ -19,6 +19,8 @@ CCustomOutfit::CCustomOutfit()
     m_HitTypeProtection.resize(ALife::eHitTypeMax);
     for (int i = 0; i < static_cast<int>(ALife::eHitTypeMax); i++)
         m_HitTypeProtection[i] = 1.0f;
+
+    m_b_HasGlass = false;
 }
 
 bool CCustomOutfit::net_Spawn(CSE_Abstract* DC)
@@ -117,6 +119,8 @@ void CCustomOutfit::Load(LPCSTR section)
 
     // Added by Axel, to enable optional condition use on any item
     m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", true));
+
+    m_b_HasGlass = !!READ_IF_EXISTS(pSettings, r_bool, section, "has_glass", FALSE);
 }
 
 void CCustomOutfit::ReloadBonesProtection()

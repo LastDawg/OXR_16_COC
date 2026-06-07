@@ -669,6 +669,9 @@ CRenderTarget::CRenderTarget()
             D3DFVF_TEXCOORDSIZE2(2) | D3DFVF_TEXCOORDSIZE2(3) | D3DFVF_TEXCOORDSIZE2(4) | D3DFVF_TEXCOORDSIZE4(5) |
             D3DFVF_TEXCOORDSIZE4(6);
         g_aa_AA.create(fvf_aa_AA, RImplementation.Vertex.Buffer(), RImplementation.QuadIB);
+
+		s_rain_drops.create("raindrops");
+        g_rain_drops.create(fvf_aa_AA, RImplementation.Vertex.Buffer(), RImplementation.QuadIB);
     }
 
     // Build textures
