@@ -344,10 +344,17 @@ CRenderTarget::CRenderTarget()
     }
 
 	// Hud Mask
+    #if defined(USE_DX11)
+    {
+        CBlender_hud_mask b_hud_mask;
+        s_hud_mask.create(&b_hud_mask, "r3" DELIMITER "hud_mask");
+    }
+    #else
     {
         CBlender_hud_mask b_hud_mask;
         s_hud_mask.create(&b_hud_mask, "r2" DELIMITER "hud_mask");
     }
+    #endif
     //s_hud_mask.create(b_hud_mask, "r2\\hud_mask"); 
 
     // DIRECT (spot)

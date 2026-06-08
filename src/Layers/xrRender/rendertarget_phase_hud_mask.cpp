@@ -28,12 +28,11 @@ void CRenderTarget::phase_hud_mask()
 	//Set MSAA/NonMSAA rendertarget
 
 #if defined(USE_DX11)
-	ref_rt dest_rt = RImplementation.o.msaa ? rt_Generic : rt_Color;
+	ref_rt& dest_rt = RImplementation.o.msaa ? rt_Generic : rt_Color;
 #else
-	ref_rt dest_rt = rt_Generic_0;
+	ref_rt& dest_rt = rt_Generic_0;
 #endif
 
-	// 2. Устанавливаем холст (разделено для OpenGL и DirectX)
 #if defined(USE_OGL)
 	u_setrt(RCache, Device.dwWidth, Device.dwHeight, dest_rt->pRT, 0, 0, 0);
 #else
