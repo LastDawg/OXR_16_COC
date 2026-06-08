@@ -19,6 +19,12 @@
 #    include "Layers/xrRender/blenders/dx11HDAOCSBlender.h"
 #endif
 
+#if defined(USE_DX11)
+    #include "Layers/xrRenderPC_R4/blender_hud_mask.h"
+#else
+    #include "Layers/xrRenderPC_GL/blender_hud_mask.h"
+#endif
+
 namespace xray::render::RENDER_NAMESPACE
 {
 void CRenderTarget::u_stencil_optimize(CBackend& cmd_list, eStencilOptimizeMode eSOM)
@@ -243,6 +249,7 @@ CRenderTarget::CRenderTarget()
 
     // Blenders
     b_accum_spot = xr_new<CBlender_accum_spot>();
+    //b_hud_mask = xr_new<CBlender_hud_mask>(); Нет нужды, тк существует внутри скобок
 
     if (options.msaa)
     {
@@ -335,6 +342,13 @@ CRenderTarget::CRenderTarget()
         CBlender_light_occq b_occq;
         s_occq.create(&b_occq, "r2" DELIMITER "occq");
     }
+
+	// Hud Mask
+    {
+        CBlender_hud_mask b_hud_mask;
+        s_hud_mask.create(&b_hud_mask, "r2" DELIMITER "hud_mask");
+    }
+    //s_hud_mask.create(b_hud_mask, "r2\\hud_mask"); 
 
     // DIRECT (spot)
     pcstr smapTarget = r2_RT_smap_depth;
@@ -741,6 +755,8 @@ CRenderTarget::~CRenderTarget()
 
     // Blenders
     xr_delete(b_accum_spot);
+    //xr_delete(b_hud_mask); Нет нужды, тк существует внутри скобок
+
     if (RImplementation.o.msaa)
     {
         const u32 bound = RImplementation.o.msaa_opt ? 1 : RImplementation.o.msaa_samples;

@@ -5,6 +5,7 @@
 #include "Torch.h"
 #include "BoneProtections.h"
 #include "Include/xrRender/Kinematics.h"
+#include "DynamicHudGlass.h"
 
 CHelmet::CHelmet()
 {

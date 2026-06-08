@@ -9,8 +9,7 @@ void CRenderTarget::PhaseRainDrops()
 	static u32 steps_finished = 0;
 
 	// Чтобы эффект перезапускался по HudGlassEnabled.
-    // Это будет при подключении худа маски. Last_Dawn.
-    /*
+
 	static bool saved_rain_drops_control = false;
 
 	bool current_rain_drops_control = g_pGamePersistent->GetHudGlassEnabled();
@@ -25,7 +24,6 @@ void CRenderTarget::PhaseRainDrops()
 
 	if (!current_rain_drops_control)
 		return;
-    */
 
 	// Функция рассчитывает интенсивность эффекта капель на худе. В шейдере нормально рассчитать слишком муторно, проще посчитать здесь и получить в шейдере через c_timers.w
 	auto update_rain_drops_factor = [](bool act_on_rain)

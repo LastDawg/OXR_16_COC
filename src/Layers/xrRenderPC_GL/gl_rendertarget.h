@@ -29,6 +29,7 @@ public:
     u32 dwLightMarkerID;
 
     IBlender* b_accum_spot{};
+    IBlender* b_hud_mask{};
     IBlender* b_accum_spot_msaa[8]{};
     IBlender* b_accum_volumetric_msaa[8]{};
 
@@ -109,6 +110,8 @@ private:
     ref_shader s_accum_reflected_msaa[8];
     ref_shader s_accum_volume;
     ref_shader s_accum_volume_msaa[8];
+
+    ref_shader s_hud_mask;
 
     //	generate min/max
     ref_shader s_create_minmax_sm;
@@ -259,6 +262,7 @@ public:
     void phase_vol_accumulator(CBackend& cmd_list);
     void shadow_direct(CBackend& cmd_list, light* L, u32 dls_phase);
     void PhaseRainDrops();
+    void phase_hud_mask();
 
     //	Generates min/max sm
     void create_minmax_SM(CBackend& cmd_list);

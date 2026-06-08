@@ -106,6 +106,11 @@ public:
     virtual void OnSectorChanged(IRender_Sector::sector_id_t sector);
     virtual void OnAssetsChanged();
 
+    int GetHudGlassElement();
+    bool GetHudGlassEnabled();
+    bool GetActorAliveStatus();
+    bool GetActor();
+
     CHudTuner GetHudTuner() { return m_hudTuner; }
 };
 

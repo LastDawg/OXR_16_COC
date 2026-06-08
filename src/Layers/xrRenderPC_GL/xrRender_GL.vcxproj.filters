@@ -612,6 +612,12 @@
     <ClCompile Include="..\xrRender\rendertarget_raindrops.cpp">
       <Filter>Core_Target</Filter>
     </ClCompile>	
+    <ClCompile Include="..\xrRenderPC_GL\blender_hud_mask.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>	
+    <ClCompile Include="..\xrRender\rendertarget_phase_hud_mask.cpp">
+      <Filter>Core_Target</Filter>
+    </ClCompile>		
     <ClCompile Include="..\xrRender_R2\r2_rendertarget_phase_bloom.cpp">
       <Filter>Core_Target</Filter>
     </ClCompile>
@@ -1127,6 +1133,9 @@
     <ClInclude Include="..\xrRender\blenders\Blender_tree.h">
       <Filter>Shading templates</Filter>
     </ClInclude>
+    <ClInclude Include="..\xrRenderPC_GL\blender_hud_mask.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>		
     <ClInclude Include="..\xrRender\r__sync_point.h">
       <Filter>Core</Filter>
     </ClInclude>

@@ -46,6 +46,10 @@
 
 #include "xrEngine/xr_level_controller.h"
 
+#include "DynamicHudGlass.h"
+#include "CustomOutfit.h"
+#include "ActorHelmet.h"
+
 CGamePersistent::CGamePersistent()
 {
     ZoneScoped;
@@ -830,4 +834,24 @@ void CGamePersistent::OnAssetsChanged()
 {
     IGame_Persistent::OnAssetsChanged();
     StringTable().rescan();
+}
+
+int CGamePersistent::GetHudGlassElement()
+{
+	return	(DynamicHudGlass::GetHudGlassElement());
+}
+
+bool CGamePersistent::GetHudGlassEnabled()
+{
+	return	(DynamicHudGlass::GetHudGlassEnabled());
+}
+
+bool CGamePersistent::GetActorAliveStatus()
+{
+	return	(Actor()->g_Alive());
+}
+
+bool CGamePersistent::GetActor()
+{
+	return	(Actor());
 }

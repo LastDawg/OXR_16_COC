@@ -11,6 +11,7 @@
 #include "Include/xrRender/Kinematics.h"
 #include "player_hud.h"
 #include "ActorHelmet.h"
+#include "DynamicHudGlass.h"
 
 CCustomOutfit::CCustomOutfit()
 {

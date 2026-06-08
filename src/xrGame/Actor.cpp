@@ -76,6 +76,7 @@
 #include "xrCore/xr_token.h"
 
 #include "xrEngine/Rain.h"
+#include "DynamicHudGlass.h"
 
 //Alundaio
 #include "script_hit.h"
@@ -1530,6 +1531,9 @@ void CActor::shedule_Update(u32 DT)
     UpdateArtefactsOnBeltAndOutfit();
     m_pPhysics_support->in_shedule_Update(DT);
     Check_for_AutoPickUp();
+
+	if (Actor())
+        DynamicHudGlass::UpdateDynamicHudGlass();
 };
 #include "debug_renderer.h"
 void CActor::renderable_Render(u32 context_id, IRenderable* root)

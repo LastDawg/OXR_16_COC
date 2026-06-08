@@ -235,6 +235,14 @@ enum
     R2FLAG_RAIN_DROPS = (1 << 0),
 };
 
+extern ECORE_API Flags32 ps_r2_hud_mask_flags;
+
+enum
+{
+    R_FLAG_HUD_MASK = (1 << 0),
+    R_FLAG_HUD_DYN_EFFECTS = (1 << 1),
+};
+
 extern void xrRender_initconsole();
 extern BOOL xrRender_test_hw();
 } // namespace xray::render::RENDER_NAMESPACE

@@ -131,6 +131,9 @@ float ps_r2_rain_drops_intensity = 0.00025f;
 float ps_r2_rain_drops_speed     = 1.25f;
 Flags32 ps_r2_rain_drops_flags = {R2FLAG_RAIN_DROPS};
 
+// Шейдер стекла и прочие эффекты
+Flags32 ps_r2_hud_mask_flags = {R_FLAG_HUD_MASK | R_FLAG_HUD_DYN_EFFECTS};
+
 float ps_r__Detail_l_ambient = 0.9f;
 float ps_r__Detail_l_aniso = 0.25f;
 float ps_r__Detail_density = 0.3f;
@@ -940,6 +943,10 @@ void xrRender_initconsole()
     CMD3(CCC_Mask, "r2_raindrops", &ps_r2_rain_drops_flags, R2FLAG_RAIN_DROPS);
     CMD4(CCC_Float, "r2_rain_drops_intensity", &ps_r2_rain_drops_intensity, 0.f, 1.f);
     CMD4(CCC_Float, "r2_rain_drops_speed", &ps_r2_rain_drops_speed, 0.8f, 5.f);
+
+    // Шейдер стекла и прочие эффекты
+	CMD3(CCC_Mask, "r2_hud_mask", &ps_r2_hud_mask_flags, R_FLAG_HUD_MASK);
+    CMD3(CCC_Mask, "r2_hud_dyn_effects", &ps_r2_hud_mask_flags, R_FLAG_HUD_DYN_EFFECTS);
 
     //Igor: need restart
     CMD3(CCC_Mask, "r2_soft_water", &ps_r2_ls_flags, R2FLAG_SOFT_WATER);

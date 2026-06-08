@@ -169,6 +169,11 @@ public:
     virtual void OnSectorChanged(IRender_Sector::sector_id_t /*sector*/) {};
     virtual void OnAssetsChanged();
 
+    virtual int  GetHudGlassElement()  { return 0; };
+    virtual bool GetHudGlassEnabled()  { return 0; };
+    virtual bool GetActorAliveStatus() { return 0; };
+    virtual bool GetActor()            { return 0; };
+
     IGame_Persistent();
     virtual ~IGame_Persistent();
 

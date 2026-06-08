@@ -6209,6 +6209,9 @@
     <ClInclude Include="..\xrEngine\WaveForm.h">
       <Filter>Core\Server\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="DynamicHudGlass.h">
+      <Filter>Core\Client\Objects\items &amp; weapons\Outfit</Filter>
+    </ClInclude>		
     <ClInclude Include="ui\UILoadingScreen.h">
       <Filter>UI\Common\LoadingScreen</Filter>
     </ClInclude>
@@ -9459,6 +9462,9 @@
     <ClCompile Include="game_cl_mp_script.cpp">
       <Filter>Core\Server\Games\client\mp_script</Filter>
     </ClCompile>
+    <ClCompile Include="DynamicHudGlass.cpp">
+      <Filter>Core\Client\Objects\items &amp; weapons\Outfit</Filter>
+    </ClCompile>		
     <ClCompile Include="CustomOutfit_script.cpp">
       <Filter>Core\Client\Objects\items &amp; weapons\Outfit</Filter>
     </ClCompile>
