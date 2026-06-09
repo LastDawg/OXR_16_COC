@@ -296,6 +296,15 @@
     </ClInclude>
     <ClInclude Include="..\xrRenderPC_R4\blender_hud_mask.h">
       <Filter>Shading templates</Filter>
+    </ClInclude>	
+   <ClInclude Include="..\xrRenderPC_R4\blender_hud_blood.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderPC_R4\blender_hud_stamina.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xrRenderPC_R4\blender_hud_bleeding.h">
+      <Filter>Shading templates</Filter>
     </ClInclude>		
     <ClInclude Include="..\xrRender\blenders\dx11HDAOCSBlender.h">
       <Filter>Shading templates</Filter>
@@ -1235,6 +1244,18 @@
     <ClCompile Include="..\xrRenderPC_R4\blender_hud_mask.cpp">
       <Filter>Shading templates</Filter>
     </ClCompile>	
+   <ClCompile Include="..\xrRenderPC_R4\blender_hud_blood.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRender\rendertarget_phase_hud_effects.cpp">
+      <Filter>Core_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderPC_R4\blender_hud_stamina.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xrRenderPC_R4\blender_hud_bleeding.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>		
     <ClCompile Include="..\xrRender\rendertarget_phase_hud_mask.cpp">
       <Filter>Core_Target</Filter>
     </ClCompile>		

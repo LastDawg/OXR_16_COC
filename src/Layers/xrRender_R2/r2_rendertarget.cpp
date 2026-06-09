@@ -21,8 +21,14 @@
 
 #if defined(USE_DX11)
     #include "Layers/xrRenderPC_R4/blender_hud_mask.h"
+    #include "Layers/xrRenderPC_R4/blender_hud_blood.h"
+    #include "Layers/xrRenderPC_R4/blender_hud_stamina.h"
+    #include "Layers/xrRenderPC_R4/blender_hud_bleeding.h"
 #else
     #include "Layers/xrRenderPC_GL/blender_hud_mask.h"
+    #include "Layers/xrRenderPC_GL/blender_hud_blood.h"
+    #include "Layers/xrRenderPC_GL/blender_hud_stamina.h"
+    #include "Layers/xrRenderPC_GL/blender_hud_bleeding.h"
 #endif
 
 namespace xray::render::RENDER_NAMESPACE
@@ -349,10 +355,34 @@ CRenderTarget::CRenderTarget()
         CBlender_hud_mask b_hud_mask;
         s_hud_mask.create(&b_hud_mask, "r3" DELIMITER "hud_mask");
     }
+    {
+        CBlender_Hud_Blood b_hud_blood;
+        s_hud_blood.create(&b_hud_blood, "r3" DELIMITER "hud_blood");
+    }
+    {
+        CBlender_Hud_Stamina b_hud_power;
+        s_hud_power.create(&b_hud_power, "r3" DELIMITER "hud_power");
+    }
+    {
+        CBlender_Hud_Bleeding b_hud_bleeding;
+        s_hud_bleeding.create(&b_hud_bleeding, "r3" DELIMITER "hud_bleeding");
+    }
     #else
     {
         CBlender_hud_mask b_hud_mask;
         s_hud_mask.create(&b_hud_mask, "r2" DELIMITER "hud_mask");
+    }
+    {
+        CBlender_hud_mask b_hud_blood;
+        s_hud_blood.create(&b_hud_blood, "r2" DELIMITER "hud_blood");
+    }
+    {
+        CBlender_hud_mask b_hud_power;
+        s_hud_power.create(&b_hud_power, "r2" DELIMITER "hud_power");
+    }
+    {
+        CBlender_hud_mask b_hud_bleeding;
+        s_hud_bleeding.create(&b_hud_bleeding, "r2" DELIMITER "hud_bleeding");
     }
     #endif
     //s_hud_mask.create(b_hud_mask, "r2\\hud_mask"); 

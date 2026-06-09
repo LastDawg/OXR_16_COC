@@ -16,6 +16,7 @@
 
 #include "ActorEffector.h"
 #include "Actor.h"
+#include "ActorCondition.h"
 #include "Spectator.h"
 
 #include "xrUICore/XML/UITextureMaster.h"
@@ -854,4 +855,29 @@ bool CGamePersistent::GetActorAliveStatus()
 bool CGamePersistent::GetActor()
 {
 	return	(Actor());
+}
+
+float CGamePersistent::GetActorMaxHealth()
+{
+	return	(Actor()->GetMaxHealth());
+}
+
+float CGamePersistent::GetActorHealth()
+{
+	return	(Actor()->GetfHealth());
+}
+
+float CGamePersistent::GetActorMaxPower()
+{
+	return	(Actor()->conditions().GetMaxPower());
+}
+
+float CGamePersistent::GetActorPower()
+{
+	return	(Actor()->conditions().GetPower());
+}
+
+float CGamePersistent::GetActorBleeding()
+{
+	return	(Actor()->conditions().BleedingSpeed());
 }

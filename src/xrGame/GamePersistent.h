@@ -110,6 +110,11 @@ public:
     bool GetHudGlassEnabled();
     bool GetActorAliveStatus();
     bool GetActor();
+    float GetActorMaxHealth() override;
+    float GetActorHealth() override;
+    float GetActorMaxPower() override;
+    float GetActorPower() override;
+    float GetActorBleeding() override;
 
     CHudTuner GetHudTuner() { return m_hudTuner; }
 };

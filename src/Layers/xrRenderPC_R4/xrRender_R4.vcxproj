@@ -216,6 +216,9 @@
     <ClInclude Include="..\xrRender\blenders\blender_luminance.h" />
     <ClInclude Include="..\xrRender\blenders\blender_ssao.h" />
 	<ClInclude Include="..\xrRenderPC_R4\blender_hud_mask.h" />		
+    <ClInclude Include="..\xrRenderPC_R4\blender_hud_bleeding.h" />
+    <ClInclude Include="..\xrRenderPC_R4\blender_hud_blood.h" />
+    <ClInclude Include="..\xrRenderPC_R4\blender_hud_stamina.h" />		
     <ClInclude Include="..\xrRender_R2\r2.h" />
     <ClInclude Include="..\xrRender_R2\r2_rendertarget_wallmarks.h" />
     <ClInclude Include="..\xrRender_R2\r2_R_sun_support.h" />
@@ -329,7 +332,11 @@
     <ClCompile Include="..\xrRender\ParticleGroup.cpp" />
     <ClCompile Include="..\xrRender\PSLibrary.cpp" />
 	<ClCompile Include="..\xrRender\rendertarget_raindrops.cpp" />	
-	<ClCompile Include="..\xrRender\rendertarget_phase_hud_mask.cpp" />		
+	<ClCompile Include="..\xrRender\rendertarget_phase_hud_mask.cpp" />	
+	<ClCompile Include="..\xrRender\rendertarget_phase_hud_effects.cpp" />	
+    <ClCompile Include="..\xrRenderPC_R4\blender_hud_bleeding.cpp" />
+    <ClCompile Include="..\xrRenderPC_R4\blender_hud_blood.cpp" />
+    <ClCompile Include="..\xrRenderPC_R4\blender_hud_stamina.cpp" />		
 	<ClCompile Include="..\xrRenderPC_R4\blender_hud_mask.cpp" />		
     <ClCompile Include="..\xrRender\ResourceManager.cpp" />
     <ClCompile Include="..\xrRender\ResourceManager_Loader.cpp" />
