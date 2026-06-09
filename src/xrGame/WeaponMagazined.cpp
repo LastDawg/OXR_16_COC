@@ -698,6 +698,11 @@ void CWeaponMagazined::state_Fire(float dt)
 
         if (m_dwMotionCurrTm >= m_dwMotionEndTm)
             StopShooting();
+
+        if (!m_bFireSingleShot || !IsWorking())
+        {
+            SwitchState(eIdle);
+        }
     }
     else
     {
