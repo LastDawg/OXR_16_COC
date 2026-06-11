@@ -133,6 +133,113 @@ CWeapon::CWeapon()
 
     m_bMisfireOneCartRemove = false;
     m_bOutScopeAfterShot = false;
+
+	bUseAltScope = false;
+	ScopeIsHasTexture = false;
+}
+
+const shared_str CWeapon::GetScopeName() const
+{
+	if (bUseAltScope)
+	{
+		return m_scopes[m_cur_scope];
+	}
+	else
+	{
+		return pSettings->r_string(m_scopes[m_cur_scope], "scope_name");
+	}
+}
+
+void CWeapon::UpdateAltScope()
+{
+	if (m_eScopeStatus == ALife::eAddonAttachable)
+	{
+		shared_str sectionNeedLoad;
+
+		if (!bUseAltScope)
+			return;
+
+		if (IsScopeAttached())
+		{
+			if (pSettings->section_exist(GetNameWithAttachment()))
+			{
+				sectionNeedLoad = GetNameWithAttachment();
+			}
+			else
+			{
+				return;
+			}
+		}
+		else
+		{
+			sectionNeedLoad = m_section_id.c_str();
+		}
+
+		if (!pSettings->section_exist(sectionNeedLoad))
+			return;
+
+		shared_str vis = pSettings->r_string(sectionNeedLoad, "visual");
+
+		if (vis != cNameVisual())
+		{
+			cNameVisual_set(vis);
+		}
+
+		shared_str new_hud = pSettings->r_string(sectionNeedLoad, "hud");
+		if (new_hud != hud_sect)
+		{
+			hud_sect = new_hud;
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
+shared_str CWeapon::GetNameWithAttachment()
+{
+	string64 str;
+	xr_sprintf(str, "%s_%s", m_section_id.c_str(), GetScopeName().c_str());
+	return (shared_str)str;
+}
+
+int CWeapon::GetScopeX()
+{
+	if (bUseAltScope)
+	{
+		if (m_eScopeStatus != ALife::eAddonPermanent && IsScopeAttached())
+		{
+			return pSettings->r_s32(GetNameWithAttachment(), "scope_x");
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return pSettings->r_s32(m_scopes[m_cur_scope], "scope_x");
+	}
+}
+
+int CWeapon::GetScopeY()
+{
+	if (bUseAltScope)
+	{
+		if (m_eScopeStatus != ALife::eAddonPermanent && IsScopeAttached())
+		{
+			return pSettings->r_s32(GetNameWithAttachment(), "scope_y");
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return pSettings->r_s32(m_scopes[m_cur_scope], "scope_y");
+	}
 }
 
 CWeapon::~CWeapon()
@@ -461,34 +568,63 @@ void CWeapon::Load(LPCSTR section)
     m_zoom_params.m_bZoomEnabled = !!pSettings->r_bool(section, "zoom_enabled");
     m_zoom_params.m_fZoomRotateTime = READ_IF_EXISTS(pSettings, r_float, section, "zoom_rotate_time", ROTATION_TIME);
 
+    // Проверяем наличие новой системы прицелов
+    bUseAltScope = !!pSettings->line_exist(section, "scopes");
+
     if (m_eScopeStatus == ALife::eAddonAttachable)
     {
-        if (pSettings->line_exist(section, "scopes_sect"))
+        if (bUseAltScope)
         {
-            LPCSTR str = pSettings->r_string(section, "scopes_sect");
+            LPCSTR str = pSettings->r_string(section, "scopes");
             for (int i = 0, count = _GetItemCount(str); i < count; ++i)
             {
                 string128 scope_section;
                 _GetItem(str, i, scope_section);
-                m_scopes.push_back(scope_section);
+
+                if (!xr_strcmp(scope_section, "none"))
+                {
+                    bUseAltScope = false; // Если нашли 'none', сбрасываем флаг и идем по старой логике
+                }
+                else
+                {
+                    m_scopes.push_back(scope_section);
+                }
             }
         }
-        else
+
+        // Выполнится, если нет "scopes" или там было прописано "none"
+        if (!bUseAltScope) 
         {
-            m_scopes.push_back(section);
+            if (pSettings->line_exist(section, "scopes_sect"))
+            {
+                LPCSTR str = pSettings->r_string(section, "scopes_sect");
+                for (int i = 0, count = _GetItemCount(str); i < count; ++i)
+                {
+                    string128 scope_section;
+                    _GetItem(str, i, scope_section);
+                    m_scopes.push_back(scope_section);
+                }
+            }
+            else
+            {
+                m_scopes.push_back(section);
+            }
         }
     }
     else if (m_eScopeStatus == ALife::eAddonPermanent)
     {
-        m_zoom_params.m_fScopeZoomFactor = pSettings->r_float(cNameSect(), "scope_zoom_factor");
-        if (!GEnv.isDedicatedServer)
+        // Не грузим дефолтную 2D-сетку, если используется альтернативная система прицелов
+        if (!bUseAltScope) 
         {
-            m_UIScope = xr_new<CUIWindow>("Scope UI");
-            shared_str scope_tex_name = pSettings->r_string(cNameSect(), "scope_texture");
-            LoadScope(scope_tex_name);
+            m_zoom_params.m_fScopeZoomFactor = pSettings->r_float(cNameSect(), "scope_zoom_factor");
+            if (!GEnv.isDedicatedServer) 
+            {
+                m_UIScope = xr_new<CUIWindow>("Scope UI");
+                shared_str scope_tex_name = pSettings->r_string(cNameSect(), "scope_texture");
+                LoadScope(scope_tex_name);
+            }
         }
     }
-
     if (m_eSilencerStatus == ALife::eAddonAttachable)
     {
         m_sSilencerName = pSettings->r_string(section, "silencer_name");
@@ -503,7 +639,9 @@ void CWeapon::Load(LPCSTR section)
         m_iGrenadeLauncherY = pSettings->r_s32(section, "grenade_launcher_y");
     }
 
+    UpdateAltScope();
     InitAddons();
+
     if (pSettings->line_exist(section, "weapon_remove_time"))
         m_dwWeaponRemoveTime = pSettings->r_u32(section, "weapon_remove_time");
     else
@@ -583,6 +721,10 @@ bool CWeapon::net_Spawn(CSE_Abstract* DC)
     iAmmoElapsed = E->a_elapsed;
     m_flagsAddOnState = E->m_addon_flags.get();
     m_ammoType = E->ammo_type;
+
+	if (E->cur_scope < m_scopes.size() && m_scopes.size()>1)
+		m_cur_scope = E->cur_scope;
+
     SetState(E->wpn_state);
     SetNextState(E->wpn_state);
 
@@ -594,6 +736,7 @@ bool CWeapon::net_Spawn(CSE_Abstract* DC)
             m_magazine.push_back(m_DefaultCartridge);
     }
 
+    UpdateAltScope();
     UpdateAddonsVisibility();
     InitAddons();
 
@@ -641,6 +784,7 @@ void CWeapon::net_Export(NET_Packet& P)
     P.w_u8(m_ammoType);
     P.w_u8((u8)GetState());
     P.w_u8((u8)IsZoomed());
+    P.w_u8((u8)m_cur_scope);
 }
 
 void CWeapon::net_Import(NET_Packet& P)
@@ -669,6 +813,11 @@ void CWeapon::net_Import(NET_Packet& P)
 
     u8 Zoom;
     P.r_u8(Zoom);
+
+	u8 scope;
+	P.r_u8(scope);
+
+	m_cur_scope = scope;
 
     if (H_Parent() && H_Parent()->Remote())
     {
