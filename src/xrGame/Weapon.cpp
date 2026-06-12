@@ -1509,45 +1509,55 @@ void CWeapon::UpdateHUDAddonsVisibility()
     if (!GetHUDmode())
         return;
 
-    //.	return;
+    // Получаем модель худа
+    IKinematics* hud_model = HudItemData()->m_model;
+    if (!hud_model) return;
 
     if (ScopeAttachable())
     {
         HudItemData()->set_bone_visible(wpn_scope, IsScopeAttached());
     }
 
-    if (m_eScopeStatus == ALife::eAddonDisabled)
+    bool has_scope_bone = (hud_model->LL_BoneID(wpn_scope) != BI_NONE);
+    if (has_scope_bone)
     {
-        HudItemData()->set_bone_visible(wpn_scope, FALSE, TRUE);
-    }
-    else if (m_eScopeStatus == ALife::eAddonPermanent)
-        HudItemData()->set_bone_visible(wpn_scope, TRUE, TRUE);
+        if (ScopeAttachable())
+            HudItemData()->set_bone_visible(wpn_scope, IsScopeAttached(), TRUE); // TRUE в конце значит "без спама в лог"
 
-    if (SilencerAttachable())
-    {
-        HudItemData()->set_bone_visible(wpn_silencer, IsSilencerAttached());
+        if (m_eScopeStatus == ALife::eAddonDisabled)
+            HudItemData()->set_bone_visible(wpn_scope, FALSE, TRUE);
+        else if (m_eScopeStatus == ALife::eAddonPermanent)
+            HudItemData()->set_bone_visible(wpn_scope, TRUE, TRUE);
     }
-    if (m_eSilencerStatus == ALife::eAddonDisabled)
-    {
-        HudItemData()->set_bone_visible(wpn_silencer, FALSE, TRUE);
-    }
-    else if (m_eSilencerStatus == ALife::eAddonPermanent)
-        HudItemData()->set_bone_visible(wpn_silencer, TRUE, TRUE);
 
-    bool use_soc_name{};
-    if (HudItemData()->m_model->LL_BoneID(wpn_grenade_launcher) == BI_NONE)
-        use_soc_name = HudItemData()->m_model->LL_BoneID(wpn_grenade_launcher_soc) != BI_NONE;
+    bool has_silencer_bone = (hud_model->LL_BoneID(wpn_silencer) != BI_NONE);
+    if (has_silencer_bone)
+    {
+        if (SilencerAttachable())
+            HudItemData()->set_bone_visible(wpn_silencer, IsSilencerAttached(), TRUE);
 
-    if (GrenadeLauncherAttachable())
-    {
-        HudItemData()->set_bone_visible((use_soc_name ? wpn_grenade_launcher_soc : wpn_grenade_launcher), IsGrenadeLauncherAttached());
+        if (m_eSilencerStatus == ALife::eAddonDisabled)
+            HudItemData()->set_bone_visible(wpn_silencer, FALSE, TRUE);
+        else if (m_eSilencerStatus == ALife::eAddonPermanent)
+            HudItemData()->set_bone_visible(wpn_silencer, TRUE, TRUE);
     }
-    if (m_eGrenadeLauncherStatus == ALife::eAddonDisabled)
+
+    bool has_gl_bone = (hud_model->LL_BoneID(wpn_grenade_launcher) != BI_NONE);
+    bool has_gl_soc_bone = (hud_model->LL_BoneID(wpn_grenade_launcher_soc) != BI_NONE);
+
+    if (has_gl_bone || has_gl_soc_bone)
     {
-        HudItemData()->set_bone_visible((use_soc_name ? wpn_grenade_launcher_soc : wpn_grenade_launcher), FALSE, TRUE);
+        // Если новой кости нет, но есть старая — используем старую. Иначе новую.
+        shared_str gl_bone_to_use = (!has_gl_bone && has_gl_soc_bone) ? wpn_grenade_launcher_soc : wpn_grenade_launcher;
+
+        if (GrenadeLauncherAttachable())
+            HudItemData()->set_bone_visible(gl_bone_to_use, IsGrenadeLauncherAttached(), TRUE);
+
+        if (m_eGrenadeLauncherStatus == ALife::eAddonDisabled)
+            HudItemData()->set_bone_visible(gl_bone_to_use, FALSE, TRUE);
+        else if (m_eGrenadeLauncherStatus == ALife::eAddonPermanent)
+            HudItemData()->set_bone_visible(gl_bone_to_use, TRUE, TRUE);
     }
-    else if (m_eGrenadeLauncherStatus == ALife::eAddonPermanent)
-        HudItemData()->set_bone_visible((use_soc_name ? wpn_grenade_launcher_soc : wpn_grenade_launcher), TRUE, TRUE);
 }
 
 void CWeapon::UpdateAddonsVisibility()

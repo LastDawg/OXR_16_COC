@@ -124,7 +124,9 @@ void attachable_hud_item::set_bone_visible(const shared_str& bone_name, BOOL bVi
     {
         if (bSilent)
             return;
-        R_ASSERT2(false, make_string("model [%s] has no bone [%s]", m_visual_name.c_str(), bone_name.c_str()).c_str());
+
+        Msg("! WARNING: model [%s] has no bone [%s]. Ignored.", m_visual_name.c_str(), bone_name.c_str());
+        return; 
     }
     const BOOL bVisibleNow = m_model->LL_GetBoneVisible(bone_id);
     if (bVisibleNow != bVisibility)
