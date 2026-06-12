@@ -1171,13 +1171,15 @@ bool CWeaponMagazinedWGrenade::GetBriefInfo(II_BriefInfo& info)
     if (ae != 0 && m_magazine.size() != 0)
     {
         LPCSTR ammo_type = m_ammoTypes[m_magazine.back().m_LocalAmmoType].c_str();
-        info.name._set(StringTable().translate(pSettings->r_string(ammo_type, "inv_name_short")));
+        shared_str ammo_name = READ_IF_EXISTS(pSettings, r_string, ammo_type, "inv_name_short", ammo_type);
+        info.name = StringTable().translate(ammo_name);
         info.icon._set(ammo_type);
     }
     else
     {
         LPCSTR ammo_type = m_ammoTypes[m_ammoType].c_str();
-        info.name._set(StringTable().translate(pSettings->r_string(ammo_type, "inv_name_short")));
+        shared_str ammo_name = READ_IF_EXISTS(pSettings, r_string, ammo_type, "inv_name_short", ammo_type);
+        info.name = StringTable().translate(ammo_name);
         info.icon._set(ammo_type);
     }
 

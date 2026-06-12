@@ -90,8 +90,12 @@ void CInventoryItem::Load(LPCSTR section)
         self->GetSpatialData().type |= STYPE_VISIBLEFORAI;
 
     m_section_id._set(section);
-    m_name = StringTable().translate(pSettings->r_string(section, INV_NAME_KEY));
-    m_nameShort = StringTable().translate(pSettings->r_string(section, INV_NAME_SHORT_KEY));
+
+    shared_str name = READ_IF_EXISTS(pSettings, r_string, section, INV_NAME_KEY, section);
+    m_name = StringTable().translate(name);
+
+    shared_str short_name = READ_IF_EXISTS(pSettings, r_string, section, INV_NAME_SHORT_KEY, section);
+    m_nameShort = StringTable().translate(short_name);
 
     m_weight = pSettings->r_float(section, "inv_weight");
     R_ASSERT(m_weight >= 0.f);
@@ -131,8 +135,14 @@ void CInventoryItem::Load(LPCSTR section)
 
 void CInventoryItem::ReloadNames()
 {
-    m_name = StringTable().translate(pSettings->r_string(m_object->cNameSect(), INV_NAME_KEY));
-    m_nameShort = StringTable().translate(pSettings->r_string(m_object->cNameSect(), INV_NAME_SHORT_KEY));
+    LPCSTR section = m_object->cNameSect().c_str();
+
+    shared_str name = READ_IF_EXISTS(pSettings, r_string, section, INV_NAME_KEY, section);
+    m_name = StringTable().translate(name);
+
+    shared_str safe_short_name = READ_IF_EXISTS(pSettings, r_string, section, INV_NAME_SHORT_KEY, name);
+    m_nameShort = StringTable().translate(safe_short_name);
+
     if (pSettings->line_exist(m_object->cNameSect(), DESCRIPTION_KEY))
         m_Description = StringTable().translate(pSettings->r_string(m_object->cNameSect(), DESCRIPTION_KEY));
     else

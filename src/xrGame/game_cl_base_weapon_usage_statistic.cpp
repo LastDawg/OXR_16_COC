@@ -419,7 +419,7 @@ WEAPON_STATS_it Player_Statistic::FindPlayersWeapon(LPCSTR WeaponName)
     {
         aWeaponStats.push_back(Weapon_Statistic(WeaponName));
         pWeaponI = aWeaponStats.end() - 1;
-        pWeaponI->InvName = pSettings->r_string_wb(WeaponName, "inv_name");
+        pWeaponI->InvName = READ_IF_EXISTS(pSettings, r_string, WeaponName, "inv_name", WeaponName);
 #ifdef DEBUG
         Msg("--- Just added weapon %s to statistics", WeaponName);
 #endif // #ifdef DEBUG

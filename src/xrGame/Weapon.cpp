@@ -105,7 +105,7 @@ CWeapon::CWeapon()
 
     eHandDependence = hdNone;
 
-    m_zoom_params.m_fCurrentZoomFactor = g_fov;
+    m_zoom_params.m_fCurrentZoomFactor = 1.f;
     m_zoom_params.m_fZoomRotationFactor = 0.f;
     m_zoom_params.m_pVision = nullptr;
     m_zoom_params.m_pNight_vision = nullptr;
@@ -1645,7 +1645,7 @@ void CWeapon::OnZoomOut()
 {
     m_zoom_params.m_bIsZoomModeNow = false;
     m_fRTZoomFactor = GetZoomFactor(); // store current
-    m_zoom_params.m_fCurrentZoomFactor = g_fov;
+    m_zoom_params.m_fCurrentZoomFactor = 1.f;
 
     // Включаем инерцию (также заменено  GetInertionFactor())
     // EnableHudInertion	(TRUE);
@@ -2128,8 +2128,8 @@ void CWeapon::ZoomInc()
     float delta, min_zoom_factor;
     GetZoomData(m_zoom_params.m_fScopeZoomFactor, delta, min_zoom_factor);
 
-    float f = GetZoomFactor() - delta;
-    clamp(f, m_zoom_params.m_fScopeZoomFactor, min_zoom_factor);
+    float f = GetZoomFactor() + delta;
+    clamp(f, min_zoom_factor, m_zoom_params.m_fScopeZoomFactor);
     SetZoomFactor(f);
 }
 
@@ -2142,8 +2142,8 @@ void CWeapon::ZoomDec()
     float delta, min_zoom_factor;
     GetZoomData(m_zoom_params.m_fScopeZoomFactor, delta, min_zoom_factor);
 
-    float f = GetZoomFactor() + delta;
-    clamp(f, m_zoom_params.m_fScopeZoomFactor, min_zoom_factor);
+    float f = GetZoomFactor() - delta;
+    clamp(f, min_zoom_factor, m_zoom_params.m_fScopeZoomFactor);
     SetZoomFactor(f);
 }
 u32 CWeapon::Cost() const

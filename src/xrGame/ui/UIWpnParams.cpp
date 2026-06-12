@@ -184,7 +184,8 @@ void CUIWpnParams::SetInfo(CInventoryItem* slot_wpn, CInventoryItem& cur_wpn)
         if (m_textAmmoUsedType)
         {
             string128 str;
-            xr_sprintf(str, sizeof(str), "%s", pSettings->r_string(ammo_types[0].c_str(), "inv_name_short"));
+            LPCSTR safe_ui_ammo_name = READ_IF_EXISTS(pSettings, r_string, ammo_types[0].c_str(), "inv_name_short", "Unknown Ammo");
+            xr_sprintf(str, sizeof(str), "%s", safe_ui_ammo_name);
             m_textAmmoUsedType->SetTextST(str);
         }
 

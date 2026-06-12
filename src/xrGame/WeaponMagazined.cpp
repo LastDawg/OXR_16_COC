@@ -1324,8 +1324,8 @@ void CWeaponMagazined::LoadAddons()
 */
 void CWeaponMagazined::InitAddons()
 {
-    m_zoom_params.m_fIronSightZoomFactor =
-        READ_IF_EXISTS(pSettings, r_float, cNameSect(), "ironsight_zoom_factor", 50.0f);
+    m_zoom_params.m_fIronSightZoomFactor = READ_IF_EXISTS(pSettings, r_float, cNameSect(), "ironsight_zoom_factor", 1.03f);
+
     if (IsScopeAttached())
     {
         shared_str scope_tex_name;
@@ -1887,13 +1887,15 @@ bool CWeaponMagazined::GetBriefInfo(II_BriefInfo& info)
     if (ae != 0 && m_magazine.size() != 0)
     {
         LPCSTR ammo_type = m_ammoTypes[m_magazine.back().m_LocalAmmoType].c_str();
-        info.name = StringTable().translate(pSettings->r_string(ammo_type, "inv_name_short"));
+        shared_str ammo_name = READ_IF_EXISTS(pSettings, r_string, ammo_type, "inv_name_short", ammo_type);
+        info.name = StringTable().translate(ammo_name);
         info.icon = ammo_type;
     }
     else
     {
         LPCSTR ammo_type = m_ammoTypes[m_ammoType].c_str();
-        info.name = StringTable().translate(pSettings->r_string(ammo_type, "inv_name_short"));
+        shared_str ammo_name = READ_IF_EXISTS(pSettings, r_string, ammo_type, "inv_name_short", ammo_type);
+        info.name = StringTable().translate(ammo_name);
         info.icon = ammo_type;
     }
     return true;

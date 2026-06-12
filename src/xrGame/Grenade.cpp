@@ -366,7 +366,6 @@ bool CGrenade::GetBriefInfo(II_BriefInfo& info)
     VERIFY(m_pInventory);
     info.clear();
 
-    info.name._set(m_nameShort);
     info.icon._set(cNameSect());
 
     u32 ThisGrenadeCount = m_pInventory->dwfGetSameItemCount(cNameSect().c_str(), true);
