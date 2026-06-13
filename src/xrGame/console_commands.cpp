@@ -107,7 +107,7 @@ ENGINE_API extern float g_console_sensitive;
 
 //Alundaio
 extern BOOL g_ai_die_in_anomaly;
-int g_inv_highlight_equipped = 0;
+int g_inv_highlight_equipped = 1;
 //-Alundaio
 
 int g_first_person_death = 0;
