@@ -336,9 +336,9 @@ void CALifeUpdateManager::jump_to_level(LPCSTR level_name) const
         ai().game_graph(), graph().actor()->m_tGraphID, GameGraph::_GRAPH_ID(-1), 0, evaluator);
     if (failed)
     {
-#ifndef MASTER_GOLD
+
         Msg("! Cannot build path via game graph from the current level to the level %s!", level_name);
-#endif // #ifndef MASTER_GOLD
+
         float min_dist = flt_max;
         Fvector current = ai().game_graph().vertex(graph().actor()->m_tGraphID)->game_point();
         GameGraph::_GRAPH_ID n = ai().game_graph().header().vertex_count();

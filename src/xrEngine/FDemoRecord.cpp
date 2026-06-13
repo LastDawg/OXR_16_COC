@@ -533,7 +533,6 @@ void CDemoRecord::IR_OnKeyboardPress(int dik)
         fLifeTime = -1;
         break;
 
-#ifndef MASTER_GOLD
     case kENTER:
     {
         IGameObject* entity = g_pGameLevel->CurrentEntity();
@@ -544,7 +543,6 @@ void CDemoRecord::IR_OnKeyboardPress(int dik)
         }
         break;
     }
-#endif
 
     case kPAUSE:
         Device.Pause(!Device.Paused(), true, true, "demo_record");

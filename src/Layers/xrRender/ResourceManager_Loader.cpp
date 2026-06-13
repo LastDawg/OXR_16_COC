@@ -104,12 +104,10 @@ void CResourceManager::OnDeviceCreate(IReader* F)
             chunk->r(&desc, sizeof(desc));
             if (IBlender* B = IBlender::Create(desc.CLS))
             {
-#ifndef MASTER_GOLD
                 if (B->getDescription().version != desc.version)
                 {
                     Msg("! Version conflict in shader '%s'", desc.cName);
                 }
-#endif
                 chunk->seek(0);
                 B->Load(*chunk, desc.version);
 
@@ -118,12 +116,10 @@ void CResourceManager::OnDeviceCreate(IReader* F)
                 auto I = m_blenders.emplace(xr_strdup(desc.cName), B);
                 R_ASSERT2(I.second, "shader.xr - found duplicate name!!!");
             }
-#ifndef MASTER_GOLD
             else
             {
                 Msg("! Renderer doesn't support blender '%s'", desc.cName);
             }
-#endif
             chunk->close();
             chunk_id += 1;
         }

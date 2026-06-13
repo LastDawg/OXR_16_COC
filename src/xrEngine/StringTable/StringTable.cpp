@@ -226,9 +226,7 @@ void CStringTable::Load(LPCSTR xml_file_full)
 
         if (!string_text)
         {
-#ifndef MASTER_GOLD
             Msg("! [%s] string table entry[%s] doesn't have a translation (no 'text' tag)", xml_file_full, string_name);
-#endif
             continue;
         }
 
@@ -236,15 +234,11 @@ void CStringTable::Load(LPCSTR xml_file_full)
         const STRING_VALUE str_val = ParseLine(string_text); // NOLINT
         {
             std::lock_guard guard{ pDataMutex };
-#ifndef MASTER_GOLD
             duplicate = pData->m_StringTable.find(string_name) != pData->m_StringTable.end();
-#endif
             pData->m_StringTable[string_name] = str_val;
         }
-#ifndef MASTER_GOLD
         if (duplicate)
             Msg("~ duplicate string table id [%s]", string_name);
-#endif
     }
 }
 

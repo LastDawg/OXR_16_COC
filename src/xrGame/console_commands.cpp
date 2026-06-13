@@ -1265,7 +1265,6 @@ struct CCC_ClearSmartCastStats : public IConsole_Command
 
 #endif
 
-#ifndef MASTER_GOLD
 /*
 struct CCC_NoClip : public CCC_Mask
 {
@@ -1349,7 +1348,6 @@ struct CCC_JumpToLevel : public IConsole_Command
     }
 };
 
-//#ifndef MASTER_GOLD
 class CCC_Script : public IConsole_Command
 {
 public:
@@ -1446,8 +1444,6 @@ public:
         IConsole_Command::fill_tips(tips, mode);
     }
 };
-
-#endif // MASTER_GOLD
 
 class CCC_LuaGCMethod : public CCC_Token
 {
@@ -2322,7 +2318,7 @@ void CCC_RegisterCommands()
 
 #ifndef MASTER_GOLD
     CMD3(CCC_Mask, "ai_ignore_actor", &psAI_Flags, aiIgnoreActor);
-#endif // MASTER_GOLD
+#endif
 
     // Physics
     CMD1(CCC_PHFps, "ph_frequency");
@@ -2337,7 +2333,6 @@ void CCC_RegisterCommands()
     CMD4(CCC_FloatBlock, "ph_tri_query_ex_aabb_rate", &ph_console::ph_tri_query_ex_aabb_rate, 1.01f, 3.f);
 #endif // DEBUG
 
-#ifndef MASTER_GOLD
     CMD1(CCC_JumpToLevel, "jump_to_level");
     CMD3(CCC_Mask, "g_god", &psActorFlags, AF_GODMODE);
     CMD1(CCC_ToggleNoClip, "g_no_clip");
@@ -2347,7 +2342,6 @@ void CCC_RegisterCommands()
     CMD1(CCC_Script, "run_script");
     CMD1(CCC_ScriptCommand, "run_string");
     CMD1(CCC_TimeFactor, "time_factor");
-#endif // MASTER_GOLD
 
     CMD3(CCC_Mask, "g_autopickup", &psActorFlags, AF_AUTOPICKUP);
     CMD3(CCC_Mask, "g_dynamic_music", &psActorFlags, AF_DYNAMIC_MUSIC);

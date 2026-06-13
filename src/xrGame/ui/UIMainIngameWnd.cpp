@@ -791,10 +791,11 @@ void CUIMainIngameWnd::UpdateMainIndicators()
         }
     }
 
+    u16 slot = pActor->inventory().GetActiveSlot();
+
     // Weapon broken icon
     if (m_ind_weapon_broken)
     {
-        u16 slot = pActor->inventory().GetActiveSlot();
         m_ind_weapon_broken->Show(false);
         if (slot == INV_SLOT_2 || slot == INV_SLOT_3)
         {
