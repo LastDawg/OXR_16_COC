@@ -199,7 +199,7 @@ void CUIActorMenu::InitializeUniversal(CUIXml& uiXml)
     constexpr std::tuple<eActorMenuListType, cpcstr, cpcstr, cpcstr, cpcstr, bool> inventory_lists[] =
     {
         // { id,                   "xml_section_name",         "condition_indicator,  "highlighter",             "blocker",          required }
-        { eInventoryKnifeList,     "dragdrop_knife",           "progess_bar_knife",   "inv_slot1_highlight",     nullptr,            false },
+        { eInventoryKnifeList,     "dragdrop_knife",           "progess_bar_knife",   "inv_slot1_highlight",     nullptr,            true },
         { eInventoryPistolList,    "dragdrop_pistol",          "progess_bar_weapon1", "inv_slot2_highlight",     nullptr,            true },
         { eInventoryAutomaticList, "dragdrop_automatic",       "progess_bar_weapon2", "inv_slot3_highlight",     nullptr,            true },
 
@@ -207,7 +207,12 @@ void CUIActorMenu::InitializeUniversal(CUIXml& uiXml)
         { eInventoryHelmetList,    "dragdrop_helmet",          "progess_bar_helmet",  "helmet_slot_highlight",   "helmet_over",      false },
 
         { eInventoryBeltList,      "dragdrop_belt",            nullptr,               "artefact_slot_highlight", "belt_list_over",   true },
-        { eInventoryDetectorList,  "dragdrop_detector",        nullptr,               "detector_slot_highlight", nullptr,            true },
+        { eInventoryDetectorList,  "dragdrop_detector",        "progess_bar_detector","detector_slot_highlight", nullptr,            true },
+
+        { eInventoryBinocularList, "dragdrop_binocular",       nullptr,               "binocular_slot_highlight",nullptr,            true },
+        { eInventoryGrenadeList,   "dragdrop_grenade",         nullptr,               "grenade_slot_highlight",  nullptr,            true },
+        { eInventoryBoltList,      "dragdrop_bolt",            nullptr,               "bolt_slot_highlight",     nullptr,            true },
+        { eInventoryTorchList,     "dragdrop_torch",           "progess_bar_torch",   "torch_slot_highlight",    nullptr,            true },
 
         { eInventoryBagList,       "dragdrop_bag",             nullptr,               nullptr,                   nullptr,            true },
 
@@ -538,6 +543,11 @@ void CUIActorMenu::InitCallbacks()
 
     BindDragDropListEvents(m_pLists[eInventoryBeltList]);
     BindDragDropListEvents(m_pLists[eInventoryDetectorList]);
+
+    BindDragDropListEvents(m_pLists[eInventoryBinocularList]);
+    BindDragDropListEvents(m_pLists[eInventoryBoltList]);
+    BindDragDropListEvents(m_pLists[eInventoryGrenadeList]);
+    BindDragDropListEvents(m_pLists[eInventoryTorchList]);
 
     BindDragDropListEvents(m_pLists[eInventoryBagList]);
 

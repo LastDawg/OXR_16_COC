@@ -95,6 +95,11 @@ protected:
         eInventoryBeltList,
         eInventoryDetectorList,
 
+        eInventoryBinocularList,
+        eInventoryGrenadeList,
+        eInventoryBoltList,
+        eInventoryTorchList,
+
         eInventoryBagList,
 
         eTradeActorList,

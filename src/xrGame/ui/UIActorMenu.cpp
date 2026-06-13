@@ -346,6 +346,14 @@ EDDListType CUIActorMenu::GetListType(CUIDragDropListEx* l)
         return iActorSlot;
     if (l == m_pLists[eInventoryDetectorList] && m_pLists[eInventoryDetectorList] != nullptr)
         return iActorSlot;
+    if (l == m_pLists[eInventoryBinocularList] && m_pLists[eInventoryBinocularList] != nullptr)
+        return iActorSlot;
+    if (l == m_pLists[eInventoryGrenadeList] && m_pLists[eInventoryGrenadeList] != nullptr)
+        return iActorSlot;
+    if (l == m_pLists[eInventoryBoltList] && m_pLists[eInventoryBoltList] != nullptr)
+        return iActorSlot;
+    if (l == m_pLists[eInventoryTorchList] && m_pLists[eInventoryTorchList] != nullptr)
+        return iActorSlot;
 
     if (l == m_pLists[eTradeActorBagList])
         return iActorBag;
@@ -623,6 +631,15 @@ void CUIActorMenu::clear_highlight_lists()
         m_pLists[eInventoryDetectorList]->Highlight(false);
     m_pLists[eInventoryBeltList]->Highlight(false);
     m_pLists[eInventoryBagList]->clear_select_armament();
+    if (m_pLists[eInventoryBinocularList])
+        m_pLists[eInventoryBinocularList]->Highlight(false);
+    if (m_pLists[eInventoryGrenadeList])
+        m_pLists[eInventoryGrenadeList]->Highlight(false);
+    if (m_pLists[eInventoryBoltList])
+        m_pLists[eInventoryBoltList]->Highlight(false);
+    if (m_pLists[eInventoryTorchList])
+        m_pLists[eInventoryTorchList]->Highlight(false);
+
     if (m_pQuickSlot)
         m_pQuickSlot->Highlight(false);
 
@@ -981,6 +998,12 @@ void CUIActorMenu::ClearAllLists()
         m_pLists[eInventoryBackpackList]->ClearAll(true);
     if (m_pLists[eInventoryKnifeList])
         m_pLists[eInventoryKnifeList]->ClearAll(true);
+    if (m_pLists[eInventoryBinocularList])
+        m_pLists[eInventoryBinocularList]->ClearAll(true);
+    if (m_pLists[eInventoryGrenadeList])
+        m_pLists[eInventoryGrenadeList]->ClearAll(true);
+    if (m_pLists[eInventoryBoltList])
+        m_pLists[eInventoryBoltList]->ClearAll(true);
     m_pLists[eInventoryPistolList]->ClearAll(true);
     m_pLists[eInventoryAutomaticList]->ClearAll(true);
     if (m_pQuickSlot)
