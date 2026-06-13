@@ -771,7 +771,7 @@ bool IsContextNotConflicted(EKeyContext c1, EKeyContext c2)
 
 bool IsContextMatching(EKeyContext c1, EKeyContext c2)
 {
-    return c1 == c2 || (c1 == EKeyContext::Undefined && c2 == EKeyContext::Undefined);
+    return c1 == c2;
 }
 
 EGameActions GetBindedAction(int dik, EKeyContext context /*= EKeyContext::Undefined*/)
