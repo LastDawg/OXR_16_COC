@@ -133,6 +133,7 @@ CWeapon::CWeapon()
 
     m_bMisfireOneCartRemove = false;
     m_bOutScopeAfterShot = false;
+    bGrenadeLauncherNSilencer = false;
 
 	bUseAltScope = false;
 	ScopeIsHasTexture = false;
@@ -546,6 +547,7 @@ void CWeapon::Load(LPCSTR section)
     }
     conditionDecreasePerShot = pSettings->r_float(section, "condition_shot_dec");
     conditionDecreasePerQueueShot = pSettings->read_if_exists<float>(section, "condition_queue_shot_dec", conditionDecreasePerShot);
+    conditionDecreasePerShotOnHit = READ_IF_EXISTS(pSettings, r_float, section, "condition_shot_dec_on_hit", 0.f);
 
     // При достижении этого порога оружие ломается
     fConditionToBroke = READ_IF_EXISTS(pSettings, r_float, section, "condition_to_broke", 0.f);
@@ -567,6 +569,9 @@ void CWeapon::Load(LPCSTR section)
 
     m_zoom_params.m_bZoomEnabled = !!pSettings->r_bool(section, "zoom_enabled");
     m_zoom_params.m_fZoomRotateTime = READ_IF_EXISTS(pSettings, r_float, section, "zoom_rotate_time", ROTATION_TIME);
+
+    // Можно ли установить глушитель и ПГ одновременно?
+    bGrenadeLauncherNSilencer = READ_IF_EXISTS(pSettings, r_bool, section, "GrenadeLauncherNSilencer", false);
 
     // Проверяем наличие новой системы прицелов
     bUseAltScope = !!pSettings->line_exist(section, "scopes");
@@ -2156,6 +2161,7 @@ void CWeapon::ZoomDec()
     clamp(f, min_zoom_factor, m_zoom_params.m_fScopeZoomFactor);
     SetZoomFactor(f);
 }
+
 u32 CWeapon::Cost() const
 {
     u32 res = CInventoryItem::Cost();
@@ -2180,4 +2186,10 @@ u32 CWeapon::Cost() const
         res += iFloor(w * (iAmmoElapsed / bs));
     }
     return res;
+}
+
+void CWeapon::OnBulletHit()
+{
+    if (!fis_zero(conditionDecreasePerShotOnHit))
+        ChangeCondition(-conditionDecreasePerShotOnHit);
 }

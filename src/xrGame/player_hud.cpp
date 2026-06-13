@@ -125,8 +125,17 @@ void attachable_hud_item::set_bone_visible(const shared_str& bone_name, BOOL bVi
         if (bSilent)
             return;
 
-        Msg("! WARNING: model [%s] has no bone [%s]. Ignored.", m_visual_name.c_str(), bone_name.c_str());
-        return; 
+        // Вектор для хранения уникальных пар (модель + кость), о которых уже ругались
+        static xr_vector<std::pair<const char*, const char*>> warned_bones;
+
+        auto cache_pair = std::make_pair(m_visual_name.c_str(), bone_name.c_str());
+
+        if (std::find(warned_bones.begin(), warned_bones.end(), cache_pair) == warned_bones.end())
+        {
+            warned_bones.push_back(cache_pair);
+            Msg("! WARNING: model [%s] has no bone [%s]. Ignored.", m_visual_name.c_str(), bone_name.c_str());
+        }
+        return;
     }
     const BOOL bVisibleNow = m_model->LL_GetBoneVisible(bone_id);
     if (bVisibleNow != bVisibility)

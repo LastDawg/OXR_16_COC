@@ -52,6 +52,9 @@ public:
 	bool					ScopeIsHasTexture;
 	shared_str				GetNameWithAttachment();
 
+    // При попадании во что-то
+    virtual void OnBulletHit();
+
     virtual void UpdateCL();
     virtual void shedule_Update(u32 dt);
 
@@ -169,6 +172,7 @@ public:
     bool IsGrenadeLauncherAttached() const;
     bool IsScopeAttached() const;
     bool IsSilencerAttached() const;
+    bool bGrenadeLauncherNSilencer;
 
     virtual bool GrenadeLauncherAttachable();
     virtual bool ScopeAttachable();
@@ -397,6 +401,7 @@ protected:
     float misfireEndProbability; //шанс осечки при изношености больше чем misfireEndCondition
     float conditionDecreasePerQueueShot; //увеличение изношености при выстреле очередью
     float conditionDecreasePerShot; //увеличение изношености при одиночном выстреле
+    float conditionDecreasePerShotOnHit; //увеличение изношености при ударе(выстреле) о поверхность
 
 public:
     float GetMisfireStartCondition() const { return misfireStartCondition; }

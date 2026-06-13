@@ -11,6 +11,7 @@
 #include "mt_config.h"
 #include "game_cl_base_weapon_usage_statistic.h"
 #include "game_cl_mp.h"
+#include "Weapon.h"
 
 #include "Include/xrRender/UIRender.h"
 #include "Include/xrRender/Kinematics.h"
@@ -36,6 +37,8 @@ SBullet::SBullet(const Fvector& position, const Fvector& direction, float starti
     float impulse, u16 sender_id, u16 sendersweapon_id, ALife::EHitType e_hit_type, float maximum_distance,
     const CCartridge& cartridge, float const air_resistance_factor, bool SendHit, int iShotNum /*= 0*/)
 {
+    m_on_bullet_hit = false;
+
     bullet_pos = position;
     speed = max_speed = starting_speed;
     VERIFY(speed > 0.f);
@@ -178,7 +181,7 @@ void CBulletManager::Clear()
     m_Events.clear();
 }
 
-void CBulletManager::AddBullet(const Fvector& position, const Fvector& direction, float starting_speed, float power,
+SBullet& CBulletManager::AddBullet(const Fvector& position, const Fvector& direction, float starting_speed, float power,
     float impulse, u16 sender_id, u16 sendersweapon_id, ALife::EHitType e_hit_type, float maximum_distance,
     const CCartridge& cartridge, float const air_resistance_factor, bool SendHit, bool AimBullet, int iShotNum /*= 0*/)
 {
@@ -199,6 +202,8 @@ void CBulletManager::AddBullet(const Fvector& position, const Fvector& direction
         if (SendHit)
             Game().m_WeaponUsageStatistic->OnBullet_Fire(&bullet, cartridge);
     }
+
+    return bullet;
 }
 
 void CBulletManager::UpdateWorkload()
@@ -939,6 +944,18 @@ void CBulletManager::CommitEvents() // @ the start of frame
                 DynamicObjectHit(E);
             else
                 StaticObjectHit(E);
+
+            if (E.bullet.isOnBulletHit())
+            {
+                IGameObject* O = Level().Objects.net_Find(E.bullet.weapon_id);
+                if (O)
+                {
+                    CWeapon* W = smart_cast<CWeapon*>(O);
+                    if (W)
+                        W->OnBulletHit();
+                }
+            }
+
             break;
         }
         case EVENT_REMOVE:

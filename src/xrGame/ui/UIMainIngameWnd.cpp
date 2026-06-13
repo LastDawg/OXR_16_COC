@@ -817,7 +817,21 @@ void CUIMainIngameWnd::UpdateMainIndicators()
             }
         }
     }
-
+    if (slot == KNIFE_SLOT)
+    {
+        CWeapon* weapon = smart_cast<CWeapon*>(pActor->inventory().ItemFromSlot(slot));
+        if (weapon)
+        {
+            float condition = weapon->GetCondition();
+            m_ind_weapon_broken->Show(true);
+            if (condition <= 0.75f && condition >= 0.5f)
+                m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_green");
+            else if (condition < 0.5f && condition > 0.25f)
+                m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_yellow");
+            else if (condition <= 0.25f)
+                m_ind_weapon_broken->InitTexture("ui_inGame2_circle_Gunbroken_red");
+        }
+    }
     // Overweight icon
     if (m_ind_overweight)
     {

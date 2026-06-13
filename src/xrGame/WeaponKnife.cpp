@@ -14,6 +14,7 @@
 #include "xrCore/Animation/SkeletonMotions.hpp"
 #include "player_hud.h"
 #include "ActorEffector.h"
+#include "Level_Bullet_Manager.h"
 #ifdef DEBUG
 #include <iterator>
 #endif
@@ -289,8 +290,21 @@ void CWeaponKnife::MakeShot(Fvector const& pos, Fvector const& dir, float const 
         pInput->Feedback(CInput::FeedbackTriggers, left ? k_hit : 0.0f, right ? k_hit : 0.0f, 0.1f);
     }
 
-    Level().BulletManager().AddBullet(pos, dir, m_fStartBulletSpeed, fCurrentHit, fHitImpulse_cur, H_Parent()->ID(),
+    // Снижаем урон, если нож сильно изношен (состояние < 95%)
+    if (ParentIsActor() && !fis_zero(conditionDecreasePerShotOnHit) && GetCondition() < 0.95f)
+    {
+        fCurrentHit = fCurrentHit * (GetCondition() / 0.95f);
+    }
+
+    // Спавним пулю (удар ножа) и захватываем ссылку на нее
+    SBullet& bullet = Level().BulletManager().AddBullet(pos, dir, m_fStartBulletSpeed, fCurrentHit, fHitImpulse_cur, H_Parent()->ID(),
         ID(), m_eHitType, fireDistance, cartridge, 1.f, SendHit);
+
+    // Вешаем на нее флажок. Если она во что-то попадет — вызовется W->OnBulletHit() и снимет состояние ножа
+    if (ParentIsActor())
+    {
+        bullet.setOnBulletHit(true);
+    }
 }
 
 void CWeaponKnife::OnKnifeStrike(u32 state)

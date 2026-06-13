@@ -1134,16 +1134,32 @@ bool CWeaponMagazined::CanAttach(PIItem pIItem)
         }
         return false;
     }
-    else if (pSilencer && m_eSilencerStatus == ALife::eAddonAttachable &&
-        (m_flagsAddOnState & CSE_ALifeItemWeapon::eWeaponAddonSilencer) == 0 &&
-        (m_sSilencerName == pIItem->object().cNameSect()))
-        return true;
-    else if (pGrenadeLauncher && m_eGrenadeLauncherStatus == ALife::eAddonAttachable &&
-        (m_flagsAddOnState & CSE_ALifeItemWeapon::eWeaponAddonGrenadeLauncher) == 0 &&
-        (m_sGrenadeLauncherName == pIItem->object().cNameSect()))
-        return true;
+    else if (pSilencer && m_eSilencerStatus == ALife::eAddonAttachable && (m_flagsAddOnState & CSE_ALifeItemWeapon::eWeaponAddonSilencer) == 0 && (m_sSilencerName == pIItem->object().cNameSect()))
+    {
+        // Если есть опция на запрет глушителя и ПГ одновременно
+        if (!bGrenadeLauncherNSilencer || (bGrenadeLauncherNSilencer && (m_flagsAddOnState & CSE_ALifeItemWeapon::eWeaponAddonGrenadeLauncher) == 0))
+        {
+            // Используем твою стандартную проверку по имени
+            if (m_sSilencerName == pIItem->object().cNameSect())
+                return true;
+        }
+        return false;
+    }
+    else if (pGrenadeLauncher && m_eGrenadeLauncherStatus == ALife::eAddonAttachable && (m_flagsAddOnState & CSE_ALifeItemWeapon::eWeaponAddonGrenadeLauncher) == 0 && (m_sGrenadeLauncherName == pIItem->object().cNameSect()))
+    {
+        // Если есть опция на запрет глушителя и ПГ одновременно
+        if (!bGrenadeLauncherNSilencer || (bGrenadeLauncherNSilencer && (m_flagsAddOnState & CSE_ALifeItemWeapon::eWeaponAddonSilencer) == 0))
+        {
+            // Используем твою стандартную проверку по имени
+            if (m_sGrenadeLauncherName == pIItem->object().cNameSect())
+                return true;
+        }
+        return false;
+    }
     else
+    {
         return inherited::CanAttach(pIItem);
+    }
 }
 
 bool CWeaponMagazined::CanDetach(const char* item_section_name)

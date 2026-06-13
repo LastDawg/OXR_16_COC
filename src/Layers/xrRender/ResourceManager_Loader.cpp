@@ -116,7 +116,7 @@ void CResourceManager::OnDeviceCreate(IReader* F)
                 // XXX: SDK must prevent the duplication,
                 // the engine should just work
                 auto I = m_blenders.emplace(xr_strdup(desc.cName), B);
-                R_ASSERT2(I.second, "CResourceManager::LoadSharedFile - found shader name [%s]", desc.cName);
+                R_ASSERT2(I.second, "shader.xr - found duplicate name!!!");
             }
 #ifndef MASTER_GOLD
             else

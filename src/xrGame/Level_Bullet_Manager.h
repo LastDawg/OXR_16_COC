@@ -81,11 +81,16 @@ struct SBullet
 
     ref_sound m_whine_snd;
     ref_sound m_mtl_snd;
+    bool m_on_bullet_hit;
+
 
     [[nodiscard]]
     bool operator==(const u32 id) const { return id == m_dwID; }
 
 public:
+    bool isOnBulletHit() const { return m_on_bullet_hit; }
+    void setOnBulletHit(bool flag) { m_on_bullet_hit = flag; }
+
     SBullet(const Fvector& position, const Fvector& direction, float starting_speed, float power,
         float impulse, u16 sender_id, u16 sendersweapon_id, ALife::EHitType e_hit_type, float maximum_distance,
         const CCartridge& cartridge, float const air_resistance_factor, bool SendHit, int iShotNum = 0);
@@ -210,7 +215,7 @@ public:
 
     void Load();
     void Clear();
-    void AddBullet(const Fvector& position, const Fvector& direction, float starting_speed, float power,
+    SBullet& AddBullet(const Fvector& position, const Fvector& direction, float starting_speed, float power,
         float impulse, u16 sender_id, u16 sendersweapon_id, ALife::EHitType e_hit_type,
         float maximum_distance, const CCartridge& cartridge, float const air_resistance_factor, bool SendHit,
         bool AimBullet = false, int iShotNum = 0);
