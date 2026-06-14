@@ -419,6 +419,19 @@ bool CUIActorMenu::OnKeyboardAction(int dik, EUIMessages keyboard_action)
         return true;
     }
 
+    if (IsBinded(kUSE, dik))
+    {
+        if (WINDOW_KEY_PRESSED == keyboard_action)
+        {
+            // Проверяем, что открыт именно труп/тайник или окно торговли
+            if (m_currMenuMode == mmDeadBodySearch || m_currMenuMode == mmTrade)
+            {
+                OnBtnExitClicked(this, nullptr);
+                return true;
+            }
+        }
+    }
+
     if (IsBinded(kQUIT, dik) || IsBinded(kINVENTORY, dik) ||
         IsBinded(kUI_BACK, dik, EKeyContext::UI))
     {
