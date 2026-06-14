@@ -16,7 +16,7 @@
 #endif
 #endif
 
-extern ENGINE_API float psHUD_FOV;
+extern ENGINE_API float psHUD_FOV_def;
 
 namespace xray::render::RENDER_NAMESPACE
 {
@@ -673,7 +673,7 @@ void CParticleEffect::Render(CBackend& cmd_list, float, bool use_fast_geo)
                 Fmatrix FTold = Device.mFullTransform;
                 if (GetHudMode())
                 {
-                    Device.mProject.build_projection(deg2rad(psHUD_FOV * Device.fFOV), Device.fASPECT, HUD_VIEWPORT_NEAR,
+                    Device.mProject.build_projection(deg2rad(psHUD_FOV_def * Device.fFOV), Device.fASPECT, HUD_VIEWPORT_NEAR,
                         g_pGamePersistent->Environment().CurrentEnv.far_plane);
 
                     Device.mFullTransform.mul(Device.mProject, Device.mView);
@@ -840,7 +840,7 @@ void CParticleEffect::Render(float, bool)
                 Fmatrix FTold = Device.mFullTransform;
                 if (GetHudMode())
                 {
-                    Device.mProject.build_projection(deg2rad(psHUD_FOV * Device.fFOV), Device.fASPECT, HUD_VIEWPORT_NEAR,
+                    Device.mProject.build_projection(deg2rad(psHUD_FOV_def * Device.fFOV), Device.fASPECT, HUD_VIEWPORT_NEAR,
                         g_pGamePersistent->Environment().CurrentEnv.far_plane);
 
                     Device.mFullTransform.mul(Device.mProject, Device.mView);

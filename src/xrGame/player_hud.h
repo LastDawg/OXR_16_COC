@@ -47,6 +47,8 @@ struct hud_item_measures
     Fvector m_hands_attach[2]{}; // pos,rot
     Fvector m_item_attach[2]{}; // pos,rot
 
+    Fvector m_collision_offset[2]; // pos,rot
+
     Fvector m_fire_point_offset{};
     Fvector m_fire_point2_offset{};
     Fvector m_shell_point_offset{};
@@ -71,8 +73,29 @@ struct hud_item_measures
         float m_origin_offset_aim;
         float m_tendto_speed;
         float m_tendto_speed_aim;
+        float m_tendto_ret_speed;
+        float m_tendto_ret_speed_aim;
+
+        float m_min_angle;
+        float m_min_angle_aim;
+
+        Fvector4 m_offset_LRUD;
+        Fvector4 m_offset_LRUD_aim;
     };
     inertion_params m_inertion_params; //--#SM+#--
+
+	struct shooting_params
+    {
+        bool bShootShake;
+        Fvector4 m_shot_max_offset_LRUD;
+        Fvector4 m_shot_max_offset_LRUD_aim;
+        Fvector2 m_shot_offset_BACKW;
+        float m_ret_speed;
+        float m_ret_speed_aim;
+        float m_min_LRUD_power;
+    };
+
+    shooting_params m_shooting_params; //--#SM+#--
 };
 
 struct attachable_hud_item

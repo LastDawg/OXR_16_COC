@@ -11,8 +11,11 @@
 #include "player_hud.h"
 #include "xrCore/Animation/SkeletonMotions.hpp"
 #include "xrNetServer/NET_Messages.h"
+#include "HUDManager.h"
 
 #include "xrUICore/ui_base.h"
+
+ENGINE_API extern float psHUD_FOV_def; //--#SM+#--
 
 CHudItem::CHudItem()
 {
@@ -23,6 +26,15 @@ CHudItem::CHudItem()
     m_bStopAtEndAnimIsRunning = false;
     m_current_motion_def = NULL;
     m_started_rnd_anim_idx = u8(-1);
+
+    m_nearwall_last_hud_fov = psHUD_FOV_def;
+
+    m_fLR_MovingFactor = 0.f;
+    m_fLR_CameraFactor = 0.f;
+    m_fLR_InertiaFactor = 0.f;
+    m_fUD_InertiaFactor = 0.f;
+
+    m_fCachedCollisionDist = 50.0f;
 }
 
 IFactoryObject* CHudItem::_construct()
@@ -204,7 +216,10 @@ void CHudItem::SendHiddenItem()
     }
 }
 
-void CHudItem::UpdateHudAdditional(Fmatrix& hud_trans) {}
+void CHudItem::UpdateHudAdditional(Fmatrix& hud_trans) 
+{
+}
+
 void CHudItem::UpdateCL()
 {
     if (m_current_motion_def)
@@ -246,14 +261,27 @@ void CHudItem::UpdateCL()
             }
         }
     }
+    // КЭШИРОВАНИЕ ЛУЧА (1 раз за кадр)
+    if (ParentIsActor() && (Level().CurrentViewEntity() == object().H_Parent()))
+    {
+        collide::rq_result& RQ = HUD().GetCurrentRayQuery();
+        m_fCachedCollisionDist = RQ.range;
+    }
 }
 
 void CHudItem::OnH_A_Chield() {}
-void CHudItem::OnH_B_Chield() { StopCurrentAnimWithoutCallback(); }
+
+void CHudItem::OnH_B_Chield() 
+{ 
+    StopCurrentAnimWithoutCallback();
+    m_nearwall_last_hud_fov = psHUD_FOV_def;
+}
+
 void CHudItem::OnH_B_Independent(bool just_before_destroy)
 {
     m_sounds.StopAllSounds();
     UpdateXForm();
+    m_nearwall_last_hud_fov = psHUD_FOV_def;
 
     // next code was commented
     /*
@@ -615,4 +643,39 @@ attachable_hud_item* CHudItem::HudItemData() const
         return hi;
 
     return NULL;
+}
+
+BOOL CHudItem::ParentIsActor()
+{
+    IGameObject* O = object().H_Parent();
+    if (!O)
+        return false;
+
+    CEntityAlive* EA = smart_cast<CEntityAlive*>(O);
+    if (!EA)
+        return false;
+
+    return !!EA->cast_actor();
+}
+
+float CHudItem::GetHudFov()
+{
+    if (smart_cast<CActor*>(this->object().H_Parent()) && (Level().CurrentViewEntity() == object().H_Parent()))
+    {
+        // ИСПОЛЬЗУЕМ КЭШИРОВАННУЮ ДИСТАНЦИЮ ВМЕСТО ВЫЗОВА GetCurrentRayQuery() !!
+        float dist = m_fCachedCollisionDist;
+
+        clamp(dist, m_nearwall_dist_min, m_nearwall_dist_max);
+        float fDistanceMod = ((dist - m_nearwall_dist_min) / (m_nearwall_dist_max - m_nearwall_dist_min));
+
+        float fBaseFov = psHUD_FOV_def + m_hud_fov_add_mod;
+        clamp(fBaseFov, 0.0f, FLT_MAX);
+
+        float src = m_nearwall_speed_mod * Device.fTimeDelta;
+        clamp(src, 0.f, 1.f);
+
+        float fTrgFov = m_nearwall_target_hud_fov + fDistanceMod * (fBaseFov - m_nearwall_target_hud_fov);
+        m_nearwall_last_hud_fov = m_nearwall_last_hud_fov * (1.0f - src) + fTrgFov * src;
+    }
+    return m_nearwall_last_hud_fov;
 }

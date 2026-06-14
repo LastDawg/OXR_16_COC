@@ -152,6 +152,34 @@ void CWeaponMagazined::Load(LPCSTR section)
     LoadSilencerKoeffs();
 
     m_bCartridgeInTheChamber = READ_IF_EXISTS(pSettings, r_bool, section, "CartridgeInTheChamberEnabled", true);
+
+    // Настройки стрейфа (боковая ходьба)
+    Fvector vZero = {0.f, 0.f, 0.f};
+
+    // Смещение в стрейфе
+    m_strafe_params.vPosOffset    = READ_IF_EXISTS(pSettings, r_fvector3, section, "strafe_hud_offset_pos", vZero);
+    m_strafe_params.vRotOffset    = READ_IF_EXISTS(pSettings, r_fvector3, section, "strafe_hud_offset_rot", vZero);
+    m_strafe_params.vAimPosOffset = READ_IF_EXISTS(pSettings, r_fvector3, section, "strafe_aim_hud_offset_pos", vZero);
+    m_strafe_params.vAimRotOffset = READ_IF_EXISTS(pSettings, r_fvector3, section, "strafe_aim_hud_offset_rot", vZero);
+
+    // Параметры стрейфа
+    m_strafe_params.bStrafeEnabled     = READ_IF_EXISTS(pSettings, r_bool, section, "strafe_enabled", false);
+    m_strafe_params.bStrafeAimEnabled  = READ_IF_EXISTS(pSettings, r_bool, section, "strafe_aim_enabled", false);
+    m_strafe_params.fTransitionTime    = READ_IF_EXISTS(pSettings, r_float, section, "strafe_transition_time", 0.01f);
+    m_strafe_params.fAimTransitionTime = READ_IF_EXISTS(pSettings, r_float, section, "strafe_aim_transition_time", 0.01f);
+    m_strafe_params.fCamLimitFactor    = READ_IF_EXISTS(pSettings, r_float, section, "strafe_cam_limit_factor", 0.5f);
+    m_strafe_params.fAimCamLimitFactor = READ_IF_EXISTS(pSettings, r_float, section, "strafe_cam_limit_aim_factor", 1.0f);
+    m_strafe_params.fMinAngle          = READ_IF_EXISTS(pSettings, r_float, section, "strafe_cam_min_angle", 0.0f);
+    m_strafe_params.fAimMinAngle       = READ_IF_EXISTS(pSettings, r_float, section, "strafe_cam_aim_min_angle", 7.0f);
+
+    // Модификатор для HUD FOV от бедра
+    m_hud_fov_add_mod = READ_IF_EXISTS(pSettings, r_float, section, "hud_fov_addition_modifier", 0.f);
+
+    // Параметры изменения HUD FOV, когда игрок стоит вплотную к стене
+    m_nearwall_dist_min       = READ_IF_EXISTS(pSettings, r_float, section, "nearwall_dist_min", 0.5f);
+    m_nearwall_dist_max       = READ_IF_EXISTS(pSettings, r_float, section, "nearwall_dist_max", 1.f);
+    m_nearwall_target_hud_fov = READ_IF_EXISTS(pSettings, r_float, section, "nearwall_target_hud_fov", 0.27f);
+    m_nearwall_speed_mod      = READ_IF_EXISTS(pSettings, r_float, section, "nearwall_speed_mod", 10.f);
 }
 
 bool CWeaponMagazined::UseScopeTexture()
@@ -767,6 +795,9 @@ void CWeaponMagazined::OnShot()
     //дым из ствола
     ForceUpdateFireParticles();
     StartSmokeParticles(get_LastFP(), vel);
+
+    // Эффект сдвига (отдача)
+    AddHUDShootingEffect();
 
     // Передёргивание затвора отдельным звуком
     if (!IsDiffShotModes() || IsDiffShotModes() && GetCurrentFireMode() == 1)

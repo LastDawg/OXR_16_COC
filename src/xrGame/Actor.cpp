@@ -147,6 +147,9 @@ CActor::CActor() : CEntityAlive(), current_ik_cam_shift(0)
     fPrevCamPos = 0.0f;
     vPrevCamDir.set(0.f, 0.f, 1.f);
     fCurAVelocity = 0.0f;
+    fFPCamYawMagnitude = 0.0f;
+    fFPCamPitchMagnitude = 0.0f;
+
     // эффекторы
     pCamBobbing = 0;
 

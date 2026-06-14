@@ -348,6 +348,9 @@ protected:
     static float f_Ladder_cam_limit;
 
 public:
+    float fFPCamYawMagnitude;
+    float fFPCamPitchMagnitude;
+
     virtual void feel_touch_new(IGameObject* O);
     virtual void feel_touch_delete(IGameObject* O);
     virtual bool feel_touch_contact(IGameObject* O);

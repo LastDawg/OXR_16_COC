@@ -53,12 +53,47 @@ public:
     virtual void OnStateSwitch(u32 S, u32 oldState) = 0;
 };
 
+struct SStrafeHudParams {
+    bool    bStrafeEnabled;
+    bool    bStrafeAimEnabled;
+    float   fTransitionTime;
+    float   fAimTransitionTime;
+    float   fCamLimitFactor;
+    float   fAimCamLimitFactor;
+    float   fMinAngle;
+    float   fAimMinAngle;
+    Fvector vPosOffset;
+    Fvector vRotOffset;
+    Fvector vAimPosOffset;
+    Fvector vAimRotOffset;
+
+    SStrafeHudParams() { ZeroMemory(this, sizeof(*this)); }
+};
+
 class CHudItem : public CHUDState
 {
 protected:
+
     CHudItem();
     virtual ~CHudItem();
     virtual IFactoryObject* _construct();
+
+    // SWM 3.0 
+    float m_fLR_MovingFactor;
+    float m_fLR_CameraFactor;
+    float m_fLR_InertiaFactor;
+    float m_fUD_InertiaFactor; 
+
+    SStrafeHudParams m_strafe_params;
+
+    float m_fCachedCollisionDist;
+
+    float m_hud_fov_add_mod;
+    float m_nearwall_dist_max;
+    float m_nearwall_dist_min;
+    float m_nearwall_last_hud_fov;
+    float m_nearwall_target_hud_fov;
+    float m_nearwall_speed_mod;
 
     Flags16 m_huditem_flags;
     enum
@@ -193,5 +228,10 @@ public:
     virtual CHudItem* cast_hud_item() { return this; }
     bool isHUDAnimationExist(pcstr anim_name, bool silent = false) const;
     virtual bool IsMisfireNow() { return false; }
+
+    // SWM 3
+    virtual float GetHudFov();
+    virtual BOOL ParentIsActor();
+
     pcstr WhichHUDAnimationExist(pcstr anim_name, pcstr anim_name2, bool silent = false) const;
 };
