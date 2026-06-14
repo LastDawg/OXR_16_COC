@@ -502,7 +502,7 @@ u32 attachable_hud_item::anim_play(const shared_str& anm_name_b, BOOL bMixIn, co
     const motion_descr& M = anm->m_animations[rnd_idx];
 
     IKinematicsAnimated* ka = smart_cast<IKinematicsAnimated*>(m_model);
-    const u32 ret = m_parent->anim_play(m_attach_place_idx, M.mid, bMixIn, md, speed, m_monolithic ? ka : nullptr);
+    const u32 ret = m_parent->anim_play(m_attach_place_idx, M.mid, bMixIn, md, speed);
 
     if (ka)
     {
@@ -577,6 +577,12 @@ player_hud::~player_hud()
         GEnv.Render->model_Delete(v);
     }
 
+    if (m_model_2)
+    {
+        IRenderVisual* v = m_model_2->dcast_RenderVisual();
+        GEnv.Render->model_Delete(v);
+    }
+
     for (auto& [name, item] : m_pool)
     {
         xr_delete(item);
@@ -590,47 +596,54 @@ void player_hud::load(const shared_str& player_hud_sect)
         return;
 
     m_sect_name = player_hud_sect;
-
     const bool b_reload = m_model != nullptr;
+
     if (m_model)
     {
         IRenderVisual* v = m_model->dcast_RenderVisual();
         GEnv.Render->model_Delete(v);
     }
 
+    if (m_model_2)
+    {
+        IRenderVisual* v = m_model_2->dcast_RenderVisual();
+        GEnv.Render->model_Delete(v);
+    }
+
     if (!pSettings->section_exist(m_sect_name))
     {
-        if (b_reload)
-        {
-            if (m_attached_items[1])
-                m_attached_items[1]->m_parent_hud_item->on_a_hud_attach();
-
-            if (m_attached_items[0])
-                m_attached_items[0]->m_parent_hud_item->on_a_hud_attach();
-        }
-
         return;
     }
 
     const shared_str& model_name = pSettings->r_string(m_sect_name, "visual");
     m_model = smart_cast<IKinematicsAnimated*>(GEnv.Render->model_Create(model_name.c_str()));
+    
+    shared_str model_2_name = pSettings->line_exist(m_sect_name, "visual_2") ? pSettings->r_string(m_sect_name, "visual_2") : model_name;
+    m_model_2 = smart_cast<IKinematicsAnimated*>(GEnv.Render->model_Create(model_2_name.c_str()));
+
     load_ancors();
-    // Msg("hands visual changed to [%s] [%s] [%s]", model_name.c_str(), b_reload ? "R" : "", m_attached_items[0] ? "Y" : "");
+
+    // Скрытие рук (Разделение)
+    u16 l_arm = m_model->dcast_PKinematics()->LL_BoneID("l_clavicle");
+    u16 r_arm = m_model_2->dcast_PKinematics()->LL_BoneID("r_clavicle");
+    m_model->dcast_PKinematics()->LL_SetBoneVisible(l_arm, FALSE, TRUE);
+    m_model_2->dcast_PKinematics()->LL_SetBoneVisible(r_arm, FALSE, TRUE);
 
     if (!b_reload)
     {
         m_model->PlayCycle("hand_idle_doun");
+        m_model_2->PlayCycle("hand_idle_doun");
     }
     else
     {
-        if (m_attached_items[1])
-            m_attached_items[1]->m_parent_hud_item->on_a_hud_attach();
-
-        if (m_attached_items[0])
-            m_attached_items[0]->m_parent_hud_item->on_a_hud_attach();
+        if (m_attached_items[1]) m_attached_items[1]->m_parent_hud_item->on_a_hud_attach();
+        if (m_attached_items[0]) m_attached_items[0]->m_parent_hud_item->on_a_hud_attach();
     }
+
     m_model->dcast_PKinematics()->CalculateBones_Invalidate();
     m_model->dcast_PKinematics()->CalculateBones(TRUE);
+    m_model_2->dcast_PKinematics()->CalculateBones_Invalidate();
+    m_model_2->dcast_PKinematics()->CalculateBones(TRUE);
 }
 
 void player_hud::load_ancors()
@@ -683,6 +696,9 @@ void player_hud::render_hud(u32 context_id, IRenderable* root)
     if (m_model)
         GEnv.Render->add_Visual(context_id, root, m_model->dcast_RenderVisual(), m_transform);
 
+    if (m_model_2)
+        GEnv.Render->add_Visual(context_id, root, m_model_2->dcast_RenderVisual(), m_transform_2);
+
     if (item0)
         item0->render(context_id, root);
 
@@ -722,78 +738,95 @@ u32 player_hud::motion_length(const MotionID& M, const CMotionDef*& md, float sp
 void player_hud::update(const Fmatrix& cam_trans)
 {
     Fmatrix trans = cam_trans;
+
     if (psHUD_Flags.test(HUD_LEFT_HANDED))
     {
-        // faster than multiplication by flip matrix
-        trans.m[0][0] = -trans.m[0][0];
-        trans.m[0][1] = -trans.m[0][1];
-        trans.m[0][2] = -trans.m[0][2];
-        trans.m[0][3] = -trans.m[0][3];
+        trans.m[0][0] = -trans.m[0][0]; trans.m[0][1] = -trans.m[0][1];
+        trans.m[0][2] = -trans.m[0][2]; trans.m[0][3] = -trans.m[0][3];
     }
 
     update_inertion(trans);
-    update_additional(trans);
 
-    attachable_hud_item* item0 = m_attached_items[0];
-    attachable_hud_item* item1 = m_attached_items[1];
-
-    const bool monolithic = item0 && item0->m_monolithic || item1 && item1->m_monolithic;
-    if (!m_model || monolithic)
-        m_transform = trans;
-    else
+    if (m_attached_items[0])
     {
-        Fvector ypr{};
-        if (item0)
-            ypr = item0->hands_attach_rot();
-        else if (item1)
-            ypr = item1->hands_attach_rot();
-
-        ypr.mul(PI / 180.f);
-        m_attach_offset.setHPB(ypr.x, ypr.y, ypr.z);
-
-        Fvector tmp{};
-        if (item0)
-            tmp = item0->hands_attach_pos();
-        else if (item1)
-            tmp = item1->hands_attach_pos();
-
-        m_attach_offset.translate_over(tmp);
-        m_transform.mul(trans, m_attach_offset);
-
-        m_model->UpdateTracks();
-        m_model->dcast_PKinematics()->CalculateBones_Invalidate();
-        m_model->dcast_PKinematics()->CalculateBones(TRUE);
+        m_attached_items[0]->update_hud_additional(trans);
+    }
+    else if (m_attached_items[1])
+    {
+        m_attached_items[1]->update_hud_additional(trans);
     }
 
-    if (item0)
-        item0->update(true);
+    Fmatrix trans_2 = trans;
 
-    if (item1)
-        item1->update(true);
+    Fvector m1rot = attach_rot(0);
+    Fvector m2rot = attach_rot(1);
+    
+    m1rot.mul(PI / 180.f);
+    m_attach_offset.setHPB(m1rot.x, m1rot.y, m1rot.z);
+    m_attach_offset.translate_over(attach_pos(0));
+
+    m2rot.mul(PI / 180.f);
+    m_attach_offset_2.setHPB(m2rot.x, m2rot.y, m2rot.z);
+    m_attach_offset_2.translate_over(attach_pos(1));
+
+    m_transform.mul(trans, m_attach_offset);
+    m_transform_2.mul(trans_2, m_attach_offset_2);
+
+    m_model->UpdateTracks();
+    m_model->dcast_PKinematics()->CalculateBones_Invalidate();
+    m_model->dcast_PKinematics()->CalculateBones(TRUE);
+
+    m_model_2->UpdateTracks();
+    m_model_2->dcast_PKinematics()->CalculateBones_Invalidate();
+    m_model_2->dcast_PKinematics()->CalculateBones(TRUE);
+
+    if (m_attached_items[0]) m_attached_items[0]->update(true);
+    if (m_attached_items[1]) m_attached_items[1]->update(true);
 }
 
-u32 player_hud::anim_play(u16 part, const MotionID& M, BOOL bMixIn, const CMotionDef*& md, float speed, IKinematicsAnimated* itemModel)
+u32 player_hud::anim_play(u16 part, const MotionID& M, BOOL bMixIn, const CMotionDef*& md, float speed, u16 override_part)
 {
-    if (!itemModel && m_model)
-    {
-        u16 part_id = u16(-1);
-        if (attached_item(0) && attached_item(1))
-            part_id = m_model->partitions().part_id((part == 0) ? "right_hand" : "left_hand");
+    u16 part_id = u16(-1);
+    if (attached_item(0) && attached_item(1))
+        part_id = m_model->partitions().part_id((part == 0) ? "right_hand" : "left_hand");
 
-        const u16 pc = m_model->partitions().count();
-        for (u16 pid = 0; pid < pc; ++pid)
+    if (override_part != u16(-1))
+        part_id = override_part;
+
+    for (u8 pid = 0; pid < 3; ++pid)
+    {
+        if (part_id == u16(-1))
         {
-            if (pid == 0 || pid == part_id || part_id == u16(-1))
+            if (pid == 0 || pid == 2) 
             {
                 CBlend* B = m_model->PlayCycle(pid, M, bMixIn);
-                R_ASSERT(B);
-                B->speed *= speed;
+                if (B) B->speed *= speed;
+            }
+            if (pid == 0 || pid == 1) 
+            {
+                CBlend* B = m_model_2->PlayCycle(pid, M, bMixIn);
+                if (B) B->speed *= speed;
             }
         }
-        m_model->dcast_PKinematics()->CalculateBones_Invalidate();
+        else if (pid == 0 || pid == part_id)
+        {
+            if (part_id == 2 || part_id == 0)
+            {
+                CBlend* B = m_model->PlayCycle(pid, M, bMixIn);
+                if (B) B->speed *= speed;
+            }
+            else
+            {
+                CBlend* B = m_model_2->PlayCycle(pid, M, bMixIn);
+                if (B) B->speed *= speed;
+            }
+        }
     }
 
-    return motion_length(M, md, speed, itemModel);
+    m_model->dcast_PKinematics()->CalculateBones_Invalidate();
+    m_model_2->dcast_PKinematics()->CalculateBones_Invalidate();
+
+    return motion_length(M, md, speed, nullptr); 
 }
 
 void player_hud::update_additional(Fmatrix& trans) const
@@ -922,41 +955,39 @@ void player_hud::detach_item_idx(u16 idx)
         return;
 
     m_attached_items[idx]->m_parent_hud_item->on_b_hud_detach();
-
     m_attached_items[idx]->m_parent_hud_item = nullptr;
     m_attached_items[idx] = nullptr;
 
-    if (idx == 1 && attached_item(0))
+    if (idx == 1)
     {
-        u16 part_idR = m_model->partitions().part_id("right_hand");
-        u32 bc = m_model->LL_PartBlendsCount(part_idR);
-        for (u32 bidx = 0; bidx < bc; ++bidx)
+        if (m_attached_items[0])
+            re_sync_anim(2);
+        else
+            m_model_2->PlayCycle("hand_idle_doun");
+    }
+    else if (idx == 0)
+    {
+        if (m_attached_items[1])
         {
-            CBlend* BR = m_model->LL_PartBlend(part_idR, bidx);
-            if (!BR)
-                continue;
-
-            MotionID M = BR->motionID;
-
-            u16 pc = m_model->partitions().count();
-            for (u16 pid = 0; pid < pc; ++pid)
+            const player_hud_motion* pm = m_attached_items[1]->m_hand_motions.find_motion("anm_idle");
+            if (pm)
             {
-                if (pid != part_idR)
-                {
-                    CBlend* B = m_model->PlayCycle(pid, M, TRUE); // this can destroy BR calling UpdateTracks !
-                    if (BR->blend_state() != CBlend::eFREE_SLOT)
-                    {
-                        u16 bop = B->bone_or_part;
-                        *B = *BR;
-                        B->bone_or_part = bop;
-                    }
-                }
+                const motion_descr& M = pm->m_animations[0];
+                m_model->PlayCycle(0, M.mid, false);
+                m_model->PlayCycle(2, M.mid, false);
             }
         }
+        else
+        {
+            m_model->PlayCycle("hand_idle_doun");
+            m_model_2->PlayCycle("hand_idle_doun");
+        }
     }
-    else if (idx == 0 && attached_item(1))
+
+    if (!m_attached_items[0] && !m_attached_items[1])
     {
-        OnMovementChanged(mcAnyMove);
+        m_model->PlayCycle("hand_idle_doun");
+        m_model_2->PlayCycle("hand_idle_doun");
     }
 }
 
@@ -976,16 +1007,20 @@ void player_hud::detach_item(CHudItem* item)
 void player_hud::calc_transform(u16 attach_slot_idx, const Fmatrix& offset, Fmatrix& result) const
 {
     const attachable_hud_item* item = m_attached_items[attach_slot_idx];
+    
+    // Выбираем нужную модель и нужную матрицу трансформации в зависимости от слота
+    IKinematics* kin = (attach_slot_idx == 0) ? m_model->dcast_PKinematics() : m_model_2->dcast_PKinematics();
+    const Fmatrix& parent_trans = (attach_slot_idx == 0) ? m_transform : m_transform_2;
+
     if (item && !item->m_monolithic)
     {
-        IKinematics* k = smart_cast<IKinematics*>(m_model);
-        const Fmatrix ancor_m = k->LL_GetTransform(m_ancors[attach_slot_idx]);
-        result.mul(m_transform, ancor_m);
+        const Fmatrix ancor_m = kin->LL_GetTransform(m_ancors[attach_slot_idx]);
+        result.mul(parent_trans, ancor_m);
         result.mulB_43(offset);
     }
     else
     {
-        result.mul(m_transform, offset);
+        result.mul(parent_trans, offset);
         VERIFY(!fis_zero(DET(result)));
     }
 }
@@ -1019,5 +1054,60 @@ void player_hud::OnMovementChanged(ACTOR_DEFS::EMoveCommand cmd) const
 
         if (hudItem1)
             hudItem1->OnMovementChanged(cmd);
+    }
+}
+
+const Fvector& player_hud::attach_rot(u8 part) const
+{
+    if (m_attached_items[part])
+        return m_attached_items[part]->hands_attach_rot();
+    else if (m_attached_items[!part]) // Если в текущем слоте пусто, берем ротацию из того, что в другой руке
+        return m_attached_items[!part]->hands_attach_rot();
+
+    static Fvector zero = { 0.f, 0.f, 0.f };
+    return zero;
+}
+
+const Fvector& player_hud::attach_pos(u8 part) const
+{
+    if (m_attached_items[part])
+        return m_attached_items[part]->hands_attach_pos();
+    else if (m_attached_items[!part])
+        return m_attached_items[!part]->hands_attach_pos();
+
+    static Fvector zero = { 0.f, 0.f, 0.f };
+    return zero;
+}
+
+void player_hud::re_sync_anim(u8 part)
+{
+    u32 bc = part == 1 ? m_model_2->LL_PartBlendsCount(part) : m_model->LL_PartBlendsCount(part);
+    for (u32 bidx = 0; bidx < bc; ++bidx)
+    {
+        CBlend* BR = part == 1 ? m_model_2->LL_PartBlend(part, bidx) : m_model->LL_PartBlend(part, bidx);
+        if (!BR) continue;
+
+        MotionID M = BR->motionID;
+        u16 pc = m_model->partitions().count(); // партиции на обеих руках одинаковые
+
+        for (u16 pid = 0; pid < pc; ++pid)
+        {
+            if (pid == 0) // Базовый цикл (тело анимации)
+            {
+                CBlend* B = m_model->PlayCycle(0, M, TRUE);
+                B->timeCurrent = BR->timeCurrent;
+                B->speed = BR->speed;
+
+                B = m_model_2->PlayCycle(0, M, TRUE);
+                B->timeCurrent = BR->timeCurrent;
+                B->speed = BR->speed;
+            }
+            else if (pid != part) // Синхронизируем другую руку
+            {
+                CBlend* B = part == 1 ? m_model->PlayCycle(pid, M, TRUE) : m_model_2->PlayCycle(pid, M, TRUE);
+                B->timeCurrent = BR->timeCurrent;
+                B->speed = BR->speed;
+            }
+        }
     }
 }

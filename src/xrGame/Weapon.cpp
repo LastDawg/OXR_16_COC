@@ -155,14 +155,16 @@ CWeapon::CWeapon()
 
 const shared_str CWeapon::GetScopeName() const
 {
-	if (bUseAltScope)
-	{
-		return m_scopes[m_cur_scope];
-	}
-	else
-	{
-		return pSettings->r_string(m_scopes[m_cur_scope], "scope_name");
-	}
+    if (m_eScopeStatus == ALife::eAddonPermanent)
+        return cNameSect();
+
+    if (m_scopes.empty() || m_cur_scope >= m_scopes.size())
+        return cNameSect();
+
+    if (bUseAltScope)
+        return m_scopes[m_cur_scope];
+    else
+        return pSettings->r_string(m_scopes[m_cur_scope], "scope_name");
 }
 
 void CWeapon::UpdateAltScope()
@@ -690,6 +692,13 @@ void CWeapon::Load(LPCSTR section)
     m_zoom_params.m_bUseDynamicZoom = READ_IF_EXISTS(pSettings, r_bool, section, "scope_dynamic_zoom", false);
     m_zoom_params.m_sUseZoomPostprocess = nullptr;
     m_zoom_params.m_sUseBinocularVision = nullptr;
+
+    if (!bScopeIsHasTexture)
+    {
+        m_zoom_params.m_sUseZoomPostprocess = 0;
+        m_zoom_params.m_sUseBinocularVision = 0;
+        m_zoom_params.m_bUseDynamicZoom = false;
+    }
 
     // Added by Axel, to enable optional condition use on any item
     m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", true));
