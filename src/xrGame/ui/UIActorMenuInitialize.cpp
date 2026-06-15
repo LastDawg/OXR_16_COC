@@ -205,6 +205,7 @@ void CUIActorMenu::InitializeUniversal(CUIXml& uiXml)
 
         { eInventoryOutfitList,    "dragdrop_outfit",          "progess_bar_outfit",  "outfit_slot_highlight",   nullptr,            true },
         { eInventoryHelmetList,    "dragdrop_helmet",          "progess_bar_helmet",  "helmet_slot_highlight",   "helmet_over",      false },
+        { eInventoryBackpackList,  "dragdrop_backpack",        "progess_bar_backpack","backpack_slot_highlight", nullptr,            true },
 
         { eInventoryBeltList,      "dragdrop_belt",            nullptr,               "artefact_slot_highlight", "belt_list_over",   true },
         { eInventoryDetectorList,  "dragdrop_detector",        "progess_bar_detector","detector_slot_highlight", nullptr,            true },
@@ -226,8 +227,6 @@ void CUIActorMenu::InitializeUniversal(CUIXml& uiXml)
         { eSearchLootActorBagList, nullptr,                    nullptr,               nullptr,                   nullptr,            false },
 
         { eTrashList,              "dragdrop_trash",           nullptr,               nullptr,                   nullptr,            false },
-
-        { eInventoryBackpackList,  "dragdrop_backpack",        nullptr,               "backpack_slot_highlight", nullptr,            false },
     };
     static_assert(std::size(inventory_lists) == eListCount,
         "All lists should be listed in the tuple above.");

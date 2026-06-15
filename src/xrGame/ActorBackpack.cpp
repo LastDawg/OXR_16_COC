@@ -8,6 +8,15 @@ CBackpack::CBackpack()
     m_flags.set(FUsingCondition, false);
 }
 
+bool CBackpack::net_Spawn(CSE_Abstract* DC)
+{
+    //if (IsGameTypeSingle())
+        //ReloadBonesProtection();
+
+    BOOL res = inherited::net_Spawn(DC);
+    return (res);
+}
+
 void CBackpack::Load(pcstr section)
 {
     inherited::Load(section);
@@ -24,6 +33,18 @@ void CBackpack::Load(pcstr section)
 
     m_flags.set(FUsingCondition, pSettings->read_if_exists<bool>(section, "use_condition", true));
 }
+
+/*
+void CBackpack::ReloadBonesProtection()
+{
+    IGameObject* parent = H_Parent();
+    if (IsGameTypeSingle())
+        parent = smart_cast<IGameObject*>(Level().CurrentViewEntity());
+
+    if (parent && parent->Visual() && m_BonesProtectionSect.size())
+        m_boneProtection.reload(m_BonesProtectionSect, smart_cast<IKinematics*>(parent->Visual()));
+}
+*/
 
 void CBackpack::Hit(float hit_power, ALife::EHitType hit_type)
 {
@@ -45,4 +66,18 @@ bool CBackpack::install_upgrade_impl(pcstr section, bool test)
     result |= process_if_exists(section, "additional_inventory_weight2", &CInifile::r_float, m_additional_weight2, test);
 
     return result;
+}
+
+void CBackpack::net_Export(NET_Packet& P)
+{
+    inherited::net_Export(P);
+    P.w_float_q8(GetCondition(), 0.0f, 1.0f);
+}
+
+void CBackpack::net_Import(NET_Packet& P)
+{
+    inherited::net_Import(P);
+    float _cond;
+    P.r_float_q8(_cond, 0.0f, 1.0f);
+    SetCondition(_cond);
 }

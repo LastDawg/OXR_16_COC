@@ -693,13 +693,6 @@ void CWeapon::Load(LPCSTR section)
     m_zoom_params.m_sUseZoomPostprocess = nullptr;
     m_zoom_params.m_sUseBinocularVision = nullptr;
 
-    if (!bScopeIsHasTexture)
-    {
-        m_zoom_params.m_sUseZoomPostprocess = 0;
-        m_zoom_params.m_sUseBinocularVision = 0;
-        m_zoom_params.m_bUseDynamicZoom = false;
-    }
-
     // Added by Axel, to enable optional condition use on any item
     m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", true));
 }

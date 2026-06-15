@@ -318,7 +318,7 @@ void CObjectFactory::register_classes()
     ADD(CMilitaryOutfit, CSE_ALifeItemCustomOutfit, CLSID_EQUIPMENT_MILITARY, "equ_military");
     ADD(CExoOutfit, CSE_ALifeItemCustomOutfit, CLSID_EQUIPMENT_EXO, "equ_exo");
     ADD(CHelmet, CSE_ALifeItem, CLSID_EQUIPMENT_HELMET, "helmet");
-    ADD(CBackpack, CSE_ALifeItem, CLSID_EQUIPMENT_BACKPACK, "equ_backpack");
+    ADD(CBackpack, CSE_ALifeItemBackpack, CLSID_EQUIPMENT_BACKPACK, "equ_backpack");
 
     // Grenades
     ADD(CF1, CSE_ALifeItemGrenade, CLSID_GRENADE_F1, "wpn_grenade_f1");
@@ -399,6 +399,7 @@ void CObjectFactory::register_classes()
     ADD(CTorch, CSE_ALifeItemTorch, make_clsid("TORCH_S "), "device_torch_s");
     ADD(CHangingLamp, CSE_ALifeObjectHangingLamp, make_clsid("SO_HLAMP"), "hlamp_s");
     ADD(CStalkerOutfit, CSE_ALifeItemCustomOutfit, make_clsid("E_STLK  "), "equ_stalker_s");
+    ADD(CBackpack, CSE_ALifeItemBackpack, TEXT2CLSID("E_BAKPK"), "equ_backpack_s");
     ADD(CScope, CSE_ALifeItem, make_clsid("WP_SCOPE"), "wpn_scope_s");
     ADD(CWeaponAK74, CSE_ALifeItemWeaponMagazinedWGL, make_clsid("WP_AK74 "), "wpn_ak74_s");
     ADD(CWeaponLR300, CSE_ALifeItemWeaponMagazined, make_clsid("WP_LR300"), "wpn_lr300_s");

@@ -507,6 +507,24 @@ private:
     DECLARE_SCRIPT_REGISTER_FUNCTION(CSE_ALifeItem);
 };
 
+class CSE_ALifeItemBackpack : public CSE_ALifeItem
+{
+    using inherited = CSE_ALifeItem;
+
+public:
+    CSE_ALifeItemBackpack(LPCSTR caSection);
+    virtual ~CSE_ALifeItemBackpack();
+    virtual BOOL Net_Relevant();
+    virtual void UPDATE_Read(NET_Packet& P);
+    virtual void UPDATE_Write(NET_Packet& P);
+    virtual void STATE_Read(NET_Packet& P, u16 size);
+    virtual void STATE_Write(NET_Packet& P);
+    SERVER_ENTITY_EDITOR_METHODS
+
+private:
+    DECLARE_SCRIPT_REGISTER_FUNCTION(CSE_ALifeItem);
+};
+
 #pragma warning(pop)
 
 #endif

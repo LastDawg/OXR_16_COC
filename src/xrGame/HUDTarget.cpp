@@ -19,6 +19,7 @@
 
 #include "inventory_item.h"
 #include "Inventory.h"
+#include "PDA.h"
 
 #include "ai/monsters/poltergeist/poltergeist.h"
 
@@ -124,6 +125,8 @@ void CHUDTarget::Render()
         return;
 
     VERIFY(g_bRendering);
+
+    CActor* Actor = smart_cast<CActor*>(Level().CurrentEntity());
 
     IGameObject* O = Level().CurrentEntity();
     if (0 == O)
@@ -261,6 +264,9 @@ void CHUDTarget::Render()
         F->OutNext("%4.1f", PP.RQ.range);
 #endif
     }
+
+	if (smart_cast<CPda*>(Actor->inventory().ActiveItem()))
+        return;
 
     //отрендерить кружочек или крестик
     if (!m_bShowCrosshair)
