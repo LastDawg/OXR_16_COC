@@ -504,8 +504,6 @@ public:
     void rmFar(CBackend& cmd_list);
     void rmNormal(CBackend& cmd_list);
 
-    void RenderToTarget(RRT target);
-
     // Constructor/destructor/loader
     CRender();
     ~CRender() override;
