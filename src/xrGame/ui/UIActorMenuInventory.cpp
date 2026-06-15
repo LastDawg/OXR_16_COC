@@ -1338,8 +1338,9 @@ void CUIActorMenu::PropertiesBoxForRepair(PIItem item, bool& b_show)
     CCustomOutfit* pOutfit = smart_cast<CCustomOutfit*>(item);
     CWeapon* pWeapon = smart_cast<CWeapon*>(item);
     CHelmet* pHelmet = smart_cast<CHelmet*>(item);
+    CBackpack* pBackpack = smart_cast<CBackpack*>(item);
 
-    if ((pOutfit || pWeapon || pHelmet) && item->GetCondition() < 0.99f)
+    if ((pOutfit || pWeapon || pHelmet || pBackpack) && item->GetCondition() < 0.99f)
     {
         m_UIPropertiesBox->AddItem("ui_inv_repair", NULL, INVENTORY_REPAIR);
         b_show = true;

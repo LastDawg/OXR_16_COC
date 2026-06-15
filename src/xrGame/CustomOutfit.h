@@ -57,6 +57,9 @@ public:
     float m_fThirstRestoreSpeed;
     float m_fPowerRestoreSpeed;
     float m_fBleedingRestoreSpeed;
+    float m_fJumpSpeed;
+    float m_fWalkAccel;
+    float m_fOverweightWalkK;
 
     shared_str m_BonesProtectionSect;
     shared_str m_NightVisionSect;

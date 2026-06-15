@@ -69,8 +69,7 @@ void CCustomOutfit::Load(LPCSTR section)
     // fire_wound_protection isn't used in hit calculations code, bone protections are used instead.
     // This is used as a virtual value in the UI, and possibly in Lua scripts (which can do some real calculations).
     m_HitTypeProtection[ALife::eHitTypeFireWound] = pSettings->read_if_exists<float>(section, "fire_wound_protection", 0.0f);
-    m_HitTypeProtection[ALife::eHitTypePhysicStrike] = pSettings->read_if_exists<float>(
-        section, "physic_strike_protection", m_HitTypeProtection[ALife::eHitTypeStrike]);
+    m_HitTypeProtection[ALife::eHitTypePhysicStrike] = pSettings->read_if_exists<float>(section, "physic_strike_protection", m_HitTypeProtection[ALife::eHitTypeStrike]);
     m_HitTypeProtection[ALife::eHitTypeLightBurn] = m_HitTypeProtection[ALife::eHitTypeBurn];
 
     if (pSettings->line_exist(section, "hit_fraction_actor"))
@@ -110,6 +109,9 @@ void CCustomOutfit::Load(LPCSTR section)
     m_fThirstRestoreSpeed = READ_IF_EXISTS(pSettings, r_float, section, "thirst_restore_speed", 0.0f);
     m_fPowerRestoreSpeed = READ_IF_EXISTS(pSettings, r_float, section, "power_restore_speed", 0.0f);
     m_fBleedingRestoreSpeed = READ_IF_EXISTS(pSettings, r_float, section, "bleeding_restore_speed", 0.0f);
+    m_fJumpSpeed = pSettings->read_if_exists<float>(section, "jump_speed", 1.f);
+    m_fWalkAccel = pSettings->read_if_exists<float>(section, "walk_accel", 1.f);
+    m_fOverweightWalkK = pSettings->read_if_exists<float>(section, "overweight_walk_accel", 1.f);
 
     m_full_icon_name = pSettings->r_string(section, "full_icon_name");
     m_artefact_count = READ_IF_EXISTS(pSettings, r_u32, section, "artefact_count", 0);
@@ -458,6 +460,8 @@ bool CCustomOutfit::install_upgrade_impl(LPCSTR section, bool test)
     result |= process_if_exists(section, "thirst_restore_speed", &CInifile::r_float, m_fThirstRestoreSpeed, test);
     result |= process_if_exists(section, "power_restore_speed", &CInifile::r_float, m_fPowerRestoreSpeed, test);
     result |= process_if_exists(section, "bleeding_restore_speed", &CInifile::r_float, m_fBleedingRestoreSpeed, test);
+    result |= process_if_exists(section, "jump_speed", &CInifile::r_float, m_fJumpSpeed, test);
+    result |= process_if_exists(section, "walk_accel", &CInifile::r_float, m_fWalkAccel, test);
 
     result |= process_if_exists(section, "power_loss", &CInifile::r_float, m_fPowerLoss, test);
     clamp(m_fPowerLoss, 0.0f, 1.0f);

@@ -18,6 +18,7 @@
 #include "Weapon.h"
 #include "CustomOutfit.h"
 #include "ActorHelmet.h"
+#include "ActorBackpack.h"
 #include "eatable_item.h"
 #include "UICellItem.h"
 #include "xrGame/game_type.h"
@@ -379,6 +380,9 @@ void CUIItemInfo::TryAddArtefactInfo(CInventoryItem& pInvItem)
     if (!UIArtefactParams)
         return;
 
+    if (UIDesc->IsChild(UIArtefactParams))
+        return;
+
     if (UIArtefactParams->Check(pInvItem.object().cNameSect()))
     {
         UIArtefactParams->SetInfo(pInvItem);
@@ -388,11 +392,12 @@ void CUIItemInfo::TryAddArtefactInfo(CInventoryItem& pInvItem)
 
 void CUIItemInfo::TryAddOutfitInfo(CInventoryItem& pInvItem, CInventoryItem* pCompareItem)
 {
-    if (!UIOutfitInfo)
-        return;
+    if (!UIOutfitInfo) return;
 
     CCustomOutfit* outfit = smart_cast<CCustomOutfit*>(&pInvItem);
     CHelmet* helmet = smart_cast<CHelmet*>(&pInvItem);
+    CBackpack* backpack = smart_cast<CBackpack*>(&pInvItem);
+
     if (outfit)
     {
         CCustomOutfit* comp_outfit = smart_cast<CCustomOutfit*>(pCompareItem);

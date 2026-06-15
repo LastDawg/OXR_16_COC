@@ -39,6 +39,9 @@ public:
     float m_fThirstRestoreSpeed;
     float m_fPowerRestoreSpeed;
     float m_fBleedingRestoreSpeed;
+    float m_fJumpSpeed;
+    float m_fWalkAccel;
+    float m_fOverweightWalkK;
 
     float m_fShowNearestEnemiesDistance;
     bool m_b_HasGlass;

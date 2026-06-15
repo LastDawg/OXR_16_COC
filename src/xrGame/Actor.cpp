@@ -77,6 +77,7 @@
 
 #include "xrEngine/Rain.h"
 #include "DynamicHudGlass.h"
+#include "ActorBackpack.h"
 
 //Alundaio
 #include "script_hit.h"
@@ -371,14 +372,20 @@ void CActor::Load(LPCSTR section)
     set_box(section, *character_physics_support()->movement(), 1);
     set_box(section, *character_physics_support()->movement(), 0);
 
-    m_fWalkAccel = pSettings->r_float(section, "walk_accel");
-    m_fJumpSpeed = pSettings->r_float(section, "jump_speed");
-    m_fRunFactor = pSettings->r_float(section, "run_coef");
-    m_fRunBackFactor = pSettings->r_float(section, "run_back_coef");
-    m_fWalkBackFactor = pSettings->r_float(section, "walk_back_coef");
-    m_fCrouchFactor = pSettings->r_float(section, "crouch_coef");
-    m_fClimbFactor = pSettings->r_float(section, "climb_coef");
-    m_fSprintFactor = pSettings->r_float(section, "sprint_koef");
+    m_fBaseWalkAccel  = pSettings->read_if_exists<float>(section, "walk_accel", 1.f);
+    m_fWalkAccel      = m_fBaseWalkAccel;
+    m_fWalkAccelLimit = pSettings->read_if_exists<float>(section, "walk_accel_limit", 1.f);
+    
+    m_fBaseJumpSpeed  = pSettings->read_if_exists<float>(section, "jump_speed", 1.f);
+    m_fJumpSpeed      = m_fBaseJumpSpeed;
+    m_fJumpSpeedLimit = pSettings->read_if_exists<float>(section, "jump_speed_limit", 1.f);
+
+    m_fRunFactor      = pSettings->read_if_exists<float>(section, "run_coef", 1.f);
+    m_fRunBackFactor  = pSettings->read_if_exists<float>(section, "run_back_coef", 1.f);
+    m_fWalkBackFactor = pSettings->read_if_exists<float>(section, "walk_back_coef", 1.f);
+    m_fCrouchFactor   = pSettings->read_if_exists<float>(section, "crouch_coef", 1.f);
+    m_fClimbFactor    = pSettings->read_if_exists<float>(section, "climb_coef", 1.f);
+    m_fSprintFactor   = pSettings->read_if_exists<float>(section, "sprint_koef", 1.f);
 
     m_fWalk_StrafeFactor = READ_IF_EXISTS(pSettings, r_float, section, "walk_strafe_coef", 1.0f);
     m_fRun_StrafeFactor = READ_IF_EXISTS(pSettings, r_float, section, "run_strafe_coef", 1.0f);
@@ -1894,6 +1901,9 @@ void CActor::UpdateArtefactsOnBeltAndOutfit()
         update_time = 0.0f;
     }
 
+	float jump_speed_add = 0.0f;
+    float walk_accel_add = 0.0f;
+
     for (auto& it : inventory().m_belt)
     {
         const auto artefact = smart_cast<CArtefact*>(it);
@@ -1905,6 +1915,8 @@ void CActor::UpdateArtefactsOnBeltAndOutfit()
             conditions().ChangePower((artefact->m_fPowerRestoreSpeed * art_cond) * f_update_time);
             conditions().ChangeSatiety((artefact->m_fSatietyRestoreSpeed * art_cond) * f_update_time);
             conditions().ChangeThirst((artefact->m_fThirstRestoreSpeed * art_cond) * f_update_time);
+            jump_speed_add += (artefact->m_fJumpSpeed * art_cond);
+            walk_accel_add += (artefact->m_fWalkAccel * art_cond);
 
             if (artefact->m_fRadiationRestoreSpeed * art_cond > 0.0f)
             {
@@ -1926,19 +1938,54 @@ void CActor::UpdateArtefactsOnBeltAndOutfit()
         conditions().ChangeSatiety(outfit->m_fSatietyRestoreSpeed * f_update_time);
         conditions().ChangeThirst(outfit->m_fThirstRestoreSpeed * f_update_time);
         conditions().ChangeRadiation(outfit->m_fRadiationRestoreSpeed * f_update_time);
+        jump_speed_add += (outfit->m_fJumpSpeed);
+        walk_accel_add += (outfit->m_fWalkAccel);
+    }
+    CHelmet* pHelmet = smart_cast<CHelmet*>(inventory().ItemFromSlot(HELMET_SLOT));
+    if (pHelmet)
+    {
+        if (!pHelmet)
+        {
+        jump_speed_add += (pHelmet->m_fJumpSpeed);
+        walk_accel_add += (pHelmet->m_fWalkAccel);
+        }
     }
     else
     {
-        CHelmet* pHelmet = smart_cast<CHelmet*>(inventory().ItemFromSlot(HELMET_SLOT));
-        if (!pHelmet)
-        {
             CTorch* pTorch = smart_cast<CTorch*>(inventory().ItemFromSlot(TORCH_SLOT));
             if (pTorch && pTorch->GetNightVisionStatus())
             {
                 pTorch->SwitchNightVision(false);
             }
-        }
     }
+    const auto backpack = smart_cast<CBackpack*>(inventory().ItemFromSlot(BACKPACK_SLOT));
+    if (backpack)
+    {
+        conditions().ChangeBleeding(backpack->m_fBleedingRestoreSpeed * f_update_time);
+        conditions().ChangeHealth(backpack->m_fHealthRestoreSpeed * f_update_time);
+        conditions().ChangePower(backpack->m_fPowerRestoreSpeed * f_update_time);
+        conditions().ChangeSatiety(backpack->m_fSatietyRestoreSpeed * f_update_time);
+        conditions().ChangeThirst(backpack->m_fThirstRestoreSpeed * f_update_time);
+        conditions().ChangeRadiation(backpack->m_fRadiationRestoreSpeed * f_update_time);
+        jump_speed_add += (backpack->m_fJumpSpeed);
+        walk_accel_add += (backpack->m_fWalkAccel);
+    }
+
+	if (m_fBaseJumpSpeed + jump_speed_add <= 0)
+        m_fJumpSpeed = 0.01;
+    else if (m_fBaseJumpSpeed + jump_speed_add > m_fJumpSpeedLimit)
+        m_fJumpSpeed = m_fJumpSpeedLimit;
+    else
+        m_fJumpSpeed = m_fBaseJumpSpeed + jump_speed_add;
+
+    character_physics_support()->movement()->SetJumpUpVelocity(m_fJumpSpeed);
+
+	if (m_fBaseWalkAccel + walk_accel_add <= 0)
+        m_fWalkAccel = 1;
+    else if (m_fBaseWalkAccel + walk_accel_add > m_fWalkAccelLimit)
+        m_fWalkAccel = m_fWalkAccelLimit;
+    else
+        m_fWalkAccel = m_fBaseWalkAccel + walk_accel_add;
 }
 
 float CActor::HitArtefactsOnBelt(float hit_power, ALife::EHitType hit_type)
@@ -2105,6 +2152,10 @@ bool CActor::is_ai_obstacle() const
 float CActor::GetRestoreSpeed(ALife::EConditionRestoreType const& type)
 {
     float res = 0.0f;
+    
+    const auto backpack = smart_cast<CBackpack*>(inventory().ItemFromSlot(BACKPACK_SLOT));
+    const auto outfit = GetOutfit();
+
     switch (type)
     {
     case ALife::eHealthRestoreSpeed:
@@ -2120,9 +2171,11 @@ float CActor::GetRestoreSpeed(ALife::EConditionRestoreType const& type)
                 res += artefact->m_fHealthRestoreSpeed * artefact->GetCondition();
         }
 
-        const auto outfit = GetOutfit();
         if (outfit)
             res += outfit->m_fHealthRestoreSpeed;
+
+        if (backpack)
+            res += backpack->m_fHealthRestoreSpeed;
 
         break;
     }
@@ -2135,9 +2188,11 @@ float CActor::GetRestoreSpeed(ALife::EConditionRestoreType const& type)
                 res += artefact->m_fRadiationRestoreSpeed * artefact->GetCondition();
         }
 
-        const auto outfit = GetOutfit();
         if (outfit)
             res += outfit->m_fRadiationRestoreSpeed;
+
+        if (backpack)
+            res += backpack->m_fRadiationRestoreSpeed;
 
         break;
     }
@@ -2152,9 +2207,11 @@ float CActor::GetRestoreSpeed(ALife::EConditionRestoreType const& type)
                 res += artefact->m_fSatietyRestoreSpeed * artefact->GetCondition();
         }
 
-        const auto outfit = GetOutfit();
         if (outfit)
             res += outfit->m_fSatietyRestoreSpeed;
+
+        if (backpack)
+            res += backpack->m_fSatietyRestoreSpeed;
 
         break;
     }
@@ -2169,15 +2226,32 @@ float CActor::GetRestoreSpeed(ALife::EConditionRestoreType const& type)
             if (artefact)
                 res += artefact->m_fPowerRestoreSpeed * artefact->GetCondition();
         }
-        auto outfit = GetOutfit();
+
+        if (outfit)
+            res += outfit->m_fPowerRestoreSpeed;
+        
+        if (backpack)
+            res += backpack->m_fPowerRestoreSpeed;
+
+        float total_power_loss = 1.0f;
+        
         if (outfit)
         {
-            res += outfit->m_fPowerRestoreSpeed;
             VERIFY(outfit->m_fPowerLoss != 0.0f);
-            res /= outfit->m_fPowerLoss;
+            total_power_loss = outfit->m_fPowerLoss;
         }
         else
-            res /= 0.5f;
+        {
+            total_power_loss = 0.5f;
+        }
+
+        // Если есть рюкзак, его штраф перемножается с костюмом
+        if (backpack)
+        {
+            total_power_loss *= backpack->m_fPowerLoss;
+        }
+
+        res /= total_power_loss;
 
         break;
     }
@@ -2192,9 +2266,11 @@ float CActor::GetRestoreSpeed(ALife::EConditionRestoreType const& type)
                 res += artefact->m_fBleedingRestoreSpeed * artefact->GetCondition();
         }
 
-        const auto outfit = GetOutfit();
         if (outfit)
             res += outfit->m_fBleedingRestoreSpeed;
+
+        if (backpack)
+            res += backpack->m_fBleedingRestoreSpeed;
 
         break;
     }
@@ -2209,9 +2285,11 @@ float CActor::GetRestoreSpeed(ALife::EConditionRestoreType const& type)
                 res += artefact->m_fThirstRestoreSpeed * artefact->GetCondition();
         }
 
-        const auto outfit = GetOutfit();
         if (outfit)
             res += outfit->m_fThirstRestoreSpeed;
+
+        if (backpack)
+            res += backpack->m_fThirstRestoreSpeed;
 
         break;
     }

@@ -53,6 +53,16 @@ constexpr std::tuple<ALife::EConditionRestoreType, cpcstr, cpcstr, cpcstr, float
 static_assert(std::size(af_restore) == ALife::eRestoreTypeMax,
     "All restore types should be listed in the tuple above.");
 
+struct SMoveMod {
+    pcstr section;
+    pcstr caption;
+};
+
+static const SMoveMod move_modifiers[] = {
+    { "jump_speed", "ui_inv_jump_speed" },
+    { "walk_accel", "ui_inv_walk_speed" }
+};
+
 bool CUIArtefactParams::InitFromXml(CUIXml& xml)
 {
     XML_NODE stored_root = xml.GetLocalRoot();
@@ -105,13 +115,20 @@ bool CUIArtefactParams::InitFromXml(CUIXml& xml)
     const auto weight = StringTable().translate("ui_inv_weight", "ui_inv_outfit_additional_weight");
     m_additional_weight = create_item("additional_weight", weight.c_str());
 
+    m_jump_speed_item = create_item("jump_speed", StringTable().translate("ui_inv_jump_speed").c_str(), 100.0f, false, "%");
+    m_walk_accel_item = create_item("walk_accel", StringTable().translate("ui_inv_walk_speed").c_str(), 100.0f, false, "%");
+
     xml.SetLocalRoot(stored_root);
     return true;
 }
 
 bool CUIArtefactParams::Check(const shared_str& af_section) const
 {
-    return pSettings->line_exist(af_section, "af_actor_properties");
+    // Будет возвращать true, если есть флаг артефакта ИЛИ параметры веса/прыжка/скорости
+    return pSettings->line_exist(af_section, "af_actor_properties") || 
+           pSettings->line_exist(af_section, "additional_inventory_weight") ||
+           pSettings->line_exist(af_section, "jump_speed") ||
+           pSettings->line_exist(af_section, "walk_accel");
 }
 
 void CUIArtefactParams::SetInfo(const CInventoryItem& pInvItem)
@@ -121,13 +138,11 @@ void CUIArtefactParams::SetInfo(const CInventoryItem& pInvItem)
         AttachChild(m_Prop_line);
 
     const CActor* actor = smart_cast<CActor*>(Level().CurrentViewEntity());
-    if (!actor)
-        return;
+    if (!actor) return;
 
-    const auto& af_section = pInvItem.object().cNameSect().c_str();
+    const shared_str& item_section = pInvItem.object().cNameSect();
     const auto& actor_sect = actor->cNameSect().c_str();
     const auto& condition_sect = pSettings->read_if_exists<pcstr>(actor_sect, "condition_sect", actor_sect);
-    const auto& hit_absorbation_sect = pSettings->r_string(af_section, "hit_absorbation_sect");
 
     float h = 0.0f;
     if (m_Prop_line)
@@ -136,30 +151,26 @@ void CUIArtefactParams::SetInfo(const CInventoryItem& pInvItem)
     const auto setValue = [&](UIArtefactParamItem* item, const float val)
     {
         item->SetValue(val);
-
         Fvector2 pos = item->GetWndPos();
         pos.y = h;
         item->SetWndPos(pos);
-
         h += item->GetWndSize().y;
         AttachChild(item);
     };
 
-    //Alundaio: Show AF Condition
-    if (m_disp_condition)
+    if (m_disp_condition && smart_cast<const CArtefact*>(&pInvItem))
+    {
         setValue(m_disp_condition, pInvItem.GetCondition());
-    //-Alundaio
+    }
 
     const bool is_soc = GMLib.GetLibraryVersion() <= GAMEMTL_VERSION_SOC;
 
     for (auto [id, restore_section, actor_condition, restore_caption, magnitude, sign_inverse, unit] : af_restore)
     {
-        if (!m_restore_item[id])
-            continue;
+        if (!m_restore_item[id]) continue;
 
-        float val = pSettings->r_float(af_section, restore_section);
-        if (fis_zero(val))
-            continue;
+        float val = pSettings->read_if_exists<float>(item_section, restore_section, 0.0f);
+        if (fis_zero(val)) continue;
 
         val = val * pInvItem.GetCondition();
         if (is_soc)
@@ -170,33 +181,50 @@ void CUIArtefactParams::SetInfo(const CInventoryItem& pInvItem)
         setValue(m_restore_item[id], val);
     }
 
-    CHitImmunity immunities;
-    immunities.LoadImmunities(hit_absorbation_sect, pSettings, is_soc);
-
-    for (auto [id, immunity_section, immunity_caption, magnitude, sign_inverse, unit] : af_immunity)
+    if (pSettings->line_exist(item_section, "hit_absorbation_sect"))
     {
-        if (!m_immunity_item[id])
-            continue;
+        const auto& hit_absorbation_sect = pSettings->r_string(item_section, "hit_absorbation_sect");
+        CHitImmunity immunities;
+        immunities.LoadImmunities(hit_absorbation_sect, pSettings, is_soc);
 
-        float val = immunities.GetHitImmunity(id);
-        if (fis_zero(val))
-            continue;
-
-        val *= pInvItem.GetCondition();
-        if (!is_soc)
+        for (auto [id, immunity_section, immunity_caption, magnitude, sign_inverse, unit] : af_immunity)
         {
-            const float max_val = actor->conditions().GetZoneMaxPower(id);
-            val /= max_val;
+            if (!m_immunity_item[id]) continue;
+
+            float val = immunities.GetHitImmunity(id);
+            if (fis_zero(val)) continue;
+
+            val *= pInvItem.GetCondition();
+            if (!is_soc)
+            {
+                const float max_val = actor->conditions().GetZoneMaxPower(id);
+                val /= max_val;
+            }
+            setValue(m_immunity_item[id], val);
         }
-        setValue(m_immunity_item[id], val);
     }
+
+    auto process_move_mod = [&](UIArtefactParamItem* item, pcstr sect_name) {
+        if (!item) return;
+        
+        float val = pSettings->read_if_exists<float>(item_section, sect_name, 1.0f);
+        if (!fsimilar(val, 1.0f)) 
+        {
+            setValue(item, val - 1.0f); 
+        }
+    };
+
+    process_move_mod(m_jump_speed_item, "jump_speed");
+    process_move_mod(m_walk_accel_item, "walk_accel");
 
     if (m_additional_weight)
     {
-        float val = pSettings->r_float(af_section, "additional_inventory_weight");
+        float val = pSettings->read_if_exists<float>(item_section, "additional_inventory_weight", 0.0f);
+        if (fis_zero(val))
+            val = pSettings->read_if_exists<float>(item_section, "additional_inventory_weight2", 0.0f);
+
         if (!fis_zero(val))
         {
-            val *= pInvItem.GetCondition();
             setValue(m_additional_weight, val);
         }
     }

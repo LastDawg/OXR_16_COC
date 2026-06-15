@@ -311,14 +311,6 @@ void CActor::g_cl_CheckControls(u32 mstate_wf, Fvector& vControlAccel, float& Ju
                         scale *= m_fWalk_StrafeFactor;
                 }
 
-                CBackpack* backpack = GetBackpack();
-                if (backpack)
-                {
-                    scale *= backpack->m_fWalkAccel;
-                    if (inventory().TotalWeight() > MaxCarryWeight())
-                        scale *= backpack->m_fOverweightWalkK;
-                }
-
                 vControlAccel.mul(scale);
                 cam_eff_factor = scale;
             } // scale>EPS

@@ -26,6 +26,8 @@ protected:
     UIArtefactParamItem* m_immunity_item[ALife::eHitTypeMax - 3]{};
     UIArtefactParamItem* m_restore_item[ALife::eRestoreTypeMax]{};
     UIArtefactParamItem* m_additional_weight{};
+    UIArtefactParamItem* m_jump_speed_item{};
+    UIArtefactParamItem* m_walk_accel_item{};
 
     CUIStatic* m_Prop_line{};
 

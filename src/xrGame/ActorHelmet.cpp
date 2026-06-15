@@ -65,6 +65,10 @@ void CHelmet::Load(LPCSTR section)
     m_fThirstRestoreSpeed = READ_IF_EXISTS(pSettings, r_float, section, "thirst_restore_speed", 0.0f);
     m_fPowerRestoreSpeed = READ_IF_EXISTS(pSettings, r_float, section, "power_restore_speed", 0.0f);
     m_fBleedingRestoreSpeed = READ_IF_EXISTS(pSettings, r_float, section, "bleeding_restore_speed", 0.0f);
+    m_fJumpSpeed = pSettings->read_if_exists<float>(section, "jump_speed", 1.f);
+    m_fWalkAccel = pSettings->read_if_exists<float>(section, "walk_accel", 1.f);
+    m_fOverweightWalkK = pSettings->read_if_exists<float>(section, "overweight_walk_accel", 1.f);
+
     m_fPowerLoss = READ_IF_EXISTS(pSettings, r_float, section, "power_loss", 1.0f);
     clamp(m_fPowerLoss, 0.0f, 1.0f);
 

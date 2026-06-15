@@ -434,8 +434,12 @@ protected:
     BOOL m_bJumpKeyPressed;
 
 public:
+    float m_fBaseWalkAccel;
     float m_fWalkAccel;
+    float m_fWalkAccelLimit;
+    float m_fBaseJumpSpeed;
     float m_fJumpSpeed;
+    float m_fJumpSpeedLimit;
     float m_fRunFactor;
     float m_fRunBackFactor;
     float m_fWalkBackFactor;

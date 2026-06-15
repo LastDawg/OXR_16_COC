@@ -7,6 +7,7 @@
 #include "EntityCondition.h"
 #include "CustomOutfit.h"
 #include "ActorHelmet.h"
+#include "ActorBackpack.h"
 #include "PDA.h"
 #include "xrServerEntities/character_info.h"
 #include "Inventory.h"
@@ -753,16 +754,21 @@ void CUIMainIngameWnd::UpdateMainIndicators()
     if (m_ind_outfit_broken)
     {
         CCustomOutfit* outfit = smart_cast<CCustomOutfit*>(pActor->inventory().ItemFromSlot(OUTFIT_SLOT));
+        CBackpack* backpack = smart_cast<CBackpack*>(pActor->inventory().ItemFromSlot(BACKPACK_SLOT));
+
         m_ind_outfit_broken->Show(false);
-        if (outfit)
+        if (outfit || backpack)
         {
-            const float condition = outfit->GetCondition();
-            if (condition < 0.75f)
+        float out_cond = outfit ? outfit->GetCondition() : 1.0f;
+        float bp_cond = backpack ? backpack->GetCondition() : 1.0f;
+        float min_cond = _min(out_cond, bp_cond); // Берем самый поломанный
+
+            if (min_cond < 0.75f)
             {
                 m_ind_outfit_broken->Show(true);
-                if (condition > 0.5f)
+                if (min_cond > 0.5f)
                     m_ind_outfit_broken->InitTexture("ui_inGame2_circle_Armorbroken_green");
-                else if (condition > 0.25f)
+                else if (min_cond > 0.25f)
                     m_ind_outfit_broken->InitTexture("ui_inGame2_circle_Armorbroken_yellow");
                 else
                     m_ind_outfit_broken->InitTexture("ui_inGame2_circle_Armorbroken_red");

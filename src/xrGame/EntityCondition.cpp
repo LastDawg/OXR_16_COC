@@ -302,6 +302,7 @@ float CEntityCondition::HitOutfitEffect(
 
     CCustomOutfit* pOutfit = (CCustomOutfit*)pInvOwner->inventory().ItemFromSlot(OUTFIT_SLOT);
     CHelmet* pHelmet = (CHelmet*)pInvOwner->inventory().ItemFromSlot(HELMET_SLOT);
+
     if (!pOutfit && !pHelmet)
         return hit_power;
 
@@ -325,12 +326,24 @@ float CEntityCondition::HitPowerEffect(float power_loss)
         return power_loss;
 
     CCustomOutfit* pOutfit = pInvOwner->GetOutfit();
-    if (!pOutfit)
+    CBackpack* pBackpack = smart_cast<CBackpack*>(pInvOwner->inventory().ItemFromSlot(BACKPACK_SLOT));
+
+    if (!pOutfit && !pBackpack)
         return power_loss * 0.5f;
 
-    const float new_power_loss = power_loss * pOutfit->GetPowerLoss();
+    float final_multiplier = 1.0f;
 
-    return new_power_loss;
+    if (pOutfit)
+    {
+        final_multiplier *= pOutfit->GetPowerLoss();
+    }
+
+    if (pBackpack)
+    {
+        final_multiplier *= pBackpack->m_fPowerLoss; 
+    }
+
+    return power_loss * final_multiplier;
 }
 
 CWound* CEntityCondition::AddWound(float hit_power, ALife::EHitType hit_type, u16 element)

@@ -2,6 +2,7 @@
 
 #include "CustomOutfit.h"
 #include "ActorHelmet.h"
+#include "ActorBackpack.h"
 
 void CCustomOutfit::script_register(lua_State* luaState)
 {
@@ -20,6 +21,8 @@ void CCustomOutfit::script_register(lua_State* luaState)
             .def_readwrite("m_fThirstRestoreSpeed", &CCustomOutfit::m_fThirstRestoreSpeed)
             .def_readwrite("m_fPowerRestoreSpeed", &CCustomOutfit::m_fPowerRestoreSpeed)
             .def_readwrite("m_fBleedingRestoreSpeed", &CCustomOutfit::m_fBleedingRestoreSpeed)
+            .def_readwrite("m_fJumpSpeed", &CCustomOutfit::m_fJumpSpeed) 
+            .def_readwrite("m_fWalkAccel", &CCustomOutfit::m_fWalkAccel)
             .def_readonly("bIsHelmetAvaliable", &CCustomOutfit::bIsHelmetAvaliable)
             .def("BonePassBullet", &CCustomOutfit::BonePassBullet)
             .def("get_artefact_count", &CCustomOutfit::get_artefact_count)
@@ -51,6 +54,8 @@ void CHelmet::script_register(lua_State* luaState)
             .def_readwrite("m_fThirstRestoreSpeed", &CHelmet::m_fThirstRestoreSpeed)
             .def_readwrite("m_fPowerRestoreSpeed", &CHelmet::m_fPowerRestoreSpeed)
             .def_readwrite("m_fBleedingRestoreSpeed", &CHelmet::m_fBleedingRestoreSpeed)
+            .def_readwrite("m_fJumpSpeed", &CHelmet::m_fJumpSpeed) 
+            .def_readwrite("m_fWalkAccel", &CHelmet::m_fWalkAccel)
             .def("GetDefHitTypeProtection", +[](CHelmet* self, int hit_type)
             {
                 return self->GetDefHitTypeProtection(ALife::EHitType(hit_type));
@@ -61,5 +66,26 @@ void CHelmet::script_register(lua_State* luaState)
                 return self->GetHitTypeProtection(ALife::EHitType(hit_type), elem);
             })
             .def("GetBoneArmor", &CHelmet::GetBoneArmor)
+    ];
+}
+
+void CBackpack::script_register(lua_State* luaState)
+{
+    using namespace luabind;
+
+    module(luaState)
+    [
+        class_<CBackpack, CGameObject>("CBackpack")
+            .def(constructor<>())
+            .def_readwrite("m_fPowerLoss", &CBackpack::m_fPowerLoss)
+            .def_readwrite("m_additional_weight", &CBackpack::m_additional_weight)
+            .def_readwrite("m_fHealthRestoreSpeed", &CBackpack::m_fHealthRestoreSpeed)
+            .def_readwrite("m_fRadiationRestoreSpeed", &CBackpack::m_fRadiationRestoreSpeed)
+            .def_readwrite("m_fSatietyRestoreSpeed", &CBackpack::m_fSatietyRestoreSpeed)
+            .def_readwrite("m_fThirstRestoreSpeed", &CBackpack::m_fThirstRestoreSpeed)
+            .def_readwrite("m_fPowerRestoreSpeed", &CBackpack::m_fPowerRestoreSpeed)
+            .def_readwrite("m_fBleedingRestoreSpeed", &CBackpack::m_fBleedingRestoreSpeed)
+            .def_readwrite("m_fJumpSpeed", &CBackpack::m_fJumpSpeed) 
+            .def_readwrite("m_fWalkAccel", &CBackpack::m_fWalkAccel)
     ];
 }
