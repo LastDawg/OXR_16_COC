@@ -595,58 +595,40 @@ void CWeapon::Load(LPCSTR section)
     // Проверяем наличие новой системы прицелов
     bUseAltScope = !!pSettings->line_exist(section, "scopes");
 
-    if (m_eScopeStatus == ALife::eAddonAttachable)
+    if (bUseAltScope)
     {
-        if (bUseAltScope)
+        LPCSTR str = pSettings->r_string(section, "scopes");
+        if (!xr_strcmp(str, "none"))
         {
-            LPCSTR str = pSettings->r_string(section, "scopes");
+            bUseAltScope = false; // Отключаем альтернативные прицелы
+        }
+        else if (m_eScopeStatus == ALife::eAddonAttachable)
+        {
             for (int i = 0, count = _GetItemCount(str); i < count; ++i)
             {
                 string128 scope_section;
                 _GetItem(str, i, scope_section);
-
-                if (!xr_strcmp(scope_section, "none"))
-                {
-                    bUseAltScope = false; // Если нашли 'none', сбрасываем флаг и идем по старой логике
-                }
-                else
-                {
-                    m_scopes.push_back(scope_section);
-                }
-            }
-        }
-
-        // Выполнится, если нет "scopes" или там было прописано "none"
-        if (!bUseAltScope) 
-        {
-            if (pSettings->line_exist(section, "scopes_sect"))
-            {
-                LPCSTR str = pSettings->r_string(section, "scopes_sect");
-                for (int i = 0, count = _GetItemCount(str); i < count; ++i)
-                {
-                    string128 scope_section;
-                    _GetItem(str, i, scope_section);
-                    m_scopes.push_back(scope_section);
-                }
-            }
-            else
-            {
-                m_scopes.push_back(section);
+                m_scopes.push_back(scope_section);
             }
         }
     }
-    else if (m_eScopeStatus == ALife::eAddonPermanent)
+
+    // Если альтернативные прицелы отключены, но прицел съемный - грузим по старинке
+    if (m_eScopeStatus == ALife::eAddonAttachable && !bUseAltScope)
     {
-        // Не грузим дефолтную 2D-сетку, если используется альтернативная система прицелов
-        if (!bUseAltScope) 
+        if (pSettings->line_exist(section, "scopes_sect"))
         {
-            m_zoom_params.m_fScopeZoomFactor = pSettings->r_float(cNameSect(), "scope_zoom_factor");
-            if (!GEnv.isDedicatedServer) 
+            LPCSTR str = pSettings->r_string(section, "scopes_sect");
+            for (int i = 0, count = _GetItemCount(str); i < count; ++i)
             {
-                m_UIScope = xr_new<CUIWindow>("Scope UI");
-                shared_str scope_tex_name = pSettings->r_string(cNameSect(), "scope_texture");
-                LoadScope(scope_tex_name);
+                string128 scope_section;
+                _GetItem(str, i, scope_section);
+                m_scopes.push_back(scope_section);
             }
+        }
+        else
+        {
+            m_scopes.push_back(section);
         }
     }
     if (m_eSilencerStatus == ALife::eAddonAttachable)

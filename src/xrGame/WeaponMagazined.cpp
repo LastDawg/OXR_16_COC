@@ -1439,44 +1439,46 @@ void CWeaponMagazined::InitAddons()
 
     if (IsScopeAttached())
     {
-        shared_str scope_tex_name;
+        shared_str scope_tex_name = "none";
+        // По умолчанию читаем параметры из секции самого оружия (для постоянных прицелов)
+        shared_str scope_section = cNameSect(); 
+
+        // Если прицел съемный - читаем из секции прицела
         if (m_eScopeStatus == ALife::eAddonAttachable)
         {
-			if (pSettings->line_exist(GetScopeName(), "scope_texture"))
-			{
-				scope_tex_name = pSettings->r_string(GetScopeName(), "scope_texture");
-				if (xr_strcmp(scope_tex_name, "none") != 0)
-				{
-					ScopeIsHasTexture = true;
-				}
-				else
-				{
-					ScopeIsHasTexture = false;
-				}
-			}
-			else
-			{
-				ScopeIsHasTexture = false;
-			}
-            m_zoom_params.m_fScopeZoomFactor = pSettings->r_float(GetScopeName(), "scope_zoom_factor");
-			if (ScopeIsHasTexture)
-			{
-				m_zoom_params.m_sUseZoomPostprocess = READ_IF_EXISTS(pSettings, r_string, GetScopeName(), "scope_nightvision", 0);
-				m_zoom_params.m_bUseDynamicZoom = READ_IF_EXISTS(pSettings, r_bool, GetScopeName(), "scope_dynamic_zoom", FALSE);
-				m_zoom_params.m_sUseBinocularVision = READ_IF_EXISTS(pSettings, r_string, GetScopeName(), "scope_alive_detector", 0);
-			}
-			m_fRTZoomFactor = m_zoom_params.m_fScopeZoomFactor;
+            scope_section = GetScopeName();
+        }
 
-			if (m_UIScope)
-            {
-                xr_delete(m_UIScope);
-            }
+        // Читаем текстуру прицела
+        if (pSettings->line_exist(scope_section, "scope_texture"))
+        {
+            scope_tex_name = pSettings->r_string(scope_section, "scope_texture");
+            ScopeIsHasTexture = (xr_strcmp(scope_tex_name, "none") != 0);
+        }
+        else
+        {
+            ScopeIsHasTexture = false;
+        }
 
-            if (!GEnv.isDedicatedServer && ScopeIsHasTexture)
-            {
-                m_UIScope = xr_new<CUIWindow>("Scope UI");
-                LoadScope(scope_tex_name);
-            }
+        // Читаем зум
+        m_zoom_params.m_fScopeZoomFactor = pSettings->r_float(scope_section, "scope_zoom_factor");
+        m_fRTZoomFactor = m_zoom_params.m_fScopeZoomFactor;
+
+        // Пересоздаем UI прицела
+        if (m_UIScope)
+        {
+            xr_delete(m_UIScope);
+        }
+
+        if (!GEnv.isDedicatedServer && ScopeIsHasTexture)
+        {
+            m_UIScope = xr_new<CUIWindow>("Scope UI");
+            LoadScope(scope_tex_name);
+
+            // Читаем ПНВ и бинокль (для постоянных и съемных прицелов)
+            m_zoom_params.m_sUseZoomPostprocess = READ_IF_EXISTS(pSettings, r_string, scope_section, "scope_nightvision", 0);
+            m_zoom_params.m_bUseDynamicZoom = READ_IF_EXISTS(pSettings, r_bool, scope_section, "scope_dynamic_zoom", FALSE);
+            m_zoom_params.m_sUseBinocularVision = READ_IF_EXISTS(pSettings, r_string, scope_section, "scope_alive_detector", 0);
         }
     }
     else
