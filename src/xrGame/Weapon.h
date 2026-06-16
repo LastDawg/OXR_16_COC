@@ -91,6 +91,7 @@ public:
 	float m_fLR_ShootingFactor; // Фактор горизонтального сдвига худа при стрельбе [-1; +1]
     float m_fUD_ShootingFactor; // Фактор вертикального сдвига худа при стрельбе [-1; +1]
     float m_fBACKW_ShootingFactor; // Фактор сдвига худа в сторону лица при стрельбе [0; +1]
+    IC float GetZRotatingFactor() const { return m_zoom_params.m_fZoomRotationFactor; } // BaS
 
 	xr_vector<shared_str> bullets_bones; // Mortan (BaS, STCoP)
     int bullet_cnt;

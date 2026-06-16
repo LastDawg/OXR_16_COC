@@ -233,5 +233,7 @@ public:
     virtual float GetHudFov();
     virtual BOOL ParentIsActor();
 
+    float GetNWLastHudFov() const { return m_nearwall_last_hud_fov; }
+
     pcstr WhichHUDAnimationExist(pcstr anim_name, pcstr anim_name2, bool silent = false) const;
 };

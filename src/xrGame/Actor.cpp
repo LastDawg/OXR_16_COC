@@ -1163,6 +1163,10 @@ void CActor::UpdateCL()
             psHUD_Flags.set(HUD_CROSSHAIR_RT2, B);
 
             psHUD_Flags.set(HUD_DRAW_RT, pWeapon->show_indicators());
+
+			// Коллиматоры из BaS
+            g_pGamePersistent->m_pGShaderConstants->hud_params.x = pWeapon->GetZRotatingFactor();
+            g_pGamePersistent->m_pGShaderConstants->hud_params.z = pWeapon->GetNWLastHudFov();
         }
     }
     else
