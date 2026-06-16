@@ -61,6 +61,14 @@ CUIInventoryCellItem::CUIInventoryCellItem(CInventoryItem* itm)
         CreateLayer(section, offset, scale);
     }
     //-Alundaio
+
+	LPCSTR condbar = READ_IF_EXISTS(pSettings, r_string, itm->m_section_id, "condition_bar", NULL);
+    if (condbar)
+    {
+        CUIXml uiXml;
+        uiXml.Load(CONFIG_PATH, UI_PATH, "actor_menu_item.xml");
+        CUIXmlInit::InitProgressBar(uiXml, condbar, 0, m_pConditionState);
+    }
 }
 
 void CUIInventoryCellItem::OnAfterChild(CUIDragDropListEx* parent_list)
