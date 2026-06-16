@@ -92,6 +92,13 @@ public:
     float m_fUD_ShootingFactor; // Фактор вертикального сдвига худа при стрельбе [-1; +1]
     float m_fBACKW_ShootingFactor; // Фактор сдвига худа в сторону лица при стрельбе [0; +1]
 
+	xr_vector<shared_str> bullets_bones; // Mortan (BaS, STCoP)
+    int bullet_cnt;
+    int last_hide_bullet;
+    bool bHasBulletsToHide;
+
+    virtual void HUD_VisualBulletUpdate(bool force = false, int force_idx = -1);
+
 public:
     virtual bool can_kill() const;
     virtual CInventoryItem* can_kill(CInventory* inventory) const;

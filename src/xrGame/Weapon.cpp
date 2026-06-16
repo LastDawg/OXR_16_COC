@@ -150,6 +150,9 @@ CWeapon::CWeapon()
     m_fUD_ShootingFactor = 0.f;
     m_fBACKW_ShootingFactor = 0.f;
 
+	bHasBulletsToHide = false;
+    bullet_cnt = 0;
+
     m_fFactor = 0.0f;
 }
 
@@ -2461,8 +2464,36 @@ u32 CWeapon::Cost() const
     return res;
 }
 
-void CWeapon::OnBulletHit()
+void CWeapon::HUD_VisualBulletUpdate(bool force, int force_idx)
 {
-    if (!fis_zero(conditionDecreasePerShotOnHit))
-        ChangeCondition(-conditionDecreasePerShotOnHit);
+    if (!bHasBulletsToHide)
+        return;
+
+    /*if (m_pInventory->ModifyFrame() <= m_BriefInfo_CalcFrame)
+    {
+        return;
+    }*/
+
+    if (!GetHUDmode())
+        return;
+
+    // return;
+
+    bool hide = true;
+
+    // Msg("Print %d bullets", last_hide_bullet);
+
+    if (last_hide_bullet == bullet_cnt || force)
+        hide = false;
+
+    for (u8 b = 0; b < bullet_cnt; b++)
+    {
+        u16 bone_id = HudItemData()->m_model->LL_BoneID(bullets_bones[b]);
+
+        if (bone_id != BI_NONE)
+            HudItemData()->set_bone_visible(bullets_bones[b], !hide);
+
+        if (b == last_hide_bullet)
+            hide = false;
+    }
 }
