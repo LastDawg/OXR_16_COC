@@ -2464,6 +2464,12 @@ u32 CWeapon::Cost() const
     return res;
 }
 
+void CWeapon::OnBulletHit()
+{
+    if (!fis_zero(conditionDecreasePerShotOnHit))
+        ChangeCondition(-conditionDecreasePerShotOnHit);
+}
+
 void CWeapon::HUD_VisualBulletUpdate(bool force, int force_idx)
 {
     if (!bHasBulletsToHide)
