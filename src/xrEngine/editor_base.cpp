@@ -103,24 +103,25 @@ void ide::ShowMain()
             }
             ImGui::EndMenu();
         }
-#ifndef MASTER_GOLD
-        if (ImGui::BeginMenu("Tools"))
+        if (strstr(Core.Params, "-dbg") || strstr(Core.Params, "-dev"))
         {
-            if (m_tool_added)
+            if (ImGui::BeginMenu("Tools"))
             {
-                std::sort(m_tools.begin(), m_tools.end(), [](const ide_tool* left, const ide_tool* right)
+                if (m_tool_added)
                 {
-                    return xr_strcmp(left->tool_name(), right->tool_name()) < 0;
-                });
-                m_tool_added = false;
+                    std::sort(m_tools.begin(), m_tools.end(), [](const ide_tool* left, const ide_tool* right)
+                    {
+                        return xr_strcmp(left->tool_name(), right->tool_name()) < 0;
+                    });
+                    m_tool_added = false;
+                }
+                for (const auto& tool : m_tools)
+                {
+                    ImGui::MenuItem(tool->tool_name(), nullptr, &tool->get_open_state());
+                }
+                ImGui::EndMenu();
             }
-            for (const auto& tool : m_tools)
-            {
-                ImGui::MenuItem(tool->tool_name(), nullptr, &tool->get_open_state());
-            }
-            ImGui::EndMenu();
         }
-#endif
         if (ImGui::BeginMenu("About"))
         {
 #ifndef MASTER_GOLD

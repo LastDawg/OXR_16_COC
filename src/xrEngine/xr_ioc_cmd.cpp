@@ -689,10 +689,14 @@ public:
 class CCC_Editor : public IConsole_Command
 {
 public:
-    CCC_Editor(pcstr name) : IConsole_Command(name) { bEmptyArgsHandled = true; }
+CCC_Editor(pcstr name) : IConsole_Command(name) { bEmptyArgsHandled = true; }
     void Execute(pcstr args) override
     {
-        Device.editor().SetState(xray::editor::ide::visible_state::full);
+        // Проверяем текущее состояние: если открыт - скрываем, если скрыт - открываем
+        if (Device.editor().GetState() == xray::editor::ide::visible_state::full)
+            Device.editor().SetState(xray::editor::ide::visible_state::hidden);
+        else
+            Device.editor().SetState(xray::editor::ide::visible_state::full);
     }
 };
 

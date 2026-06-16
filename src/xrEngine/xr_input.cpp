@@ -280,6 +280,27 @@ void CInput::KeyUpdate()
         return;
     }
 
+    static bool lalt_was_pressed = false;
+    if (keyboardState[SDL_SCANCODE_LALT])
+    {
+        if (!lalt_was_pressed)
+        {
+            lalt_was_pressed = true;
+            
+            if (strstr(Core.Params, "-dbg"))
+            {
+                if (Device.b_is_Ready)
+                    Device.editor().SwitchToNextState();
+                
+                keyboardState[SDL_SCANCODE_LALT] = false; 
+            }
+        }
+    }
+    else
+    {
+        lalt_was_pressed = false; // Сбрасываем, когда отпустили кнопку
+    }
+
     if (count)
         SetCurrentInputType(KeyboardMouse);
 
