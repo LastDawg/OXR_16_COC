@@ -2200,13 +2200,13 @@ void CWeaponMagazined::OnMotionMark(u32 state, const motion_marks& M)
     inherited::OnMotionMark(state, M);
     if (state == eReload)
     {
-        u8 ammo_type = m_ammoType.type1;
+        u8 ammo_type = iAmmoElapsed;
         int ae = CheckAmmoBeforeReload(ammo_type);
 
-        if (ammo_type == m_ammoType.type1)
+        if (ammo_type == iAmmoElapsed)
         {
-            Msg("Ammo elapsed: %d", m_ammoElapsed.type1);
-            ae += m_ammoElapsed.type1;
+            Msg("Ammo elapsed: %d", iAmmoElapsed);
+            ae += iAmmoElapsed;
         }
 
         last_hide_bullet = ae >= bullet_cnt ? bullet_cnt : bullet_cnt - ae - 1;
