@@ -94,6 +94,11 @@ namespace DynamicHudGlass
 			DynamicHudGlassEnabled = false;
 		}
     // 1. ОПРЕДЕЛЯЕМ ТИП ПНВ (Берем самый лучший/совершенный из всех надетых)        
-
+    if (torch) 
+		NightVisionType = std::max(NightVisionType, (int)torch->m_NightVisionType);
+	if (outfit) 
+		NightVisionType = std::max(NightVisionType, (int)outfit->m_NightVisionType);
+	if (helmet) 
+		NightVisionType = std::max(NightVisionType, (int)helmet->m_NightVisionType);
 	}
 }
