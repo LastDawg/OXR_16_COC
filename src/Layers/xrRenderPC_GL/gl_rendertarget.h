@@ -35,6 +35,8 @@ public:
     IBlender* b_hud_blood{};
     IBlender* b_hud_power{};
     IBlender* b_hud_bleeding{};
+    IBlender* b_nightvision{};
+    IBlender* b_pp_bloom{};
 
 #ifdef DEBUG
     struct dbg_line_t
@@ -76,6 +78,17 @@ public:
     ref_rt rt_LUM_pool[CHWCaps::MAX_GPUS * 2]; // 1xfp32,1x1,		exp-result -> scaler
     ref_texture t_LUM_src; // source
     ref_texture t_LUM_dest; // destination & usage for current frame
+
+	ref_rt rt_blur_h_2;
+    ref_rt rt_blur_2;
+
+    ref_rt rt_blur_h_4;
+    ref_rt rt_blur_4;
+
+    ref_rt rt_blur_h_8;
+    ref_rt rt_blur_8;
+
+    ref_rt rt_pp_bloom;
 
     // smap
     ref_rt rt_smap_surf; // 32bit,		color

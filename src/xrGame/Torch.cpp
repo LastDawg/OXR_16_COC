@@ -27,6 +27,8 @@ static Fvector TORCH_OFFSET = {-0.2f, +0.1f, -0.3f};
 static const Fvector OMNI_OFFSET = {-0.2f, +0.1f, -0.1f};
 static const float OPTIMIZATION_DISTANCE = 100.f;
 
+ENGINE_API extern int ps_r__ShaderNVG;
+
 CTorch::CTorch()
     : fBrightness(1.f), lanim(nullptr), guid_bone(BI_NONE),
       m_delta_h(0), m_switched_on(false),
@@ -49,6 +51,8 @@ CTorch::CTorch()
         TORCH_OFFSET.x = 0;
         TORCH_OFFSET.z = 0;
     }
+
+    m_NightVisionType = 0;
 }
 
 CTorch::~CTorch()
@@ -82,6 +86,8 @@ void CTorch::Load(LPCSTR section)
         m_sounds.LoadSound(section, "snd_turn_on", "sndTurnOn", false, SOUND_TYPE_ITEM_USING);
     if (pSettings->line_exist(section, "snd_turn_off"))
         m_sounds.LoadSound(section, "snd_turn_off", "sndTurnOff", false, SOUND_TYPE_ITEM_USING);
+
+    m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, section, "night_vision_type", 0);
 }
 
 void CTorch::SwitchNightVision()
@@ -103,20 +109,24 @@ void CTorch::SwitchNightVision(bool vision_on, bool use_sounds)
     {
         return;
     }
+
     if (!m_night_vision)
         m_night_vision = xr_new<CNightVisionEffector>(cNameSect());
+
+    bool bIsActiveNow = m_night_vision->IsActive();
 
     LPCSTR disabled_names = pSettings->r_string(cNameSect(), "disabled_maps");
     pcstr curr_map = Level().name().c_str();
     u32 cnt = _GetItemCount(disabled_names);
-    bool b_allow = true;
+    bool b_allow_maps = true;
     string512 tmp;
+
     for (u32 i = 0; i < cnt; ++i)
     {
         _GetItem(disabled_names, i, tmp);
         if (0 == xr_stricmp(tmp, curr_map))
         {
-            b_allow = false;
+            b_allow_maps = false;
             break;
         }
     }
@@ -124,39 +134,56 @@ void CTorch::SwitchNightVision(bool vision_on, bool use_sounds)
     CHelmet* pHelmet = smart_cast<CHelmet*>(pA->inventory().ItemFromSlot(HELMET_SLOT));
     CCustomOutfit* pOutfit = smart_cast<CCustomOutfit*>(pA->inventory().ItemFromSlot(OUTFIT_SLOT));
 
-    if (pHelmet && pHelmet->m_NightVisionSect.size() && !b_allow)
+    if (!b_allow_maps)
     {
         m_night_vision->OnDisabled(pA, use_sounds);
         return;
     }
-    else if (pOutfit && pOutfit->m_NightVisionSect.size() && !b_allow)
-    {
-        m_night_vision->OnDisabled(pA, use_sounds);
-        return;
-    }
-
-    bool bIsActiveNow = m_night_vision->IsActive();
 
     if (m_bNightVisionOn)
     {
         if (!bIsActiveNow)
         {
+            int best_nv_type = 0;
+            shared_str best_nv_sect = "";
+
+            if (m_bNightVisionEnabled)
+            {
+                best_nv_type = m_NightVisionType;
+                best_nv_sect = cNameSect();
+            }
+
+            if (pOutfit && pOutfit->m_NightVisionSect.size())
+            {
+                if (pOutfit->m_NightVisionType >= best_nv_type)
+                {
+                    best_nv_type = pOutfit->m_NightVisionType;
+                    best_nv_sect = pOutfit->m_NightVisionSect;
+                }
+            }
+
             if (pHelmet && pHelmet->m_NightVisionSect.size())
             {
-                m_night_vision->Start(pHelmet->m_NightVisionSect, pA, use_sounds);
-                return;
+                if (pHelmet->m_NightVisionType >= best_nv_type)
+                {
+                    best_nv_type = pHelmet->m_NightVisionType;
+                    best_nv_sect = pHelmet->m_NightVisionSect;
+                }
             }
-            else if (pOutfit && pOutfit->m_NightVisionSect.size())
+
+            if (best_nv_sect.size())
             {
-                m_night_vision->Start(pOutfit->m_NightVisionSect, pA, use_sounds);
-                return;
+                m_night_vision->Start(best_nv_sect, pA, use_sounds);
             }
-            m_bNightVisionOn = false; // in case if there is no nightvision in helmet and outfit
+            else
+            {
+                m_bNightVisionOn = false;
+            }
         }
     }
     else
     {
-        if (bIsActiveNow)
+        if (bIsActiveNow || ps_r__ShaderNVG == 1)
         {
             m_night_vision->Stop(100000.0f, use_sounds);
         }
@@ -506,14 +533,18 @@ CNightVisionEffector::CNightVisionEffector(const shared_str& section) : m_pActor
     m_sounds.LoadSound(section.c_str(), "snd_night_vision_on", "NightVisionOnSnd", false, SOUND_TYPE_ITEM_USING);
     m_sounds.LoadSound(section.c_str(), "snd_night_vision_off", "NightVisionOffSnd", false, SOUND_TYPE_ITEM_USING);
     m_sounds.LoadSound(section.c_str(), "snd_night_vision_idle", "NightVisionIdleSnd", true, SOUND_TYPE_ITEM_USING);
-    m_sounds.LoadSound(
-        section.c_str(), "snd_night_vision_broken", "NightVisionBrokenSnd", false, SOUND_TYPE_ITEM_USING);
+    m_sounds.LoadSound(section.c_str(), "snd_night_vision_broken", "NightVisionBrokenSnd", false, SOUND_TYPE_ITEM_USING);
 }
 
 void CNightVisionEffector::Start(const shared_str& sect, CActor* pA, bool play_sound)
 {
     m_pActor = pA;
-    AddEffector(m_pActor, effNightvision, sect);
+
+    bool render_ver_allowed = GEnv.Render->GenerationIsR2OrHigher();
+
+    if (ps_r__ShaderNVG == 0 || !render_ver_allowed)
+        AddEffector(pA, effNightvision, sect);
+
     if (play_sound)
     {
         PlaySounds(eStartSound);
@@ -525,16 +556,33 @@ void CNightVisionEffector::Stop(const float factor, bool play_sound)
 {
     if (!m_pActor)
         return;
+
     CEffectorPP* pp = m_pActor->Cameras().GetPPEffector((EEffectorPPType)effNightvision);
+    bool render_ver_allowed = GEnv.Render->GenerationIsR2OrHigher();
+
     if (pp)
     {
         pp->Stop(factor);
-        if (play_sound)
-            PlaySounds(eStopSound);
-
-        m_sounds.StopSound("NightVisionOnSnd");
-        m_sounds.StopSound("NightVisionIdleSnd");
     }
+
+    if (play_sound)
+    {
+        m_sounds.StopSound("NightVisionIdleSnd");
+        m_sounds.StopSound("NightVisionOnSnd");
+
+        if (ps_r__ShaderNVG == 0 || !render_ver_allowed)
+            PlaySounds(eStopSound);
+    }
+}
+
+void CNightVisionEffector::StopOnlyEffector(const float factor)
+{
+    CActor* pActor = smart_cast<CActor*>(Level().CurrentControlEntity());
+    if (!pActor)
+        return;
+    CEffectorPP* pp = pActor->Cameras().GetPPEffector((EEffectorPPType)effNightvision);
+    if (pp)
+        pp->Stop(factor);
 }
 
 bool CNightVisionEffector::IsActive()

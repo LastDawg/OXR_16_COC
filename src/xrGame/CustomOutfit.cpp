@@ -22,6 +22,7 @@ CCustomOutfit::CCustomOutfit()
         m_HitTypeProtection[i] = 1.0f;
 
     m_b_HasGlass = false;
+    m_NightVisionType = 0;
 }
 
 bool CCustomOutfit::net_Spawn(CSE_Abstract* DC)
@@ -124,6 +125,7 @@ void CCustomOutfit::Load(LPCSTR section)
     m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", true));
 
     m_b_HasGlass = !!READ_IF_EXISTS(pSettings, r_bool, section, "has_glass", FALSE);
+    m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, section, "night_vision_type", 0);
 }
 
 void CCustomOutfit::ReloadBonesProtection()
@@ -468,6 +470,8 @@ bool CCustomOutfit::install_upgrade_impl(LPCSTR section, bool test)
 
     result |= process_if_exists(section, "artefact_count", &CInifile::r_u32, m_artefact_count, test);
     clamp(m_artefact_count, (u32)0, (u32)5);
+
+    result |= process_if_exists(section, "night_vision_type", &CInifile::r_u32, m_NightVisionType, test);
 
     return result;
 }

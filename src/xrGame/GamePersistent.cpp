@@ -18,6 +18,7 @@
 #include "Actor.h"
 #include "ActorCondition.h"
 #include "Spectator.h"
+#include "Torch.h"
 
 #include "xrUICore/XML/UITextureMaster.h"
 
@@ -840,6 +841,29 @@ void CGamePersistent::OnAssetsChanged()
 int CGamePersistent::GetHudGlassElement()
 {
 	return	(DynamicHudGlass::GetHudGlassElement());
+}
+
+int CGamePersistent::GetNightvisionType()
+{
+	return (DynamicHudGlass::GetNightvisionType());
+}
+
+bool CGamePersistent::GetActorNightvision()
+{
+    CActor* pActor = Actor();
+    if (!pActor) 
+        return false;
+
+    CInventoryItem* pItem = pActor->inventory().ItemFromSlot(TORCH_SLOT);
+    
+    if (!pItem)
+        return false;
+
+    CTorch* pTorch = smart_cast<CTorch*>(pItem);
+    if (!pTorch)
+        return false;
+
+    return pTorch->GetNightVisionStatus();
 }
 
 bool CGamePersistent::GetHudGlassEnabled()

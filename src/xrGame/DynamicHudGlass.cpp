@@ -12,24 +12,28 @@
 #include "CustomOutfit.h"
 #include "Actor.h"
 #include "Inventory.h"
+#include "Torch.h"
+#include <algorithm>
 
 namespace DynamicHudGlass
 {
 	bool DynamicHudGlassEnabled = false;
 	int	HudGlassElement = 0;
-	//int NightVisionType = 0;
+	int NightVisionType = 0;
 
 	void UpdateDynamicHudGlass()
 	{
+        NightVisionType = 0; 
+
 		CHelmet* helmet = smart_cast<CHelmet*>(Actor()->inventory().ItemFromSlot(HELMET_SLOT));
 		CCustomOutfit* outfit = smart_cast<CCustomOutfit*>(Actor()->inventory().ItemFromSlot(OUTFIT_SLOT));
+        CTorch* torch = smart_cast<CTorch*>(Actor()->inventory().ItemFromSlot(TORCH_SLOT));
 
 		if (helmet)
 		{
 			float condition = helmet->GetCondition();
 			HudGlassElement = 0;
 			bool HelmetHasGlass = helmet->m_b_HasGlass;
-			//NightVisionType = helmet->m_NightVisionType;
 
 			if (HelmetHasGlass)
 			{
@@ -60,7 +64,6 @@ namespace DynamicHudGlass
 			float condition = outfit->GetCondition();
 			bool OutfitHasGlass = outfit->m_b_HasGlass;
 			HudGlassElement = 0;
-			//NightVisionType = outfit->m_NightVisionType;
 
 			if (OutfitHasGlass)
 			{
@@ -90,5 +93,7 @@ namespace DynamicHudGlass
 			HudGlassElement = 0;
 			DynamicHudGlassEnabled = false;
 		}
+    // 1. ОПРЕДЕЛЯЕМ ТИП ПНВ (Берем самый лучший/совершенный из всех надетых)        
+
 	}
 }

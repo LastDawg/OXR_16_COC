@@ -5,6 +5,8 @@
 
 #define STENCIL_CULL 0
 
+ENGINE_API extern int ps_r__ShaderNVG;
+
 namespace xray::render::RENDER_NAMESPACE
 {
 
@@ -316,6 +318,16 @@ void CRenderTarget::phase_combine()
             phase_hud_power();
             phase_hud_bleeding();
         }
+    }
+
+	// Nightvision
+    if (!_menu_pp && g_pGamePersistent->GetActor())
+    {
+        bool NightVisionEnabled = g_pGamePersistent->GetActorNightvision();
+        bool IsActorAlive = g_pGamePersistent->GetActorAliveStatus();
+        int NightVisionType = g_pGamePersistent->GetNightvisionType();
+        if (IsActorAlive && NightVisionEnabled && NightVisionType > 0 && ps_r__ShaderNVG == 1)
+            phase_nightvision();
     }
 
     // Combine everything + perform AA

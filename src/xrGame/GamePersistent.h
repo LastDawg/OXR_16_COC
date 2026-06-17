@@ -107,6 +107,9 @@ public:
     virtual void OnAssetsChanged();
 
     int GetHudGlassElement();
+    int GetNightvisionType();
+
+    bool GetActorNightvision();
     bool GetHudGlassEnabled();
     bool GetActorAliveStatus();
     bool GetActor();

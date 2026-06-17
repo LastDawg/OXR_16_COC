@@ -47,6 +47,7 @@ public:
     void Switch();
     void Switch(bool light_on);
     bool torch_active() const;
+    u32 m_NightVisionType;
 
     virtual bool can_be_attached() const;
 
@@ -72,6 +73,8 @@ protected:
         eNightVisionActive = (1 << 1),
         eAttached = (1 << 2)
     };
+
+    IC int GetTorchNV_Type() const { return m_NightVisionType; }
 
 public:
     virtual bool use_parent_ai_locations() const { return (!H_Parent()); }
@@ -101,6 +104,7 @@ public:
     CNightVisionEffector(const shared_str& sect);
     void Start(const shared_str& sect, CActor* pA, bool play_sound = true);
     void Stop(const float factor, bool play_sound = true);
+    void StopOnlyEffector(const float factor);
     bool IsActive();
     void OnDisabled(CActor* pA, bool play_sound = true);
     void PlaySounds(EPlaySounds which);

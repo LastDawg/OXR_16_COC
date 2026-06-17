@@ -245,6 +245,9 @@ int ps_r2_wait_timeout = 500;
 float ps_r2_lt_smooth = 1.f; // 1.f
 float ps_r2_slight_fade = 0.5f; // 1.f
 
+Fvector4 ps_pp_bloom_thresh = {.7, .8f, .9f, .0f};
+Fvector4 ps_pp_bloom_weight = {.33f, .33f, .33f, .0f};
+
 //  x - min (0), y - focus (1.4), z - max (100)
 Fvector3 ps_r2_dof = Fvector3().set(-1.25f, 1.4f, 600.f);
 float ps_r2_dof_sky = 30; //    distance to sky
@@ -897,6 +900,11 @@ void xrRender_initconsole()
 
     CMD4(CCC_Float, "r2_slight_fade", &ps_r2_slight_fade, .2f, 1.f);
     CMD3(CCC_Token, "r2_smap_size", &ps_r2_smapsize, qsmapsize_token);
+
+	Fvector4 twb_min = {0.f, 0.f, 0.f, 0.f};
+    Fvector4 twb_max = {1.f, 1.f, 1.f, 1.f};
+    CMD4(CCC_Vector4, "r__bloom_weight", &ps_pp_bloom_weight, twb_min, twb_max);
+    CMD4(CCC_Vector4, "r__bloom_thresh", &ps_pp_bloom_thresh, twb_min, twb_max);
 
     Fvector tw_min, tw_max;
     tw_min.set(0, 0, 0);

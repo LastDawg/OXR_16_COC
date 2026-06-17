@@ -35,6 +35,8 @@ public:
     IBlender* b_hud_blood{};
     IBlender* b_hud_power{};
     IBlender* b_hud_bleeding{};
+    IBlender* b_nightvision{};
+    IBlender* b_pp_bloom{};
 
 #ifdef DEBUG
     struct dbg_line_t
@@ -83,6 +85,17 @@ public:
     ref_rt rt_smap_rain;
     ref_rt rt_smap_depth_minmax; //	is used for min/max sm
 
+	ref_rt rt_blur_h_2;
+    ref_rt rt_blur_2;
+
+    ref_rt rt_blur_h_4;
+    ref_rt rt_blur_4;
+
+    ref_rt rt_blur_h_8;
+    ref_rt rt_blur_8;
+
+    ref_rt rt_pp_bloom;
+
     //	Igor: for async screenshots
     ID3DTexture2D* t_ss_async; // 32bit		(r,g,b,a) is situated in the system memory
 
@@ -116,6 +129,8 @@ private:
     ref_shader s_hud_blood;
     ref_shader s_hud_power;
     ref_shader s_hud_bleeding;
+    ref_shader s_nightvision;
+    ref_shader s_pp_bloom;
 
     //	generate min/max
     ref_shader s_create_minmax_sm;
@@ -275,6 +290,8 @@ public:
     void phase_hud_blood();
     void phase_hud_power();
     void phase_hud_bleeding();
+    void phase_nightvision();
+    void phase_pp_bloom();
 
     void phase_smap_direct(CBackend& cmd_list, light *L, u32 sub_phase);
     void phase_smap_direct_tsh(CBackend& cmd_list, light *L, u32 sub_phase);

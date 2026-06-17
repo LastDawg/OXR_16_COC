@@ -24,6 +24,7 @@
     #include "Layers/xrRenderPC_R4/blender_hud_blood.h"
     #include "Layers/xrRenderPC_R4/blender_hud_stamina.h"
     #include "Layers/xrRenderPC_R4/blender_hud_bleeding.h"
+    #include "Layers/xrRenderPC_R4/blender_blur.h"
 #else
     #include "Layers/xrRenderPC_GL/blender_hud_mask.h"
     #include "Layers/xrRenderPC_GL/blender_hud_blood.h"
@@ -326,6 +327,17 @@ CRenderTarget::CRenderTarget()
         rt_Generic_1.create(r2_RT_generic1, w, h, D3DFMT_A8R8G8B8, 1);
         rt_Generic.create(r2_RT_generic, w, h, D3DFMT_A8R8G8B8, 1);
 
+        rt_blur_h_2.create(r2_RT_blur_h_2, u32(w / 2), u32(h / 2), D3DFMT_A8R8G8B8);
+        rt_blur_2.create(r2_RT_blur_2, u32(w / 2), u32(h / 2), D3DFMT_A8R8G8B8);
+
+        rt_blur_h_4.create(r2_RT_blur_h_4, u32(w / 4), u32(h / 4), D3DFMT_A8R8G8B8);
+        rt_blur_4.create(r2_RT_blur_4, u32(w / 4), u32(h / 4), D3DFMT_A8R8G8B8);
+
+        rt_blur_h_8.create(r2_RT_blur_h_8, u32(w / 8), u32(h / 8), D3DFMT_A8R8G8B8);
+        rt_blur_8.create(r2_RT_blur_8, u32(w / 8), u32(h / 8), D3DFMT_A8R8G8B8);
+
+        rt_pp_bloom.create(r2_RT_pp_bloom, w, h, D3DFMT_A8R8G8B8);
+
         if (!options.msaa)
         {
             rt_Generic_0_r = rt_Generic_0;
@@ -366,6 +378,14 @@ CRenderTarget::CRenderTarget()
     {
         CBlender_Hud_Bleeding b_hud_bleeding;
         s_hud_bleeding.create(&b_hud_bleeding, "r3" DELIMITER "hud_bleeding");
+    }
+    {
+        CBlender_nightvision b_nightvision;
+        s_nightvision.create(&b_nightvision, "r3" DELIMITER "nightvision");
+    }
+    {
+        CBlender_pp_bloom b_pp_bloom;
+        s_pp_bloom.create(&b_pp_bloom, "r3" DELIMITER "pp_bloom");
     }
     #else
     {
