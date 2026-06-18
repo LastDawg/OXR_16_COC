@@ -534,6 +534,7 @@ const Ivector2& CUIDragDropListEx::CellsSpacing() { return m_container->CellsSpa
 void CUIDragDropListEx::SetCellSize(const Ivector2 new_sz) { m_container->SetCellSize(new_sz); }
 void CUIDragDropListEx::SetCellsSpacing(const Ivector2& new_sz) { m_container->SetCellsSpacing(new_sz); }
 int CUIDragDropListEx::ScrollPos() { return m_vScrollBar->GetScrollPos(); }
+
 void CUIDragDropListEx::SetItem(CUICellItem* itm) // auto
 {
     if (m_container->AddSimilar(itm))
@@ -542,6 +543,17 @@ void CUIDragDropListEx::SetItem(CUICellItem* itm) // auto
     }
 
     Ivector2 dest_cell_pos = m_container->FindFreeCell(itm->GetGridSize());
+
+    if (dest_cell_pos.x == -1)
+    {
+        // Пытаемся достать секцию предмета для лога
+        PIItem inventory_item = (PIItem)itm->m_pData;
+        LPCSTR section = inventory_item ? inventory_item->object().cNameSect().c_str() : "unknown";
+        
+        Msg("! [Inventory Error] Item [%s] was NOT placed because container is full!", section);
+        
+        return; 
+    }
 
     SetItem(itm, dest_cell_pos);
 }
@@ -563,7 +575,13 @@ void CUIDragDropListEx::SetItem(CUICellItem* itm, Ivector2 cell_pos) // start at
 {
     if (m_container->AddSimilar(itm))
         return;
-    R_ASSERT(m_container->IsRoomFree(cell_pos, itm->GetGridSize()));
+    
+    // Заменяем R_ASSERT на проверку
+    if (!m_container->ValidCell(cell_pos) || !m_container->IsRoomFree(cell_pos, itm->GetGridSize()))
+    {
+        Msg("! [Inventory Error] Invalid cell placement for item at [%d, %d]", cell_pos.x, cell_pos.y);
+        return;
+    }
 
     m_container->PlaceItemAtPos(itm, cell_pos);
 
@@ -571,6 +589,7 @@ void CUIDragDropListEx::SetItem(CUICellItem* itm, Ivector2 cell_pos) // start at
     Register(itm);
     itm->SetOwnerList(this);
 }
+
 bool CUIDragDropListEx::CanSetItem(CUICellItem* itm)
 {
     if (m_container->HasFreeSpace(itm->GetGridSize()))
@@ -809,7 +828,13 @@ Ivector2 CUICellContainer::FindFreeCell(const Ivector2& _size)
                 if (IsRoomFree(tmp, _size))
                     return tmp;
 
-        R_ASSERT2(0, "there are no free room to place item");
+        // ВМЕСТО ВЫЛЕТА:
+        // Пишем в лог красным цветом (символ ! в начале)
+        Msg("! [Inventory Error] No room in list [%s] for item size [%d, %d]", 
+            m_pParentDragDropList->WindowName().c_str(), _size.x, _size.y);
+        
+        // Возвращаем "битую" координату
+        return Ivector2().set(-1, -1);
     }
     return tmp;
 }
@@ -1084,8 +1109,12 @@ void CUICellContainer::Draw()
                     select_mode = 1;
                 else if (ui_cell.m_item->m_select_armament)
                     select_mode = 3;
-                else if (ui_cell.m_item->m_select_equipped && g_inv_highlight_equipped)
-                    select_mode = 2;
+                else 
+                {
+                    PIItem iitem = static_cast<PIItem>(ui_cell.m_item->m_pData);
+                    if (iitem && iitem->m_pInventory && iitem->m_pInventory->ItemFromSlot(iitem->BaseSlot()) == iitem)
+                        select_mode = 3;
+                }
             }
 
             Fvector2 tp;

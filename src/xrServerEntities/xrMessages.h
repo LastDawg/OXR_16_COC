@@ -154,6 +154,8 @@ enum : u32
 
     GEG_PLAYER_USE_BOOSTER,
     GE_REQUEST_PLAYERS_INFO,
+
+    GE_TRADER_FLAGS,
 };
 
 enum EGameMessages : u32

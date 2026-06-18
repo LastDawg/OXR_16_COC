@@ -227,7 +227,7 @@ bool CUIActorMenu::OnItemDbClick(CUICellItem* itm)
             ToBag(itm, false);
         break;
     }
-    case iActorBag:
+case iActorBag:
     {
         if (m_currMenuMode == mmTrade)
         {
@@ -239,24 +239,30 @@ bool CUIActorMenu::OnItemDbClick(CUICellItem* itm)
             ToDeadBodyBag(itm, false);
             break;
         }
+
         if (m_currMenuMode != mmUpgrade && TryUseItem(itm))
         {
             break;
         }
+
         if (TryActiveSlot(itm))
         {
             break;
         }
+
         PIItem iitem_to_place = static_cast<PIItem>(itm->m_pData);
-        if (!m_pActorInvOwner->inventory().SlotIsPersistent(iitem_to_place->BaseSlot())
-            && m_pActorInvOwner->inventory().ItemFromSlot(iitem_to_place->BaseSlot()) == iitem_to_place)
+        u16 slot = iitem_to_place->BaseSlot();
+
+        if (!m_pActorInvOwner->inventory().SlotIsPersistent(slot) && 
+             m_pActorInvOwner->inventory().ItemFromSlot(slot) == iitem_to_place)
         {
             ToBag(itm, false);
         }
-        else if (!ToSlot(itm, false, iitem_to_place->BaseSlot()))
+
+        else if (!ToSlot(itm, false, slot))
         {
             if (!ToBelt(itm, false))
-                ToSlot(itm, true, iitem_to_place->BaseSlot());
+                ToSlot(itm, true, slot);
         }
         break;
     }

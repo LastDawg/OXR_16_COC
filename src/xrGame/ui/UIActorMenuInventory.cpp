@@ -247,8 +247,8 @@ void CUIActorMenu::OnInventoryAction(PIItem pItem, u16 action_type)
 {
     CUIDragDropListEx* all_lists[] =
     {
-        m_pLists[eInventoryBeltList], m_pLists[eInventoryKnifeList], m_pLists[eInventoryBinocularList], m_pLists[eInventoryPistolList], m_pLists[eInventoryAutomaticList],
-        m_pLists[eInventoryBackpackList], m_pLists[eInventoryOutfitList], m_pLists[eInventoryHelmetList], m_pLists[eInventoryDetectorList],
+        m_pLists[eInventoryBeltList], m_pLists[eInventoryKnifeList], m_pLists[eInventoryBinocularList], m_pLists[eInventoryBoltList], m_pLists[eInventoryTorchList], m_pLists[eInventoryPDAList], m_pLists[eInventoryPistolList], m_pLists[eInventoryAutomaticList],
+        m_pLists[eInventoryBackpackList], m_pLists[eInventoryGrenadeList], m_pLists[eInventoryOutfitList], m_pLists[eInventoryHelmetList], m_pLists[eInventoryDetectorList],
         m_pLists[eInventoryBagList], m_pLists[eTradeActorBagList], m_pLists[eTradeActorList]
     };
 
@@ -309,6 +309,17 @@ void CUIActorMenu::OnInventoryAction(PIItem pItem, u16 action_type)
         {
             if (lst_to_add)
             {
+                if (lst_to_add != m_pLists[eInventoryBagList])
+                {
+                    // Если в этом слоте УЖЕ есть хоть один предмет
+                    if (lst_to_add->ItemsCount() > 0)
+                    {
+                        // Просто выходим из функции. 
+                        // Мы не создаем иконку-дубликат и не ловим вылет "No room"
+                        return; 
+                    }
+                }
+
                 CUICellItem* itm = create_cell_item(pItem);
                 lst_to_add->SetItem(itm);
             }
@@ -474,8 +485,10 @@ void CUIActorMenu::InitInventoryContents(CUIDragDropListEx* pBagList, bool onlyB
         InitCellForSlot(ARTEFACT_SLOT);
     if (!m_pActorInvOwner->inventory().SlotIsPersistent(PDA_SLOT))
         InitCellForSlot(PDA_SLOT);
-    //if (!m_pActorInvOwner->inventory().SlotIsPersistent(TORCH_SLOT))
-    //    InitCellForSlot(TORCH_SLOT); // Alundaio: TODO find out why this crash when you unequip
+    if (!m_pActorInvOwner->inventory().SlotIsPersistent(BOLT_SLOT))
+        InitCellForSlot(BOLT_SLOT);
+    if (!m_pActorInvOwner->inventory().SlotIsPersistent(TORCH_SLOT))
+        InitCellForSlot(TORCH_SLOT);
 
     //for custom slots that exist past LAST_SLOT
     for (u16 i = SLOTS_COUNT; i <= m_pActorInvOwner->inventory().LastSlot(); ++i)
@@ -829,7 +842,7 @@ CUIDragDropListEx* CUIActorMenu::GetSlotList(u16 slot_idx)
 
     case GRENADE_SLOT: return m_pLists[eInventoryGrenadeList]; break;
 
-    case PDA_SLOT:
+    case PDA_SLOT: return m_pLists[eInventoryPDAList]; break;
 
     case TORCH_SLOT: return m_pLists[eInventoryTorchList]; break;
 

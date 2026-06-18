@@ -850,20 +850,7 @@ int CGamePersistent::GetNightvisionType()
 
 bool CGamePersistent::GetActorNightvision()
 {
-    CActor* pActor = Actor();
-    if (!pActor) 
-        return false;
-
-    CInventoryItem* pItem = pActor->inventory().ItemFromSlot(TORCH_SLOT);
-    
-    if (!pItem)
-        return false;
-
-    CTorch* pTorch = smart_cast<CTorch*>(pItem);
-    if (!pTorch)
-        return false;
-
-    return pTorch->GetNightVisionStatus();
+	return	(Actor()->GetNightVisionStatus());
 }
 
 bool CGamePersistent::GetHudGlassEnabled()

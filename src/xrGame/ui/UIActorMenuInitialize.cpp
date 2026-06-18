@@ -215,6 +215,8 @@ void CUIActorMenu::InitializeUniversal(CUIXml& uiXml)
         { eInventoryBoltList,      "dragdrop_bolt",            nullptr,               "bolt_slot_highlight",     nullptr,            true },
         { eInventoryTorchList,     "dragdrop_torch",           "progess_bar_torch",   "torch_slot_highlight",    nullptr,            true },
 
+        { eInventoryPDAList,       "dragdrop_pda",             "progess_bar_pda",     "pda_slot_highlight",      nullptr,            true },
+
         { eInventoryBagList,       "dragdrop_bag",             nullptr,               nullptr,                   nullptr,            true },
 
         { eTradeActorList,         "dragdrop_actor_trade",     nullptr,               nullptr,                   nullptr,            true },
@@ -240,6 +242,8 @@ void CUIActorMenu::InitializeUniversal(CUIXml& uiXml)
         list = UIHelper::CreateDragDropListEx(uiXml, section, this, required);
         if (!list)
             continue;
+
+        list->SetWindowName(section); 
 
         if (conditionIndicator)
         {
@@ -547,6 +551,7 @@ void CUIActorMenu::InitCallbacks()
     BindDragDropListEvents(m_pLists[eInventoryBoltList]);
     BindDragDropListEvents(m_pLists[eInventoryGrenadeList]);
     BindDragDropListEvents(m_pLists[eInventoryTorchList]);
+    BindDragDropListEvents(m_pLists[eInventoryPDAList]);
 
     BindDragDropListEvents(m_pLists[eInventoryBagList]);
 

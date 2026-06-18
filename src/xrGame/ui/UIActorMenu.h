@@ -99,6 +99,7 @@ protected:
         eInventoryGrenadeList,
         eInventoryBoltList,
         eInventoryTorchList,
+        eInventoryPDAList,
 
         eInventoryBagList,
 

@@ -60,6 +60,8 @@ class CActorStatisticMgr;
 
 class CLocationManager;
 
+class CNightVisionEffector;
+
 class CActor : public CEntityAlive,
                public IInputReceiver,
                public Feel::Touch,
@@ -723,7 +725,6 @@ public:
     virtual bool InventoryAllowSprint();
     virtual void OnNextWeaponSlot();
     virtual void OnPrevWeaponSlot();
-    void SwitchNightVision();
     void SwitchTorch();
 
 #ifndef MASTER_GOLD
@@ -804,6 +805,17 @@ private:
 
 public:
     IC u32 get_state() const { return this->mstate_real; }
+
+public:
+    void SwitchNightVision(bool light_on, bool use_sounds = true, bool send_event = true);
+    bool GetNightVisionStatus() { return m_bNightVisionOn; }
+    void SetNightVisionAllowed(bool bAllow) { m_bNightVisionAllow = bAllow; }
+    CNightVisionEffector* GetNightVision() { return m_night_vision; }
+
+protected:
+    bool m_bNightVisionOn;
+    bool m_bNightVisionAllow;
+    CNightVisionEffector* m_night_vision;
 
 private:
     DECLARE_SCRIPT_REGISTER_FUNCTION(CGameObject);

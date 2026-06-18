@@ -41,6 +41,8 @@ CInventoryOwner::CInventoryOwner()
 {
     EnableTalk();
     EnableTrade();
+
+    m_trader_flags.zero();
 }
 
 IFactoryObject* CInventoryOwner::_construct()
@@ -132,6 +134,8 @@ bool CInventoryOwner::net_Spawn(CSE_Abstract* DC)
 
         m_deadbody_can_take = pTrader->m_deadbody_can_take;
         m_deadbody_closed = pTrader->m_deadbody_closed;
+
+        m_trader_flags.assign(pTrader->m_trader_flags.get());
     }
     else
     {
