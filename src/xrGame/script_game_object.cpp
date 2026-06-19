@@ -45,6 +45,7 @@
 #include "UIGameCustom.h"
 #include "ui/UIActorMenu.h"
 #include "InventoryBox.h"
+#include "PDA.h"
 
 class CScriptBinderObject;
 
@@ -472,8 +473,7 @@ float CScriptGameObject::GetCondition() const
     CInventoryItem* inventory_item = smart_cast<CInventoryItem*>(&object());
     if (!inventory_item)
     {
-        GEnv.ScriptEngine->script_log(
-            LuaMessageType::Error, "CSciptEntity : cannot access class member GetCondition!");
+        GEnv.ScriptEngine->script_log(LuaMessageType::Error, "CSciptEntity : cannot access class member GetCondition!");
         return (false);
     }
     return (inventory_item->GetCondition());
@@ -484,12 +484,36 @@ void CScriptGameObject::SetCondition(float val)
     CInventoryItem* inventory_item = smart_cast<CInventoryItem*>(&object());
     if (!inventory_item)
     {
-        GEnv.ScriptEngine->script_log(
-            LuaMessageType::Error, "CSciptEntity : cannot access class member SetCondition!");
+        GEnv.ScriptEngine->script_log(LuaMessageType::Error, "CSciptEntity : cannot access class member SetCondition!");
         return;
     }
     val -= inventory_item->GetCondition();
     inventory_item->ChangeCondition(val);
+}
+
+// RTT PDA
+float CScriptGameObject::GetPsyFactor() const
+{
+    CPda* pda = smart_cast<CPda*>(&object());
+    if (!pda)
+    {
+        GEnv.ScriptEngine->script_log(LuaMessageType::Error, "CSciptEntity : cannot access class member GetPsyFactor!");
+        return 0.f;
+    }
+    return (pda->m_psy_factor);
+}
+
+void CScriptGameObject::SetPsyFactor(float val)
+{
+    CPda* pda = smart_cast<CPda*>(&object());
+    if (!pda)
+    {
+        GEnv.ScriptEngine->script_log(LuaMessageType::Error, "CSciptEntity : cannot access class member SetPsyFactor!");
+        return;
+    }
+    pda->m_psy_factor = val;
+
+    clamp(pda->m_psy_factor, 0.0f, 1.0f);
 }
 
 void CScriptGameObject::eat(CScriptGameObject* item)

@@ -131,6 +131,8 @@ void CInventoryItem::Load(LPCSTR section)
         m_fControlInertionFactor = g_normalize_mouse_sens ? 1.0f : pSettings->read_if_exists<float>(section, "control_inertion_factor", 1.0f);
     }
     m_icon_name = READ_IF_EXISTS(pSettings, r_string, section, "icon_name", NULL);
+
+    m_fLowestBatteryCharge = READ_IF_EXISTS(pSettings, r_float, section, "power_critical", .03f);
 }
 
 void CInventoryItem::ReloadNames()

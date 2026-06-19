@@ -89,6 +89,7 @@ public:
     ref_rt rt_blur_8;
 
     ref_rt rt_pp_bloom;
+    ref_rt rt_ui_pda; // RTT PDA
 
     // smap
     ref_rt rt_smap_surf; // 32bit,		color

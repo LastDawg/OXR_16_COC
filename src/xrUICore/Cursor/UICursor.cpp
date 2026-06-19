@@ -68,7 +68,7 @@ void CUICursor::OnRender()
         return;
 #ifdef DEBUG
     VERIFY(last_render_frame != Device.dwFrame);
-    last_render_frame = Device.dwFrame;
+    //last_render_frame = Device.dwFrame;
 
     if (bDebug)
     {
@@ -82,9 +82,15 @@ void CUICursor::OnRender()
     }
 #endif
 
+	u32 curFrame = Device.dwFrame;
+    if (curFrame == last_render_frame)
+        return;
+
     m_static->SetWndPos(vPos);
     m_static->Update();
     m_static->Draw();
+
+	last_render_frame = curFrame;
 }
 
 void CUICursor::SetUICursorPosition(Fvector2 pos)

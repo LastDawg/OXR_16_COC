@@ -197,6 +197,17 @@ public:
     ICF u32 GameType() { return m_game_params.m_e_game_type; };
     virtual void DumpStatistics(class IGameFont& font, class IPerformanceAlert* alert);
     virtual bool CanBePaused() { return true; }
+
+	struct devices_data
+    {
+        float pda_display_factor;
+        float pda_psy_influence;
+        float pda_displaybrightness;
+        float device_global_psy_influence;
+        float device_psy_zone_influence;
+        float device_radiation_zone_influence;
+        float nightvision_lum_factor;
+    } devices_shader_data;
 };
 
 class IMainMenu

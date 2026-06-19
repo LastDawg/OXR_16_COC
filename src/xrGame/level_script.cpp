@@ -617,6 +617,28 @@ u32 g_get_target_element()
 	return 0;
 }
 
+float get_devices_psy_factor()
+{
+	if (Actor())
+		return Actor()->GetDevicesPsyFactor();
+
+	Msg("![get_devices_psy_factor]: Actor not found!");
+	return 0;
+}
+
+void set_devices_psy_factor(float psy_factor)
+{
+	clamp(psy_factor, 0.0f, 1.0f);
+
+	if (Actor())
+	{
+		Actor()->SetDevicesPsyFactor(psy_factor);
+		return;
+	}
+
+	Msg("![set_devices_psy_factor]: Actor not found!");
+}
+
 u8 get_active_cam()
 {
     CActor* actor = smart_cast<CActor*>(Level().CurrentViewEntity());
@@ -965,6 +987,10 @@ void CLevel::script_register(lua_State* luaState)
         def("translate_string", &translate_string),
         def("reload_language", +[]() { StringTable().ReloadLanguage(); }),
         def("log_stack_trace", &xrDebug::LogStackTrace),
+
+		def("get_devices_psy_factor", &get_devices_psy_factor),
+		def("set_devices_psy_factor", &set_devices_psy_factor),
+
         def("jump_to_level", +[](pcstr level_name)
         {
             if (!ai().game_graph().header().level_exist(level_name))

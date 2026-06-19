@@ -401,7 +401,7 @@ void CActor::Load(LPCSTR section)
     float AirControlParam = pSettings->r_float(section, "air_control_param");
     character_physics_support()->movement()->SetAirControlParam(AirControlParam);
 
-    m_fPickupInfoRadius = pSettings->r_float(section, "pickup_info_radius");
+    m_fPickupInfoRadius = READ_IF_EXISTS(pSettings, r_float, section, "pickup_info_radius", 0.0f);
 
     m_fFeelGrenadeRadius = pSettings->read_if_exists<float>(section, "feel_grenade_radius", 10.0f);
     m_fFeelGrenadeTime = pSettings->read_if_exists<float>(section, "feel_grenade_time", 1.0f);

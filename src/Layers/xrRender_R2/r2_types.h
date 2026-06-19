@@ -64,6 +64,8 @@ namespace xray::render::RENDER_NAMESPACE
 #define     r2_RT_blur_h_8      "$user$blur_h_8"
 #define     r2_RT_blur_8        "$user$blur_8"
 
+#define     r2_RT_ui            "$user$ui" // RTT PDA
+
 #define     r2_RT_pp_bloom      "$user$pp_bloom"
 
 #define     r2_jitter           "$user$jitter_"     // --- dither

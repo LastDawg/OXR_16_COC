@@ -202,6 +202,30 @@ private:
     xr_vector<u16> m_ancors;
     attachable_hud_item* m_attached_items[2]{};
     xr_unordered_map<shared_str, attachable_hud_item*> m_pool;
+
+    // RTT PDA
+	static void Thumb0Callback(CBoneInstance* B);
+    static void Thumb01Callback(CBoneInstance* B);
+    static void Thumb02Callback(CBoneInstance* B);
+
+public:
+    Fvector target_thumb0rot, target_thumb01rot, target_thumb02rot;
+    Fvector thumb0rot, thumb01rot, thumb02rot;
+    u8 script_anim_part;
+
+    void reset_thumb(bool bForce)
+    {
+        if (bForce)
+        {
+            thumb0rot.set(0.f, 0.f, 0.f);
+            thumb01rot.set(0.f, 0.f, 0.f);
+            thumb02rot.set(0.f, 0.f, 0.f);
+        }
+
+        target_thumb0rot.set(0.f, 0.f, 0.f);
+        target_thumb01rot.set(0.f, 0.f, 0.f);
+        target_thumb02rot.set(0.f, 0.f, 0.f);
+    }
 };
 
 extern player_hud* g_player_hud;

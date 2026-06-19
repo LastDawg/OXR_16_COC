@@ -297,15 +297,22 @@ void CUIMainIngameWnd::Draw()
 
     UIMotionIcon->SetNoise((s16)(0xffff & iFloor(pActor->m_snd_noise * 100.0f)));
 
-    UIMotionIcon->Draw();
+	CInventoryOwner* pInvOwner = smart_cast<CInventoryOwner*>(Level().CurrentEntity());
+    CActor* pActorOwner = smart_cast<CActor*>(pInvOwner);
+    CPda* pda = pActorOwner->GetPDA();
 
-    UIZoneMap->visible = true;
-    UIZoneMap->Render();
+    if (pInvOwner && pActorOwner && pda && pda->GetCondition() > 0.0)
+    {
+        UIZoneMap->visible = true;
+        UIZoneMap->Render();
 
-    bool tmp = UIMotionIcon->IsShown();
-    UIMotionIcon->Show(false);
+        UIMotionIcon->Draw();
+        bool tmp = UIMotionIcon->IsShown();
+        UIMotionIcon->Show(false);
+        UIMotionIcon->Show(tmp);
+    }
+
     CUIWindow::Draw();
-    UIMotionIcon->Show(tmp);
 
     RenderQuickInfos();
 }

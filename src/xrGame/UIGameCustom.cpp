@@ -14,6 +14,7 @@
 #include "Actor.h"
 #include "Inventory.h"
 #include "game_cl_base.h"
+#include "PDA.h"
 
 #include "ui/UICellItem.h" //Alundaio
 //#include "script_game_object.h" //Alundaio
@@ -91,6 +92,7 @@ void CUIGameCustom::Render()
     if (pEntity)
     {
         CActor* pActor = smart_cast<CActor*>(pEntity);
+        CPda* pda = pActor->GetPDA();
         if (pActor && pActor->HUDview() && pActor->g_Alive() &&
             psHUD_Flags.is(HUD_WEAPON | HUD_WEAPON_RT | HUD_WEAPON_RT2))
         {
@@ -103,8 +105,16 @@ void CUIGameCustom::Render()
                     item->render_item_ui();
             }
         }
-        if (GameIndicatorsShown() && psHUD_Flags.is(HUD_DRAW | HUD_DRAW_RT))
-            UIMainIngameWnd->Draw();
+        if (pda)
+        {
+            if (GameIndicatorsShown() && psHUD_Flags.is(HUD_DRAW | HUD_DRAW_RT) && !pda->m_bZoomed)
+                UIMainIngameWnd->Draw();
+        }
+        else
+        {
+            if (GameIndicatorsShown() && psHUD_Flags.is(HUD_DRAW | HUD_DRAW_RT))
+                UIMainIngameWnd->Draw();
+        }
     }
     m_pMessagesWnd->Draw();
     DoRenderDialogs();
@@ -167,7 +177,10 @@ bool CUIGameCustom::ShowActorMenu()
     }
     else
     {
-        HidePdaMenu();
+        if (!psActorFlags.test(AF_3D_PDA))
+            HidePdaMenu();
+
+        // HidePdaMenu();
         auto actor = smart_cast<CInventoryOwner*>(Level().CurrentViewEntity());
         VERIFY(actor);
         ActorMenu->SetActor(actor);

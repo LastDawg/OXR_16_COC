@@ -19,6 +19,7 @@ class CUIRankingWnd;
 class CUILogsWnd;
 class CUIAnimatedStatic;
 class UIHint;
+class CUIProgressBar;
 
 class CUIPdaWnd final : public CUIDialogWnd
 {
@@ -41,6 +42,12 @@ protected:
 
     UIHint* m_hint_wnd;
 
+    u32 dwPDAFrame;
+
+    CUIProgressBar* m_battery_bar;
+
+    bool bButtonL, bButtonR;
+
 public:
     // Поддиалоги PDA
     CUIMapWnd* pUIMapWnd;
@@ -50,6 +57,7 @@ public:
     CUIRankingWnd* pUIRankingWnd;
     CUILogsWnd* pUILogsWnd;
 
+    Frect m_cursor_box;
     virtual void Reset();
 
 public:
@@ -63,11 +71,9 @@ public:
     virtual void Draw();
     virtual void Update();
     virtual void Show(bool status);
-    virtual bool OnMouseAction(float x, float y, EUIMessages mouse_action)
-    {
-        CUIDialogWnd::OnMouseAction(x, y, mouse_action);
-        return true;
-    } // always true because StopAnyMove() == false
+    virtual bool OnMouseAction(float x, float y, EUIMessages mouse_action);
+    void MouseMovement(float x, float y);
+    virtual void Enable(bool status);
     virtual bool OnKeyboardAction(int dik, EUIMessages keyboard_action);
     bool OnControllerAction(int axis, const ControllerAxisState& state, EUIMessages controller_action) override;
 
@@ -90,6 +96,23 @@ public:
     bool NeedCursor() const override;
     void UpdatePda();
     void UpdateRankingWnd();
+    void ResetCursor();
+    float m_power;
+    Fvector2 last_cursor_pos;
+
+    Fvector target_joystickrot, joystickrot;
+    float target_buttonpress, buttonpress;
+
+    void ResetJoystick(bool bForce)
+    {
+        if (bForce)
+        {
+            joystickrot.set(0.f, 0.f, 0.f);
+            buttonpress = 0.f;
+        }
+        target_joystickrot.set(0.f, 0.f, 0.f);
+        target_buttonpress = 0.f;
+    }
 
     pcstr GetDebugType() override { return "CUIPdaWnd"; }
 };

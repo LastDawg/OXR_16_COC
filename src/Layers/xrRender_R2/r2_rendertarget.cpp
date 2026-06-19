@@ -338,6 +338,8 @@ CRenderTarget::CRenderTarget()
 
         rt_pp_bloom.create(r2_RT_pp_bloom, w, h, D3DFMT_A8R8G8B8);
 
+        rt_ui_pda.create(r2_RT_ui, w, h, D3DFMT_A8R8G8B8); // RTT PDA
+
         if (!options.msaa)
         {
             rt_Generic_0_r = rt_Generic_0;

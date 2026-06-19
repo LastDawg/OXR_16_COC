@@ -2161,6 +2161,12 @@ void CCC_RegisterCommands()
 
     CMD3(CCC_Mask, "g_multi_item_pickup", &psActorFlags, AF_MULTI_ITEM_PICKUP);
 
+    // RTT PDA
+    psActorFlags.set(AF_3D_PDA, TRUE);
+	CMD3(CCC_Mask, "g_3d_pda", &psActorFlags, AF_3D_PDA);
+    psActorFlags.set(AF_SIMPLE_PDA, TRUE);
+    CMD3(CCC_Mask, "g_simple_pda", &psActorFlags, AF_SIMPLE_PDA);
+
     // alife
 #ifdef DEBUG
     CMD1(CCC_ALifePath, "al_path"); // build path

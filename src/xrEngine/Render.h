@@ -244,6 +244,12 @@ public:
         }
     };
 
+	enum RRT
+    {
+        rtPDA = 1,
+        //rtSVP,
+    };
+
 public:
     // options
     bool m_hq_skinning;
@@ -344,6 +350,9 @@ public:
 
     virtual void Screenshot(ScreenshotMode mode = SM_NORMAL, pcstr name = nullptr) = 0;
     virtual void SetPostProcessParams(const SPPInfo& ppi) = 0;
+
+    // RTT
+    virtual void RenderToTarget(RRT target) = 0;
 
     // Constructor/destructor
     virtual ~IRender() {}

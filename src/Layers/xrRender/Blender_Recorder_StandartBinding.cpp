@@ -379,6 +379,30 @@ class cl_entity_data : public R_constant_setup //--#SM+#--
 };
 static cl_entity_data binder_entity_data;
 
+static class cl_pda_params : public R_constant_setup
+{
+    virtual void setup(CBackend& cmd_list, R_constant* C) override
+    {
+        float pda_factor = g_pGamePersistent->devices_shader_data.pda_display_factor;
+        float pda_psy_factor = g_pGamePersistent->devices_shader_data.pda_psy_influence;
+        float pda_display_brightness = g_pGamePersistent->devices_shader_data.pda_displaybrightness;
+
+        cmd_list.set_c(C, pda_factor, pda_psy_factor, pda_display_brightness, 0.0f);
+    }
+} binder_pda_params;
+
+static class cl_device_params : public R_constant_setup
+{
+    virtual void setup(CBackend& cmd_list, R_constant* C) override
+    {
+        float device_global_psy_factor = g_pGamePersistent->devices_shader_data.device_global_psy_influence;
+        float device_psy_zone_factor = g_pGamePersistent->devices_shader_data.device_psy_zone_influence;
+        float device_rad_zone_factor = g_pGamePersistent->devices_shader_data.device_radiation_zone_influence;
+
+        cmd_list.set_c(C, device_global_psy_factor, device_psy_zone_factor, device_rad_zone_factor, 0.0f);
+    }
+} binder_device_params;
+
 // Standart constant-binding
 void CBlender_Compile::SetMapping()
 {
@@ -444,6 +468,11 @@ void CBlender_Compile::SetMapping()
 #endif
     r_Constant("screen_res", &binder_screen_res);
     r_Constant("screen_params", &binder_screen_params);
+
+    // PDA display
+    r_Constant("pda_params", &binder_pda_params);
+    // Nightvision
+    r_Constant("device_influence", &binder_device_params);
 
     // detail
     // if (bDetail  && detail_scaler)

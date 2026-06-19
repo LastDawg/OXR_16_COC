@@ -19,6 +19,7 @@
 
 #include "inventory_item.h"
 #include "Inventory.h"
+#include "PDA.h"
 
 #include "ai/monsters/poltergeist/poltergeist.h"
 
@@ -54,8 +55,11 @@ CHUDTarget::CHUDTarget()
 }
 
 CHUDTarget::~CHUDTarget() {}
+
 void CHUDTarget::Load() { HUDCrosshair.Load(); }
+
 void CHUDTarget::ShowCrosshair(bool b) { m_bShowCrosshair = b; }
+
 //. fVisTransparencyFactor
 float fCurrentPickPower;
 ICF static bool pick_trace_callback(collide::rq_result& result, LPVOID params)
@@ -114,6 +118,7 @@ void CHUDTarget::CursorOnFrame()
 }
 
 extern ENGINE_API bool g_bRendering;
+
 void CHUDTarget::Render()
 {
     using namespace ::detail::hud_target;
@@ -124,6 +129,8 @@ void CHUDTarget::Render()
         return;
 
     VERIFY(g_bRendering);
+
+    CActor* Actor = smart_cast<CActor*>(Level().CurrentEntity());
 
     IGameObject* O = Level().CurrentEntity();
     if (0 == O)
@@ -261,6 +268,9 @@ void CHUDTarget::Render()
         F->OutNext("%4.1f", PP.RQ.range);
 #endif
     }
+
+	if (smart_cast<CPda*>(Actor->inventory().ActiveItem()))
+        return;
 
     //отрендерить кружочек или крестик
     if (!m_bShowCrosshair)

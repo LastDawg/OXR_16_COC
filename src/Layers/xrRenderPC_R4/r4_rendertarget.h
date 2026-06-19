@@ -95,6 +95,7 @@ public:
     ref_rt rt_blur_8;
 
     ref_rt rt_pp_bloom;
+    ref_rt rt_ui_pda; // RTT PDA
 
     //	Igor: for async screenshots
     ID3DTexture2D* t_ss_async; // 32bit		(r,g,b,a) is situated in the system memory

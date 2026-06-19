@@ -278,6 +278,10 @@ luabind::class_<CScriptGameObject>& script_register_game_object1(luabind::class_
         .def("path_type", &CScriptGameObject::path_type)
         .def("detail_path_type", &CScriptGameObject::detail_path_type)
 
+		// RTT PDA
+        .def("psy_factor", &CScriptGameObject::GetPsyFactor)
+        .def("set_psy_factor", &CScriptGameObject::SetPsyFactor)
+
         //
         .def("set_desired_position", (void (CScriptGameObject::*)())(&CScriptGameObject::set_desired_position))
         .def("set_desired_position",

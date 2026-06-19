@@ -35,6 +35,20 @@ constexpr void clamp(T& val, const T& _low, const T& _high) noexcept
         val = _high;
 }
 
+// linear interpolation RTT
+template <class T>
+inline constexpr T lerp(const T& _val_a, const T& _val_b, const float& _factor)
+{
+    return (_val_a * (1.0 - _factor)) + (_val_b * _factor);
+}
+
+// inertion
+IC float inertion(float _val_cur, float _val_trgt, float _friction)
+{
+    float friction_i = 1.f - _friction;
+    return _val_cur * _friction + _val_trgt * friction_i;
+}
+
 // XXX: Check usages and provide overloads for native types where arguments are NOT references.
 template <class T>
 constexpr T clampr(const T& val, const T& _low, const T& _high) noexcept

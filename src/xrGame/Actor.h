@@ -414,6 +414,7 @@ public:
     bool CanSprint();
     bool CanRun();
     void StopAnyMove();
+    void StopSprint() { mstate_wishful &= ~mcSprint; }
 
     bool AnyAction() { return (mstate_real & mcAnyAction) != 0; };
     bool AnyMove() { return (mstate_real & mcAnyMove) != 0; };
@@ -812,9 +813,13 @@ public:
     void SetNightVisionAllowed(bool bAllow) { m_bNightVisionAllow = bAllow; }
     CNightVisionEffector* GetNightVision() { return m_night_vision; }
 
+	float GetDevicesPsyFactor() { return m_fDevicesPsyFactor; }
+    void SetDevicesPsyFactor(float psy_factor) { m_fDevicesPsyFactor = psy_factor; }
+
 protected:
     bool m_bNightVisionOn;
     bool m_bNightVisionAllow;
+    float m_fDevicesPsyFactor;
     CNightVisionEffector* m_night_vision;
 
 private:

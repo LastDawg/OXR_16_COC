@@ -51,6 +51,11 @@
 #include "xrNetServer/NET_Messages.h"
 #include "xrEngine/GameFont.h"
 
+#include "UIGameCustom.h"
+#include "ui/UIPdaWnd.h"
+#include "xrUICore/Cursor/UICursor.h"
+#include "PDA.h"
+
 #ifdef DEBUG
 #include "level_debug.h"
 #include "ai/stalker/ai_stalker.h"
@@ -627,6 +632,57 @@ extern Flags32 dbg_net_Draw_Flags;
 void CLevel::OnRender()
 {
     ZoneScoped;
+
+    // RTT PDA
+    if (game && CurrentGameUI() && &CurrentGameUI()->GetPdaMenu())
+    {
+        const auto pda = &CurrentGameUI()->GetPdaMenu();
+        const auto pda_actor = Actor() ? Actor()->GetPDA() : nullptr;
+        if (psActorFlags.test(AF_3D_PDA) && pda && pda->IsShown())
+        {
+            pda->Draw();
+            CUICursor* cursor = &UI().GetUICursor();
+
+            if (cursor)
+            {
+                static bool need_reset{};
+                if (pda_actor && pda_actor->m_bZoomed && CurrentGameUI()->TopInputReceiver() != pda)
+                    CurrentGameUI()->SetMainInputReceiver(pda, false);
+
+                const bool is_top = CurrentGameUI()->TopInputReceiver() == pda;
+
+                if (pda->IsEnabled() && is_top && !Console->bVisible)
+                {
+                    if (need_reset)
+                    {
+                        need_reset = false;
+                        pda->ResetCursor();
+                    }
+
+                    Frect& pda_border = pda->m_cursor_box;
+                    Fvector2 cursor_pos = cursor->GetCursorPosition();
+
+                    if (!pda_border.in(cursor_pos))
+                    {
+                        clamp(cursor_pos.x, pda_border.left, pda_border.right);
+                        clamp(cursor_pos.y, pda_border.top, pda_border.bottom);
+                        cursor->SetUICursorPosition(cursor_pos);
+                    }
+
+                    Fvector2 cursor_pos_dif;
+                    cursor_pos_dif.set(cursor_pos);
+                    cursor_pos_dif.sub(pda->last_cursor_pos);
+                    pda->last_cursor_pos.set(cursor_pos);
+                    pda->MouseMovement(cursor_pos_dif.x, cursor_pos_dif.y);
+                }
+                else
+                    need_reset = true;
+
+                cursor->OnRender();
+            }
+            GEnv.Render->RenderToTarget(GEnv.Render->rtPDA);
+        }
+    }
 
     GEnv.Render->BeforeWorldRender();	//--#SM+#-- +SecondVP+
 

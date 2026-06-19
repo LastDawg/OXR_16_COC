@@ -182,6 +182,8 @@ public:
     u32 Cost() const;
     float GetCondition() const;
     void SetCondition(float val);
+    float GetPsyFactor() const;
+    void SetPsyFactor(float val);
 
     // CEntity
     _DECLARE_FUNCTION10(DeathTime, u32);
