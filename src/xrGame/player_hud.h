@@ -148,7 +148,7 @@ struct attachable_hud_item
 class player_hud
 {
 public:
-    player_hud();
+    player_hud() = default;
     ~player_hud();
     void load(const shared_str& model_name);
     void load_default() { load("actor_hud_05"); };

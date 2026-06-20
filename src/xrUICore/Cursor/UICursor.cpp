@@ -66,13 +66,10 @@ void CUICursor::OnRender()
 
     if (!IsVisible())
         return;
-
-    u32 curFrame = Device.dwFrame;
-
-    if (curFrame == last_render_frame)
-        return;
-
 #ifdef DEBUG
+    VERIFY(last_render_frame != Device.dwFrame);
+    //last_render_frame = Device.dwFrame;
+
     if (bDebug)
     {
         CGameFont* F = UI().Font().pFontDI;
@@ -84,6 +81,10 @@ void CUICursor::OnRender()
         F->OutNext("%f-%f", pt.x, pt.y);
     }
 #endif
+
+	u32 curFrame = Device.dwFrame;
+    if (curFrame == last_render_frame)
+        return;
 
     m_static->SetWndPos(vPos);
     m_static->Update();

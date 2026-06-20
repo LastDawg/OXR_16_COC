@@ -230,15 +230,7 @@ bool cover::loophole_path(shared_str const& source_raw, shared_str const& target
 
 void cover::check_loopholes_connectivity() const
 {
-    //VERIFY2(!loopholes().empty(), "Smart cover has no loopholes!");
-
-    #ifdef DEBUG
-    if (loopholes().empty())
-    {
-        Msg("! ERROR: Smart cover [%s] has no loopholes! Check your configs or spawn section.", m_id.c_str());
-        return;
-    }
-    #endif
+    VERIFY(!loopholes().empty());
 
     shared_str enter = transform_vertex("", true);
     shared_str exit = transform_vertex("", false);

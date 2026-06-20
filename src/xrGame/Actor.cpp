@@ -79,7 +79,6 @@
 #include "DynamicHudGlass.h"
 #include "ActorBackpack.h"
 #include "ActorNightVision.h"
-#include "ui/UIHudStatesWnd.h"
 
 //Alundaio
 #include "script_hit.h"
@@ -235,8 +234,6 @@ CActor::CActor() : CEntityAlive(), current_ik_cam_shift(0)
     m_night_vision = NULL;
     m_bNightVisionAllow = true;
     m_bNightVisionOn = false;
-
-    m_fDevicesPsyFactor = 0.0f;
 }
 
 CActor::~CActor()
@@ -1052,7 +1049,7 @@ void CActor::g_Physics(Fvector& _accel, float jump, float dt)
     }
 }
 extern ENGINE_API float g_fov;
-float g_scope_fov = 75.0f;
+extern ENGINE_API float g_scope_fov = 75.0f;
 
 float CActor::currentFOV()
 {
@@ -1248,17 +1245,6 @@ void CActor::UpdateCL()
 
     if (psActorFlags.test(AF_MULTI_ITEM_PICKUP))
         m_bPickupMode = false;
-
-    CUIHudStatesWnd* wnd = CurrentGameUI()->UIMainIngameWnd->get_hud_states();
-
-	g_pGamePersistent->devices_shader_data.device_global_psy_influence = m_fDevicesPsyFactor;
-	g_pGamePersistent->devices_shader_data.device_psy_zone_influence = wnd->get_zone_cur_power(ALife::eHitTypeTelepatic) * 10;
-	g_pGamePersistent->devices_shader_data.device_radiation_zone_influence = wnd->get_zone_cur_power(ALife::eHitTypeRadiation) * 60;
-
-	luabind::functor<bool> funct;
-
-	if (GEnv.ScriptEngine->functor("new_utils.devices_check_surge", funct) && funct.is_valid())
-        funct();
 }
 
 float NET_Jump = 0;

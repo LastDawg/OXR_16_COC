@@ -55,11 +55,6 @@ CUIPdaWnd::CUIPdaWnd() : CUIDialogWnd(CUIPdaWnd::GetDebugType())
     // RTT PDA
     m_battery_bar = nullptr;
     m_power = 0.f;
-    joystickrot.set(0.f, 0.f, 0.f);
-    target_joystickrot.set(0.f, 0.f, 0.f);
-    buttonpress = 0.f;
-    target_buttonpress = 0.f;
-
     last_cursor_pos.set(UI_BASE_WIDTH / 2.f, UI_BASE_HEIGHT / 2.f);
     m_cursor_box.set(117.f, 39.f, UI_BASE_WIDTH - 121.f, UI_BASE_HEIGHT - 37.f);
     Init();
@@ -242,39 +237,43 @@ void CUIPdaWnd::SendMessage(CUIWindow* pWnd, s16 msg, void* pData)
 
 bool CUIPdaWnd::OnMouseAction(float x, float y, EUIMessages mouse_action)
 {
-	switch (mouse_action)
-	{
-	case WINDOW_LBUTTON_DOWN:
-	case WINDOW_RBUTTON_DOWN:
-	case WINDOW_LBUTTON_UP:
-	case WINDOW_RBUTTON_UP:
-	{
-		CPda* pda = Actor()->GetPDA();
-		if (pda)
-		{
-			if (pda->IsPending())
-				return true;
+    if (psActorFlags.test(AF_3D_PDA)) // Чтобы во время пользования обычным КПК при нажатии на ПКМ он не ломался
+    {
+        switch (mouse_action)
+        {
+        case WINDOW_LBUTTON_DOWN:
+        case WINDOW_LBUTTON_UP: {
+            CPda* pda = Actor()->GetPDA();
+            if (pda)
+            {
+                if (pda->IsPending())
+                    return true;
 
-			if (mouse_action == WINDOW_LBUTTON_DOWN)
-				bButtonL = true;
-			else if (mouse_action == WINDOW_RBUTTON_DOWN)
-				bButtonR = true;
-			else if (mouse_action == WINDOW_LBUTTON_UP)
-				bButtonL = false;
-			else if (mouse_action == WINDOW_RBUTTON_UP)
-				bButtonR = false;
-		}
-		break;
-	}
-	}
-	CUIDialogWnd::OnMouseAction(x, y, mouse_action);
-	return true; //always true because StopAnyMove() == false
+                if (mouse_action == WINDOW_LBUTTON_DOWN)
+                    bButtonL = true;
+                else if (mouse_action == WINDOW_LBUTTON_UP)
+                    bButtonL = false;
+            }
+            break;
+        }
+        case WINDOW_RBUTTON_DOWN:
+            if (auto pda = Actor()->GetPDA())
+            {
+                pda->m_bZoomed = false;
+                CurrentGameUI()->SetMainInputReceiver(nullptr, false);
+                return true;
+            }
+            break;
+        }
+    }
+    CUIDialogWnd::OnMouseAction(x, y, mouse_action);
+    return true; // always true because StopAnyMove() == false
 }
 
 void CUIPdaWnd::MouseMovement(float x, float y)
 {
     CPda* pda = Actor() ? Actor()->GetPDA() : nullptr;
-    if (!pda || !g_player_hud)
+    if (!pda || !g_player_hud) // Обязательная проверка на g_player_hud
         return;
 
     x *= .1f;
@@ -393,7 +392,7 @@ void CUIPdaWnd::SetActiveSubdialog(const shared_str& section)
     }
 
     luabind::functor<CUIDialogWndEx*> functor;
-    if (GEnv.ScriptEngine->functor("pda.set_active_subdialog", functor) && functor.is_valid())
+    if (GEnv.ScriptEngine->functor("pda.set_active_subdialog", functor))
     {
         if (CUIDialogWndEx* scriptWnd = functor(section.c_str()))
         {
@@ -592,9 +591,7 @@ void CUIPdaWnd::Enable(bool status)
             ResetCursor();
         else
         {
-        if (g_player_hud)
             g_player_hud->reset_thumb(false);
-
             ResetJoystick(false);
             bButtonL = false;
             bButtonR = false;
@@ -631,6 +628,11 @@ bool CUIPdaWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
                         HideDialog();
                         Console->Execute("main_menu");
                     }
+                    else if (pda->m_bZoomed)
+                    {
+                        pda->m_bZoomed = false;
+                        CurrentGameUI()->SetMainInputReceiver(nullptr, false);
+                    }
                     else
                         Actor()->inventory().Activate(NO_ACTIVE_SLOT);
 
@@ -639,19 +641,6 @@ bool CUIPdaWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
 
                 if (action == kUSE || action == kACTIVE_JOBS || action == kINVENTORY || (action > kCAM_ZOOM_OUT && action < kWPN_NEXT)) // Since UI no longer passes non-movement inputs to // the actor input receiver this is needed now.
                 {
-                    if (action == kACTIVE_JOBS || action == kINVENTORY)
-                    {
-                        bool bIsZoomed = pda->m_bZoomed;
-                        if (bIsZoomed || IsEnabled())
-                        {
-                            pda->m_bZoomed = false;
-                            Enable(false);
-                            Actor()->inventory().Activate(NO_ACTIVE_SLOT);
-                            HideDialog();
-                            return true;
-                        }
-                    }
-
                     IGameObject* obj = (GameID() == eGameIDSingle) ? Level().CurrentEntity() : Level().CurrentControlEntity();
                     {
                         IInputReceiver* IR = smart_cast<IInputReceiver*>(smart_cast<CGameObject*>(obj));
@@ -669,14 +658,11 @@ bool CUIPdaWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
                 // zoom in instead of only right mouse button
                 if (psActorFlags.test(AF_SIMPLE_PDA))
                 {
-                    if (action == kWPN_RELOAD || (!IsEnabled() && action == kWPN_ZOOM))
+                    if (action == kWPN_ZOOM)
                     {
                         if (!pda->m_bZoomed)
                         {
                             Actor()->StopSprint();
-
-							// Input state change must be deferred because actor state can still be sprinting when activating which would instantly deactivate input again
-							pda->m_eDeferredEnable = CPda::eDeferredEnableState::eEnableZoomed;
                         }
                         else
                         {
@@ -691,20 +677,23 @@ bool CUIPdaWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
                 // "Normal" input mode, PDA input can be toggled without having to be zoomed in
                 else
                 {
-                    if (action == kWPN_RELOAD || (!IsEnabled() && action == kWPN_ZOOM))
+                    if (action == kWPN_ZOOM)
                     {
-                        if (!pda->m_bZoomed && !IsEnabled())
+                        if (!pda->m_bZoomed)
                         {
                             Actor()->StopSprint();
 
-							// Input state change must be deferred because actor state can still be sprinting when activating which would instantly deactivate input again
-							pda->m_eDeferredEnable = CPda::eDeferredEnableState::eEnableZoomed;
+                            // Input state change must be deferred because actor state can still be sprinting when
+                            // activating which would instantly deactivate input again
+                            pda->m_eDeferredEnable = CPda::eDeferredEnableState::eEnableZoomed;
                         }
+                        else
+                            CurrentGameUI()->SetMainInputReceiver(nullptr, false);
 
                         pda->m_bZoomed = !pda->m_bZoomed;
                         return true;
                     }
-                    
+                    /*
                     if (action == kWPN_FUNC || (!IsEnabled() && action == kWPN_FIRE))
                     {
                         if (IsEnabled())
@@ -715,12 +704,9 @@ bool CUIPdaWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
                         else
                         {
                             Actor()->StopSprint();
-
-							// Input state change must be deferred because actor state can still be sprinting when activating which would instantly deactivate input again
-							pda->m_eDeferredEnable = CPda::eDeferredEnableState::eEnable;
                         }
                         return true;
-                    }
+                    }*/
                 }
             }
         }

@@ -125,7 +125,7 @@ bool CUIGameSP::IR_UIOnKeyboardPress(int dik)
         if (!psActorFlags.test(AF_3D_PDA) && !pActor->inventory_disabled())
         {
             luabind::functor<bool> funct;
-            if (GEnv.ScriptEngine->functor("pda.pda_use", funct) && funct.is_valid())
+            if (GEnv.ScriptEngine->functor("pda.pda_use", funct))
             {
                 if (funct())
                     ShowPdaMenu();

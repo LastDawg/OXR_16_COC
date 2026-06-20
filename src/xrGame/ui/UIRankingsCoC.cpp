@@ -41,30 +41,30 @@ void CUIRankingsCoC::Update()
     //    return;
 
     luabind::functor<bool> functorCanShow;
-    if (GEnv.ScriptEngine->functor("pda.coc_rankings_can_show", functorCanShow) && functorCanShow.is_valid())
+    if (GEnv.ScriptEngine->functor("pda.coc_rankings_can_show", functorCanShow))
     {
         if (functorCanShow(m_index))
         {
             if (!ParentHasMe())
             {
                 luabind::functor<pcstr> functorSetName;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_name", functorSetName) && functorSetName.is_valid())
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_name", functorSetName))
                     SetName(functorSetName(m_index));
 
                 luabind::functor<pcstr> functorSetDescription;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_description", functorSetDescription) && functorSetDescription.is_valid())
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_description", functorSetDescription))
                     SetDescription(functorSetDescription(m_index));
                 luabind::functor<pcstr> functorSetHint;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_hint", functorSetHint) && functorSetHint.is_valid())
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_hint", functorSetHint))
                     SetHint(functorSetHint(m_index));
 
                 luabind::functor<pcstr> functorSetIcon;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_icon", functorSetIcon) && functorSetIcon.is_valid())
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_icon", functorSetIcon))
                     SetIcon(functorSetIcon(m_index));
 
                 /*
                 luabind::functor<pcstr> functorShowBorder;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_show_border", functorShowBorder) && functorShowBorder.is_valid())
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_show_border", functorShowBorder))
                 {
                     if (functorShowBorder(m_index))
                     {
