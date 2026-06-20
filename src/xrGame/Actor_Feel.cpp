@@ -120,13 +120,13 @@ BOOL CActor::CanPickItem(const CFrustum& frustum, const Fvector& from, IGameObje
 
 void CActor::PickupModeUpdate()
 {
-    CUIPdaWnd* pda = &CurrentGameUI()->GetPdaMenu();
+    CUIPdaWnd* pda = CurrentGameUI() ? &CurrentGameUI()->GetPdaMenu() : nullptr;
 
     if (!m_bPickupMode)
         return; // kUSE key pressed
     if (!IsGameTypeSingle())
         return;
-    if (pda->IsShown())
+    if (pda && pda->IsShown())
         return;
 
     //подбирание объекта

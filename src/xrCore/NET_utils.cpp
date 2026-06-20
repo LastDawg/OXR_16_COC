@@ -155,6 +155,9 @@ void NET_Packet::r(void* p, u32 count)
     VERIFY(p && count);
     CopyMemory(p, &B.data[r_pos], count);
     r_pos += count;
+#ifdef DEBUG
+    Msg("! NET_Packet read error: r_pos %d, count %d", r_pos, B.count);
+#endif
     VERIFY(r_pos <= B.count);
 }
 

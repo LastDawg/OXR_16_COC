@@ -106,7 +106,7 @@ void player_hud_motion_container::load(IKinematicsAnimated* model, const shared_
 #endif // #ifdef DEBUG
                 }
             }
-            VERIFY2(pm->m_animations.size(), make_string("motion not found [%s]", pm->m_base_name.c_str()).c_str());
+            VERIFY2(pm.m_animations.size(), make_string("motion not found [%s]", pm.m_base_name.c_str()).c_str());
 
             m_anims.emplace(name, std::move(pm));
         }
@@ -569,6 +569,12 @@ u32 attachable_hud_item::anim_play(const shared_str& anm_name_b, BOOL bMixIn, co
     return ret;
 }
 
+player_hud::player_hud()
+{
+    script_anim_part = u8(-1);
+    reset_thumb(true);
+}
+
 player_hud::~player_hud()
 {
     if (m_model)
@@ -724,10 +730,6 @@ void player_hud::load(const shared_str& player_hud_sect)
     m_model_2 = smart_cast<IKinematicsAnimated*>(GEnv.Render->model_Create(model_2_name.c_str()));
 
     load_ancors();
-
-    // RTT PDA
-    script_anim_part = u8(-1);
-    reset_thumb(true);
 
 	u16 r_finger0 = m_model->dcast_PKinematics()->LL_BoneID("r_finger0");
     u16 r_finger01 = m_model->dcast_PKinematics()->LL_BoneID("r_finger01");

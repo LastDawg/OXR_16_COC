@@ -545,14 +545,14 @@ void InventoryUtilities::SendInfoToLuaScripts(shared_str info)
     {
         int mode = 10; // now Menu is Talk Dialog (show)
         luabind::functor<void> funct;
-        if (GEnv.ScriptEngine->functor("pda.actor_menu_mode", funct))
+        if (GEnv.ScriptEngine->functor("pda.actor_menu_mode", funct) && funct.is_valid())
             funct(mode);
     }
     if (info == shared_str("ui_talk_hide"))
     {
         int mode = 11; // Talk Dialog hide
         luabind::functor<void> funct;
-        if (GEnv.ScriptEngine->functor("pda.actor_menu_mode", funct))
+        if (GEnv.ScriptEngine->functor("pda.actor_menu_mode", funct) && funct.is_valid())
             funct(mode);
     }
 }

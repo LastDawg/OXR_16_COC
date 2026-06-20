@@ -214,7 +214,7 @@ bool CUIRankingWnd::Init()
     u8 topRankCount = 50;
     luabind::functor<u8> getRankingArraySize;
 
-    if (GEnv.ScriptEngine->functor("pda.get_rankings_array_size", getRankingArraySize))
+    if (GEnv.ScriptEngine->functor("pda.get_rankings_array_size", getRankingArraySize) && getRankingArraySize.is_valid())
     {
         topRankCount = getRankingArraySize();
     }
@@ -371,7 +371,7 @@ void CUIRankingWnd::get_best_monster()
     pcstr str;
     luabind::functor<pcstr> functor;
 
-    if (GEnv.ScriptEngine->functor("pda.get_monster_back", functor))
+    if (GEnv.ScriptEngine->functor("pda.get_monster_back", functor) && functor.is_valid())
     {
         str = functor();
         if (!xr_strcmp(str, ""))
@@ -388,7 +388,7 @@ void CUIRankingWnd::get_best_monster()
         }
     }
 
-    if (GEnv.ScriptEngine->functor("pda.get_monster_icon", functor))
+    if (GEnv.ScriptEngine->functor("pda.get_monster_icon", functor) && functor.is_valid())
     {
         str = functor();
         if (!xr_strcmp(str, ""))

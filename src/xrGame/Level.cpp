@@ -638,47 +638,50 @@ void CLevel::OnRender()
     {
         const auto pda = &CurrentGameUI()->GetPdaMenu();
         const auto pda_actor = Actor() ? Actor()->GetPDA() : nullptr;
-        if (psActorFlags.test(AF_3D_PDA) && pda && pda->IsShown())
+        CPda* pda_item = Actor()->GetPDA();
+        
+        if (psActorFlags.test(AF_3D_PDA) && pda_item && pda && pda->IsShown())
         {
-            pda->Draw();
-            CUICursor* cursor = &UI().GetUICursor();
-
-            if (cursor)
+            if (pda_item->GetState() != CPda::eHiding && pda_item->GetState() != CPda::eHidden)
             {
-                static bool need_reset{};
-                if (pda_actor && pda_actor->m_bZoomed && CurrentGameUI()->TopInputReceiver() != pda)
-                    CurrentGameUI()->SetMainInputReceiver(pda, false);
+                pda->Draw();
+                CUICursor* cursor = &UI().GetUICursor();
 
-                const bool is_top = CurrentGameUI()->TopInputReceiver() == pda;
-
-                if (pda->IsEnabled() && is_top && !Console->bVisible)
+                if (cursor)
                 {
-                    if (need_reset)
+                    static bool need_reset;
+                    bool is_top = CurrentGameUI()->TopInputReceiver() == pda;
+
+                    if (pda->IsEnabled() && is_top && !Console->bVisible)
                     {
-                        need_reset = false;
-                        pda->ResetCursor();
+                        if (need_reset)
+                        {
+                            need_reset = false;
+                            pda->ResetCursor();
+                        }
+
+                        Frect& pda_border = pda->m_cursor_box;
+                        Fvector2 cursor_pos = cursor->GetCursorPosition();
+
+                        if (!pda_border.in(cursor_pos))
+                        {
+                            clamp(cursor_pos.x, pda_border.left, pda_border.right);
+                            clamp(cursor_pos.y, pda_border.top, pda_border.bottom);
+                            cursor->SetUICursorPosition(cursor_pos);
+                        }
+
+                        Fvector2 cursor_pos_dif;
+                        cursor_pos_dif.set(cursor_pos);
+                        cursor_pos_dif.sub(pda->last_cursor_pos);
+                        pda->last_cursor_pos.set(cursor_pos);
+                        pda->MouseMovement(cursor_pos_dif.x, cursor_pos_dif.y);
                     }
+                    else
+                        need_reset = true;
 
-                    Frect& pda_border = pda->m_cursor_box;
-                    Fvector2 cursor_pos = cursor->GetCursorPosition();
-
-                    if (!pda_border.in(cursor_pos))
-                    {
-                        clamp(cursor_pos.x, pda_border.left, pda_border.right);
-                        clamp(cursor_pos.y, pda_border.top, pda_border.bottom);
-                        cursor->SetUICursorPosition(cursor_pos);
-                    }
-
-                    Fvector2 cursor_pos_dif;
-                    cursor_pos_dif.set(cursor_pos);
-                    cursor_pos_dif.sub(pda->last_cursor_pos);
-                    pda->last_cursor_pos.set(cursor_pos);
-                    pda->MouseMovement(cursor_pos_dif.x, cursor_pos_dif.y);
+                    if (is_top)
+                        cursor->OnRender();
                 }
-                else
-                    need_reset = true;
-
-                cursor->OnRender();
             }
             GEnv.Render->RenderToTarget(GEnv.Render->rtPDA);
         }

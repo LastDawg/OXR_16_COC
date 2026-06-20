@@ -41,30 +41,30 @@ void CUIRankingsCoC::Update()
     //    return;
 
     luabind::functor<bool> functorCanShow;
-    if (GEnv.ScriptEngine->functor("pda.coc_rankings_can_show", functorCanShow))
+    if (GEnv.ScriptEngine->functor("pda.coc_rankings_can_show", functorCanShow) && functorCanShow.is_valid())
     {
         if (functorCanShow(m_index))
         {
             if (!ParentHasMe())
             {
                 luabind::functor<pcstr> functorSetName;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_name", functorSetName))
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_name", functorSetName) && functorSetName.is_valid())
                     SetName(functorSetName(m_index));
 
                 luabind::functor<pcstr> functorSetDescription;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_description", functorSetDescription))
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_description", functorSetDescription) && functorSetDescription.is_valid())
                     SetDescription(functorSetDescription(m_index));
                 luabind::functor<pcstr> functorSetHint;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_hint", functorSetHint))
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_hint", functorSetHint) && functorSetHint.is_valid())
                     SetHint(functorSetHint(m_index));
 
                 luabind::functor<pcstr> functorSetIcon;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_icon", functorSetIcon))
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_icon", functorSetIcon) && functorSetIcon.is_valid())
                     SetIcon(functorSetIcon(m_index));
 
                 /*
                 luabind::functor<pcstr> functorShowBorder;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_show_border", functorShowBorder))
+                if (GEnv.ScriptEngine->functor("pda.coc_rankings_show_border", functorShowBorder) && functorShowBorder.is_valid())
                 {
                     if (functorShowBorder(m_index))
                     {

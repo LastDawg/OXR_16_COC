@@ -206,6 +206,8 @@ public:
     virtual void UpdateArtefactsOnBeltAndOutfit();
     float HitArtefactsOnBelt(float hit_power, ALife::EHitType hit_type);
     float GetProtection_ArtefactsOnBelt(ALife::EHitType hit_type) const;
+    float GetCamHeightFactor() { return m_fCamHeightFactor; }
+    void SetCamHeightFactor(float height) { m_fCamHeightFactor = height; }
 
 protected:
     //звук тяжелого дыхания
@@ -817,9 +819,10 @@ public:
     void SetDevicesPsyFactor(float psy_factor) { m_fDevicesPsyFactor = psy_factor; }
 
 protected:
+    float m_fDevicesPsyFactor;
+
     bool m_bNightVisionOn;
     bool m_bNightVisionAllow;
-    float m_fDevicesPsyFactor;
     CNightVisionEffector* m_night_vision;
 
 private:

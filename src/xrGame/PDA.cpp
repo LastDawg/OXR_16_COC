@@ -49,6 +49,9 @@ bool CPda::net_Spawn(CSE_Abstract* DC)
     m_idOriginalOwner = pda->m_original_owner;
     m_SpecificChracterOwner = pda->m_specific_character;
 
+    m_bZoomed = false;
+    m_eDeferredEnable = eDefault;
+
     return true;
 }
 
@@ -146,20 +149,15 @@ void CPda::OnStateSwitch(u32 S, u32 oldState)
         g_player_hud->attach_item(this);
         g_pGamePersistent->devices_shader_data.pda_display_factor = 0.f;
 
-        m_sounds.PlaySound(
-            hasEnoughBatteryPower() ? "sndShow" : "sndShowEmpty", Position(), H_Root(), !!GetHUDmode(), false);
+        m_sounds.PlaySound(hasEnoughBatteryPower() ? "sndShow" : "sndShowEmpty", Position(), H_Root(), !!GetHUDmode(), false);
         PlayHUDMotion(!m_bNoticedEmptyBattery ? "anm_show" : "anm_show_empty", false, this, GetState());
-
-        if (auto pda = CurrentGameUI() && &CurrentGameUI()->GetPdaMenu() ? &CurrentGameUI()->GetPdaMenu() : nullptr)
-            pda->ResetJoystick(true);
 
         SetPending(true);
         target_screen_switch = Device.fTimeGlobal + m_screen_on_delay;
     }
     break;
     case eHiding: {
-        m_sounds.PlaySound(
-            hasEnoughBatteryPower() ? "sndHide" : "sndHideEmpty", Position(), H_Root(), !!GetHUDmode(), false);
+        m_sounds.PlaySound(hasEnoughBatteryPower() ? "sndHide" : "sndHideEmpty", Position(), H_Root(), !!GetHUDmode(), false);
         PlayHUDMotion(!m_bNoticedEmptyBattery ? "anm_hide" : "anm_hide_empty", true, this, GetState());
         SetPending(true);
         m_bZoomed = false;
@@ -172,22 +170,22 @@ void CPda::OnStateSwitch(u32 S, u32 oldState)
     }
     break;
     case eHidden: {
-        m_bZoomed = false;
-        m_fZoomfactor = 0.f;
-        CUIPdaWnd* pda = &CurrentGameUI()->GetPdaMenu();
+		if (oldState != eHidden)
+		{
+			m_bZoomed = false;
+			m_fZoomfactor = 0.f;
+			CUIPdaWnd* pda = &CurrentGameUI()->GetPdaMenu();
 
-        if (pda->IsShown())
-        {
-            if (psActorFlags.test(AF_3D_PDA))
-                pda->Enable(true);
-            else
+			if (pda && pda->IsShown())
+			{
                 pda->HideDialog();
-        }
+			}
 
-        g_player_hud->reset_thumb(true);
-        pda->ResetJoystick(true);
-        SetPending(false);
-    }
+			g_player_hud->reset_thumb(true);
+			pda->ResetJoystick(true);
+		}
+		SetPending(FALSE);
+	}
     break;
     case eIdle: {
         PlayAnimIdle();
@@ -244,7 +242,9 @@ void CPda::OnAnimationEnd(u32 state)
 void CPda::JoystickCallback(CBoneInstance* B)
 {
     CPda* Pda = static_cast<CPda*>(B->callback_param());
-    CUIPdaWnd* pda = &CurrentGameUI()->GetPdaMenu();
+    CUIPdaWnd* pda = CurrentGameUI() ? &CurrentGameUI()->GetPdaMenu() : nullptr;
+
+    if (!pda) return;
 
     static float fAvgTimeDelta = Device.fTimeDelta;
     fAvgTimeDelta = inertion(fAvgTimeDelta, Device.fTimeDelta, 0.8f);
@@ -253,6 +253,14 @@ void CPda::JoystickCallback(CBoneInstance* B)
     Fvector& current = pda->joystickrot;
     float& target_press = pda->target_buttonpress;
     float& press = pda->buttonpress;
+
+    if (!_valid(press) || !_valid(current) || !_valid(target))
+    {
+        press = 0.f;
+        current.set(0,0,0);
+        target.set(0,0,0);
+        return;
+    }
 
     if (!target.similar(current, .0001f))
     {
@@ -306,8 +314,8 @@ void CPda::UpdateCL()
 {
     inherited::UpdateCL();
 
-    if (!ParentIsActor() || !CurrentGameUI() || !g_player_hud) // Добавь эти проверки
-        return;
+    if (!ParentIsActor() || !CurrentGameUI() || !g_player_hud)
+        return; 
 
 	UpdateLights();
     UpdatePower();
@@ -323,12 +331,12 @@ void CPda::UpdateCL()
 
     if (!psActorFlags.test(AF_3D_PDA))
     {
-        if (state != eHidden)
+        if (GetState() != eHidden)
             Actor()->inventory().Activate(NO_ACTIVE_SLOT);
         return;
     }
 
-    if (pda->IsShown())
+    if (pda && pda->IsShown())
     {
         // Hide PDA UI on low condition (battery) or when the item is hidden.
         if (!enoughBatteryPower || state == eHidden)
@@ -346,18 +354,24 @@ void CPda::UpdateCL()
             if (!pda->IsEnabled())
             {
                 pda->Update();
-                if (m_bZoomed)
+
+                if (m_eDeferredEnable == eEnable || m_eDeferredEnable == eEnableZoomed)
+                {
                     pda->Enable(true);
+                    m_bZoomed = m_eDeferredEnable == eEnableZoomed;
+                    m_eDeferredEnable = eDefault;
+                }
             }
 
             // Disable PDA UI input if player is sprinting and no deferred input enable is expected.
             else
             {
-                if (!pda->IsEnabled())
+                CEntity::SEntityState st;
+                Actor()->g_State(st);
+                if (st.bSprint && !st.bCrouch && !m_eDeferredEnable)
                 {
-                    pda->Update();
-                    if (m_bZoomed)
-                        pda->Enable(true);
+                    pda->Enable(false);
+                    m_bZoomed = false;
                 }
             }
 
@@ -367,7 +381,7 @@ void CPda::UpdateCL()
                 if (!m_bPowerSaving)
                 {
                     luabind::functor<void> funct;
-                    if (GEnv.ScriptEngine->functor("pda.on_low_battery", funct))
+                    if (GEnv.ScriptEngine->functor("pda.on_low_battery", funct) && funct.is_valid())
                         funct();
                     m_bPowerSaving = true;
                 }
@@ -382,18 +396,19 @@ void CPda::UpdateCL()
     else
     {
         // Show PDA UI if possible
-        if (!b_main_menu_is_active && state != eHiding && state != eHidden && enoughBatteryPower)
+        if (!b_main_menu_is_active && state != eHiding && state != eHidden && enoughBatteryPower && GetHUDmode())
         {
             pda->ShowDialog(false); // Don't hide indicators
-            CurrentGameUI()->SetMainInputReceiver(nullptr, false);
             m_bNoticedEmptyBattery = false;
 
-            if (!m_bZoomed)
+            if (m_eDeferredEnable == eEnable) // Don't disable input if it was enabled before opening the Main Menu.
+                m_eDeferredEnable = eDefault;
+            else
                 pda->Enable(false);
         }
     }
 
-    if (state != eHidden)
+    if (GetState() != eHidden)
     {
         // Adjust screen brightness (smooth)
         if (m_bPowerSaving)
@@ -424,7 +439,7 @@ void CPda::UpdateCL()
     }
     luabind::functor<bool> funct;
 
-    if (GEnv.ScriptEngine->functor("pda.check_surge", funct))
+    if (GEnv.ScriptEngine->functor("pda.check_surge", funct) && funct.is_valid())
         funct();
 }
 
@@ -540,8 +555,8 @@ void CPda::OnMoveToRuck(const SInvItemPlace& prev)
             HudItemData()->m_model->LL_GetBoneInstance(joystick).reset_callback();
         g_player_hud->detach_item(this);
     }
-    CUIPdaWnd* pda = &CurrentGameUI()->GetPdaMenu();
-    if (pda->IsShown())
+    CUIPdaWnd* pda = CurrentGameUI() ? &CurrentGameUI()->GetPdaMenu() : nullptr;
+    if (pda && pda->IsShown())
         pda->HideDialog();
     StopCurrentAnimWithoutCallback();
     SetPending(false);
@@ -806,8 +821,8 @@ void CPda::OnH_B_Independent(bool just_before_destroy)
     m_bZoomed = false;
     m_fZoomfactor = 0.f;
 
-    CUIPdaWnd* pda = &CurrentGameUI()->GetPdaMenu();
-    if (pda->IsShown())
+    CUIPdaWnd* pda = CurrentGameUI() ? &CurrentGameUI()->GetPdaMenu() : nullptr;
+    if (pda && pda->IsShown())
         pda->HideDialog();
     g_player_hud->reset_thumb(true);
     pda->ResetJoystick(true);

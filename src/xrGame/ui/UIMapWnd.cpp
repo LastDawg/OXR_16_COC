@@ -577,7 +577,7 @@ void CUIMapWnd::SendMessage(CUIWindow* pWnd, s16 msg, void* pData)
     if (pWnd == m_UIPropertiesBox && msg == PROPERTY_CLICKED && m_UIPropertiesBox->GetClickedItem())
     {
         luabind::functor<void> funct;
-        if (GEnv.ScriptEngine->functor("pda.property_box_clicked", funct))
+        if (GEnv.ScriptEngine->functor("pda.property_box_clicked", funct) && funct.is_valid())
             funct(m_UIPropertiesBox, m_cur_location);
     }
 }
@@ -595,7 +595,7 @@ void CUIMapWnd::ActivatePropertiesBox(CUIWindow* w)
         return;
 
     luabind::functor<void> funct;
-    if (GEnv.ScriptEngine->functor("pda.property_box_add_properties", funct))
+    if (GEnv.ScriptEngine->functor("pda.property_box_add_properties", funct) && funct.is_valid())
     {
         funct(m_UIPropertiesBox, m_cur_location->ObjectID(), (LPCSTR)m_cur_location->GetLevelName().c_str(), m_cur_location->GetHint());
     }
