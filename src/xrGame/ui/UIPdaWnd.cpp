@@ -308,7 +308,7 @@ void CUIPdaWnd::Show(bool status)
     {
         InventoryUtilities::SendInfoToActor("ui_pda");
 
-        if (!m_sActiveSection.empty()) // Пометка на fatal error, мало ли
+        if (!m_sActiveSection.empty())
             SetActiveSubdialog(m_sActiveSection);
         else
         {

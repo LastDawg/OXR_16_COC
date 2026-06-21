@@ -18,7 +18,6 @@
 #include "CustomOutfit.h"
 #include "ActorHelmet.h"
 
-constexpr pcstr TORCH_DEFINITION = "torch_definition";
 static const float TORCH_INERTION_CLAMP = PI_DIV_6;
 static const float TORCH_INERTION_SPEED_MAX = 7.5f;
 static const float TORCH_INERTION_SPEED_MIN = 0.5f;
@@ -42,13 +41,12 @@ CTorch::CTorch()
     light_omni->set_type(IRender_Light::POINT);
     light_omni->set_shadow(false);
 
-    // Disabling shift by x and z axes for 1st render,
-    // because we don't have dynamic lighting in it.
-    if (GEnv.Render->GenerationIsR1())
-    {
-        TORCH_OFFSET.x = 0;
-        TORCH_OFFSET.z = 0;
-    }
+	m_torch_offset = TORCH_OFFSET;
+    m_omni_offset = OMNI_OFFSET;
+    m_torch_inertion_speed_max = TORCH_INERTION_SPEED_MAX;
+    m_torch_inertion_speed_min = TORCH_INERTION_SPEED_MIN;
+
+    m_NightVisionType = 0;
 }
 
 CTorch::~CTorch()
@@ -91,10 +89,27 @@ void CTorch::Load(LPCSTR section)
     inherited::Load(section);
     light_trace_bone = pSettings->r_string(section, "light_trace_bone");
 
+    m_light_section = READ_IF_EXISTS(pSettings, r_string, section, "light_section", "torch_definition");
+
+    m_torch_offset = READ_IF_EXISTS(pSettings, r_fvector3, section, "torch_offset", TORCH_OFFSET);
+    m_omni_offset = READ_IF_EXISTS(pSettings, r_fvector3, section, "omni_offset", OMNI_OFFSET);
+    m_torch_inertion_speed_max = READ_IF_EXISTS(pSettings, r_float, section, "torch_inertion_speed_max", TORCH_INERTION_SPEED_MAX);
+    m_torch_inertion_speed_min = READ_IF_EXISTS(pSettings, r_float, section, "torch_inertion_speed_min", TORCH_INERTION_SPEED_MIN);
+
     if (pSettings->line_exist(section, "snd_turn_on"))
         m_sounds.LoadSound(section, "snd_turn_on", "sndTurnOn", false, SOUND_TYPE_ITEM_USING);
     if (pSettings->line_exist(section, "snd_turn_off"))
         m_sounds.LoadSound(section, "snd_turn_off", "sndTurnOff", false, SOUND_TYPE_ITEM_USING);
+
+    m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, section, "night_vision_type", 0);
+
+	// Disabling shift by x and z axes for 1st render,
+    // because we don't have dynamic lighting in it.
+    if (GEnv.Render->GenerationIsR1())
+    {
+        m_torch_offset.x = 0;
+        m_torch_offset.z = 0;
+    }
 }
 
 void CTorch::Switch()
@@ -144,6 +159,7 @@ void CTorch::Switch(bool light_on)
     }
 }
 bool CTorch::torch_active() const { return (m_switched_on); }
+
 bool CTorch::net_Spawn(CSE_Abstract* DC)
 {
     CSE_Abstract* e = (CSE_Abstract*)(DC);
@@ -163,53 +179,56 @@ bool CTorch::net_Spawn(CSE_Abstract* DC)
     IKinematics* K = smart_cast<IKinematics*>(Visual());
     CInifile* pUserData = K->LL_UserData();
     R_ASSERT3(pUserData, "Empty Torch user data!", torch->get_visual());
-    lanim = LALib.FindItem(pUserData->r_string(TORCH_DEFINITION, "color_animator"));
-    guid_bone = K->LL_BoneID(pUserData->r_string(TORCH_DEFINITION, "guide_bone"));
+    lanim = LALib.FindItem(pUserData->r_string(m_light_section, "color_animator"));
+    guid_bone = K->LL_BoneID(pUserData->r_string(m_light_section, "guide_bone"));
     VERIFY(guid_bone != BI_NONE);
 
-    Fcolor clr = pUserData->r_fcolor(TORCH_DEFINITION, (b_r2) ? "color_r2" : "color");
+    Fcolor clr = pUserData->r_fcolor(m_light_section, (b_r2) ? "color_r2" : "color");
     fBrightness = clr.intensity();
-    float range = pUserData->r_float(TORCH_DEFINITION, (b_r2) ? "range_r2" : "range");
+    float range = pUserData->r_float(m_light_section, (b_r2) ? "range_r2" : "range");
     light_render->set_color(clr);
     light_render->set_range(range);
 
     if (b_r2)
     {
-        bool useVolumetric = pUserData->read_if_exists<bool>(TORCH_DEFINITION, "volumetric_enabled", false);
+        bool useVolumetric = pUserData->read_if_exists<bool>(m_light_section, "volumetric_enabled", false);
         light_render->set_volumetric(useVolumetric);
         if (useVolumetric)
         {
-            float volQuality = pUserData->read_if_exists<float>(TORCH_DEFINITION, "volumetric_quality", 1.f);
+            float volQuality = pUserData->read_if_exists<float>(m_light_section, "volumetric_quality", 1.f);
             clamp(volQuality, 0.f, 1.f);
             light_render->set_volumetric_quality(volQuality);
 
-            float volIntensity = pUserData->read_if_exists<float>(TORCH_DEFINITION, "volumetric_intensity", 1.f);
+            float volIntensity = pUserData->read_if_exists<float>(m_light_section, "volumetric_intensity", 1.f);
             clamp(volIntensity, 0.f, 10.f);
             light_render->set_volumetric_intensity(volIntensity);
 
-            float volDistance = pUserData->read_if_exists<float>(TORCH_DEFINITION, "volumetric_distance", 1.f);
+            float volDistance = pUserData->read_if_exists<float>(m_light_section, "volumetric_distance", 1.f);
             clamp(volDistance, 0.f, 1.f);
             light_render->set_volumetric_distance(volDistance);
         }
     }
 
-    Fcolor clr_o = pUserData->r_fcolor(TORCH_DEFINITION, (b_r2) ? "omni_color_r2" : "omni_color");
-    float range_o = pUserData->r_float(TORCH_DEFINITION, (b_r2) ? "omni_range_r2" : "omni_range");
+    Fcolor clr_o = pUserData->r_fcolor(m_light_section, (b_r2) ? "omni_color_r2" : "omni_color");
+    float range_o = pUserData->r_float(m_light_section, (b_r2) ? "omni_range_r2" : "omni_range");
     light_omni->set_color(clr_o);
     light_omni->set_range(range_o);
 
-    light_render->set_cone(deg2rad(pUserData->r_float(TORCH_DEFINITION, "spot_angle")));
-    light_render->set_texture(pUserData->r_string(TORCH_DEFINITION, "spot_texture"));
+    light_render->set_cone(deg2rad(pUserData->r_float(m_light_section, "spot_angle")));
+    light_render->set_texture(pUserData->r_string(m_light_section, "spot_texture"));
 
-    glow_render->set_texture(pUserData->r_string(TORCH_DEFINITION, "glow_texture"));
+    glow_render->set_texture(pUserData->r_string(m_light_section, "glow_texture"));
     glow_render->set_color(clr);
-    glow_render->set_radius(pUserData->r_float(TORCH_DEFINITION, "glow_radius"));
+    glow_render->set_radius(pUserData->r_float(m_light_section, "glow_radius"));
+
+    light_render->set_type((IRender_Light::LT)(READ_IF_EXISTS(pUserData, r_u8, m_light_section, "type", 2)));
+    light_omni->set_type((IRender_Light::LT)(READ_IF_EXISTS(pUserData, r_u8, m_light_section, "omni_type", 1)));
 
     //включить/выключить фонарик
     Switch(torch->m_active);
     VERIFY(!torch->m_active || (torch->ID_Parent != 0xffff));
 
-    m_delta_h = PI_DIV_2 - atan((range * 0.5f) / _abs(TORCH_OFFSET.x));
+    m_delta_h = PI_DIV_2 - atan((range * 0.5f) / _abs(m_torch_offset.x));
 
     return (TRUE);
 }
@@ -267,10 +286,8 @@ void CTorch::UpdateCL()
 
         if (actor)
         {
-            m_prev_hp.x = angle_inertion_var(m_prev_hp.x, -actor->cam_FirstEye()->yaw, TORCH_INERTION_SPEED_MIN,
-                TORCH_INERTION_SPEED_MAX, TORCH_INERTION_CLAMP, Device.fTimeDelta);
-            m_prev_hp.y = angle_inertion_var(m_prev_hp.y, -actor->cam_FirstEye()->pitch, TORCH_INERTION_SPEED_MIN,
-                TORCH_INERTION_SPEED_MAX, TORCH_INERTION_CLAMP, Device.fTimeDelta);
+			m_prev_hp.x = angle_inertion_var(m_prev_hp.x, -actor->cam_Active()->yaw, m_torch_inertion_speed_min, m_torch_inertion_speed_max, TORCH_INERTION_CLAMP, Device.fTimeDelta);
+		    m_prev_hp.y = angle_inertion_var(m_prev_hp.y, -actor->cam_Active()->pitch, m_torch_inertion_speed_min, m_torch_inertion_speed_max, TORCH_INERTION_CLAMP, Device.fTimeDelta);
 
             Fvector dir, right, up;
             dir.setHP(m_prev_hp.x + m_delta_h, m_prev_hp.y);
@@ -279,17 +296,17 @@ void CTorch::UpdateCL()
             if (true)
             {
                 Fvector offset = M.c;
-                offset.mad(M.i, TORCH_OFFSET.x);
-                offset.mad(M.j, TORCH_OFFSET.y);
-                offset.mad(M.k, TORCH_OFFSET.z);
+                offset.mad(M.i, m_torch_offset.x);
+                offset.mad(M.j, m_torch_offset.y);
+                offset.mad(M.k, m_torch_offset.z);
                 light_render->set_position(offset);
 
                 if (true /*false*/)
                 {
                     offset = M.c;
-                    offset.mad(M.i, OMNI_OFFSET.x);
-                    offset.mad(M.j, OMNI_OFFSET.y);
-                    offset.mad(M.k, OMNI_OFFSET.z);
+                    offset.mad(M.i, m_omni_offset.x);
+                    offset.mad(M.j, m_omni_offset.y);
+                    offset.mad(M.k, m_omni_offset.z);
                     light_omni->set_position(offset);
                 }
             } // if (true)
@@ -315,9 +332,9 @@ void CTorch::UpdateCL()
                 light_render->set_rotation(M.k, M.i);
 
                 Fvector offset = M.c;
-                offset.mad(M.i, OMNI_OFFSET.x);
-                offset.mad(M.j, OMNI_OFFSET.y);
-                offset.mad(M.k, OMNI_OFFSET.z);
+                offset.mad(M.i, m_omni_offset.x);
+                offset.mad(M.j, m_omni_offset.y);
+                offset.mad(M.k, m_omni_offset.z);
                 light_omni->set_position(M.c);
                 light_omni->set_rotation(M.k, M.i);
             } // if (can_use_dynamic_lights())
@@ -413,4 +430,27 @@ void CTorch::enable(bool value)
 
     if (!enabled() && m_switched_on)
         Switch(false);
+}
+
+bool CTorch::install_upgrade_impl(LPCSTR section, bool test)
+{
+    LPCSTR str;
+
+    // Msg("Torch Upgrade");
+    bool result = inherited::install_upgrade_impl(section, test);
+
+    //result |= process_if_exists(section, "passive_decay_rate", &CInifile::r_float, m_fPassiveDecayRate, test);
+    //result |= process_if_exists(section, "power_decay_rate", &CInifile::r_float, m_fDecayRate, test);
+    result |= process_if_exists(section, "inv_weight", &CInifile::r_float, m_weight, test);
+    result |= process_if_exists(section, "night_vision_type", &CInifile::r_u32, m_NightVisionType, test);
+
+    //bool value = m_bTorchModeEnabled;
+    //bool result2 = process_if_exists_set(section, "torch_allowed", &CInifile::r_bool, value, test);
+    //if (result2 && !test)
+    //{
+        //m_bTorchModeEnabled = !!value;
+    //}
+    //result |= result2;
+
+    return result;
 }

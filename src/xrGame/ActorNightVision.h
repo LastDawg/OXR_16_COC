@@ -19,4 +19,5 @@ public:
 	bool		IsActive();
 	void		OnDisabled(CActor* pA, bool play_sound = true);
 	void		PlaySounds(EPlaySounds which);
+    void        StopOnlyEffector(const float factor);
 };

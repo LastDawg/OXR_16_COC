@@ -24,6 +24,11 @@ protected:
     ref_light light_omni;
     ref_glow glow_render;
     Fvector m_focus;
+    shared_str m_light_section;
+    Fvector m_torch_offset;
+    Fvector m_omni_offset;
+    float m_torch_inertion_speed_max;
+    float m_torch_inertion_speed_min;
 
 private:
     inline bool can_use_dynamic_lights();
@@ -66,6 +71,7 @@ protected:
         eAttached = (1 << 2)
     };
 
+    virtual bool install_upgrade_impl(LPCSTR section, bool test);
     IC int GetTorchNV_Type() const { return m_NightVisionType; }
 
 public:
