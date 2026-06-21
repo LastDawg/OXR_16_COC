@@ -269,7 +269,7 @@ void CHUDTarget::Render()
 #endif
     }
 
-	if (smart_cast<CPda*>(Actor->inventory().ActiveItem()))
+	if (Actor && smart_cast<CPda*>(Actor->inventory().ActiveItem()))
         return;
 
     //отрендерить кружочек или крестик

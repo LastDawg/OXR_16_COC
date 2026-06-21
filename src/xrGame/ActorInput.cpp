@@ -31,7 +31,6 @@
 #include "HUDManager.h"
 #include "Weapon.h"
 #include "GamePersistent.h"
-#include "ui/UIPdaWnd.h"
 
 bool g_bAutoClearCrouch = true;
 
@@ -655,11 +654,6 @@ void CActor::ActorUse()
         return;
     }
 
-	CUIPdaWnd* pda = &CurrentGameUI()->GetPdaMenu();
-
-	if (pda->IsShown())
-        return;
-
     if (!psActorFlags.test(AF_MULTI_ITEM_PICKUP))
         m_bPickupMode = true;
 
@@ -755,6 +749,8 @@ static u16 SlotsToCheck[] = {
     INV_SLOT_2, // 1
     INV_SLOT_3, // 2
     GRENADE_SLOT, // 3
+    BINOCULAR_SLOT, // 4
+    BOLT_SLOT, // 5
     PDA_SLOT, // 7
     ARTEFACT_SLOT, // 10
 };

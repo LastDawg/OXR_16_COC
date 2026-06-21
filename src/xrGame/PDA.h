@@ -88,7 +88,7 @@ protected:
     float m_fUD_InertiaFactor;
     bool hasEnoughBatteryPower()
     {
-        return (!IsUsingCondition() || (IsUsingCondition() && GetCondition() > m_fLowestBatteryCharge));
+        return (!IsUsingCondition() || (IsUsingCondition() && this->GetCondition() > m_fLowestBatteryCharge));
     }
     static void JoystickCallback(CBoneInstance* B);
     bool m_bNoticedEmptyBattery;

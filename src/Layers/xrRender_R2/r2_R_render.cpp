@@ -406,4 +406,31 @@ void CRender::BeforeWorldRender() {}
 
 // После рендера мира и пост-эффектов --#SM+#--
 void CRender::AfterWorldRender() {}
+
+#ifdef USE_DX11
+void CRender::RenderToTarget(RRT target)
+{
+    ref_rt* RT;
+
+    switch (target)
+    {
+    case rtPDA: RT = &Target->rt_ui_pda; break;
+    //case rtSVP: RT = &Target->rt_secondVP; break;
+    default: xrDebug::Fatal(DEBUG_INFO, "None or wrong Target specified: %i", target); break;
+    }
+
+    ID3DTexture2D* pBuffer = nullptr;
+    HW.m_pSwapChain->GetBuffer(0, __uuidof(ID3DTexture2D), (LPVOID*)&pBuffer);
+    if (pBuffer)
+    {
+        HW.get_context(CHW::IMM_CTX_ID)->CopyResource((*RT)->pSurface, pBuffer);
+        pBuffer->Release();
+    }
+}
+#endif
+
+#ifdef USE_OGL
+void CRender::RenderToTarget(RRT target) {}
+#endif
+
 } // namespace xray::render::RENDER_NAMESPACE

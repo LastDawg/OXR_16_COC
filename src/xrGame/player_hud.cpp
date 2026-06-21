@@ -106,7 +106,7 @@ void player_hud_motion_container::load(IKinematicsAnimated* model, const shared_
 #endif // #ifdef DEBUG
                 }
             }
-            VERIFY2(pm->m_animations.size(), make_string("motion not found [%s]", pm->m_base_name.c_str()).c_str());
+            VERIFY2(pm.m_animations.size(), make_string("motion not found [%s]", pm.m_base_name.c_str()).c_str());
 
             m_anims.emplace(name, std::move(pm));
         }
@@ -801,10 +801,8 @@ void player_hud::render_hud(u32 context_id, IRenderable* root)
     if (!item0 && !item1)
         return;
 
-	bool b_r0 = ((m_attached_items[0] &&
-        m_attached_items[0]->need_renderable()) /*|| script_anim_part == 0 || script_anim_part == 2*/);
-    bool b_r1 = ((m_attached_items[1] &&
-        m_attached_items[1]->need_renderable()) /*|| script_anim_part == 1 || script_anim_part == 2*/);
+	bool b_r0 = ((item0 && item0->need_renderable()) /*|| script_anim_part == 0 || script_anim_part == 2*/);
+    bool b_r1 = ((item1 && item1->need_renderable()) /*|| script_anim_part == 1 || script_anim_part == 2*/);
 
     if (!b_r0 && !b_r1)
         return;

@@ -105,16 +105,8 @@ void CUIGameCustom::Render()
                     item->render_item_ui();
             }
         }
-        if (pda)
-        {
-            if (GameIndicatorsShown() && psHUD_Flags.is(HUD_DRAW | HUD_DRAW_RT) && !pda->m_bZoomed)
-                UIMainIngameWnd->Draw();
-        }
-        else
-        {
-            if (GameIndicatorsShown() && psHUD_Flags.is(HUD_DRAW | HUD_DRAW_RT))
-                UIMainIngameWnd->Draw();
-        }
+        if (GameIndicatorsShown() && psHUD_Flags.is(HUD_DRAW | HUD_DRAW_RT))
+            UIMainIngameWnd->Draw();
     }
     m_pMessagesWnd->Draw();
     DoRenderDialogs();
@@ -180,7 +172,6 @@ bool CUIGameCustom::ShowActorMenu()
         if (!psActorFlags.test(AF_3D_PDA))
             HidePdaMenu();
 
-        // HidePdaMenu();
         auto actor = smart_cast<CInventoryOwner*>(Level().CurrentViewEntity());
         VERIFY(actor);
         ActorMenu->SetActor(actor);
@@ -237,16 +228,15 @@ void CUIGameCustom::ShowMessagesWindow()
         m_pMessagesWnd->Show(true);
 }
 
-bool CUIGameCustom::ShowPdaMenu()
+bool CUIGameCustom::ShowPdaMenu()  // ShowPdaMenu() Here was fatal error if pda hide
 {
-    if (PdaMenu->IsShown())
-    {
-        PdaMenu->HideDialog();
-        return false;
-    }
     HideActorMenu();
-    PdaMenu->ShowDialog(true);
-    return true;
+    if (!PdaMenu->IsShown())
+    {
+        PdaMenu->ShowDialog(true);
+        return true;
+    }
+    return false;
 }
 
 void CUIGameCustom::HidePdaMenu()
