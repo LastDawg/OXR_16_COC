@@ -214,9 +214,12 @@ bool CUIRankingWnd::Init()
     u8 topRankCount = 50;
     luabind::functor<u8> getRankingArraySize;
 
-    if (GEnv.ScriptEngine->functor("pda.get_rankings_array_size", getRankingArraySize))
+    if (Device.dwPrecacheFrame == 0)
     {
-        topRankCount = getRankingArraySize();
+        if (GEnv.ScriptEngine->functor("pda.get_rankings_array_size", getRankingArraySize))
+        {
+            topRankCount = getRankingArraySize();
+        }
     }
 
     std::ignore = UIHelper::CreateFrameWindow(xml, "coc_ranking_background", this, false);
@@ -371,37 +374,42 @@ void CUIRankingWnd::get_best_monster()
     pcstr str;
     luabind::functor<pcstr> functor;
 
-    if (GEnv.ScriptEngine->functor("pda.get_monster_back", functor))
+    if (Device.dwPrecacheFrame == 0)
     {
-        str = functor();
-        if (!xr_strcmp(str, ""))
-            return;
-
-        if (xr_strcmp(str, m_last_monster_icon_back))
+        if (GEnv.ScriptEngine->functor("pda.get_monster_back", functor))
         {
-            if (m_monster_icon_back)
+            str = functor();
+            if (!xr_strcmp(str, ""))
+                return;
+
+            if (xr_strcmp(str, m_last_monster_icon_back))
             {
-                m_monster_icon_back->TextureOn();
-                m_monster_icon_back->InitTexture(str);
+                if (m_monster_icon_back)
+                {
+                    m_monster_icon_back->TextureOn();
+                    m_monster_icon_back->InitTexture(str);
+                }
+                m_last_monster_icon_back = str;
             }
-            m_last_monster_icon_back = str;
         }
     }
-
-    if (GEnv.ScriptEngine->functor("pda.get_monster_icon", functor))
+    if (Device.dwPrecacheFrame == 0)
     {
-        str = functor();
-        if (!xr_strcmp(str, ""))
-            return;
-
-        if (xr_strcmp(str, m_last_monster_icon))
+        if (GEnv.ScriptEngine->functor("pda.get_monster_icon", functor))
         {
-            if (m_monster_icon)
+            str = functor();
+            if (!xr_strcmp(str, ""))
+                return;
+
+            if (xr_strcmp(str, m_last_monster_icon))
             {
-                m_monster_icon->TextureOn();
-                m_monster_icon->InitTexture(str);
+                if (m_monster_icon)
+                {
+                    m_monster_icon->TextureOn();
+                    m_monster_icon->InitTexture(str);
+                }
+                m_last_monster_icon = str;
             }
-            m_last_monster_icon = str;
         }
     }
 }

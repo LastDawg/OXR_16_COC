@@ -228,7 +228,7 @@ void CUIGameCustom::ShowMessagesWindow()
         m_pMessagesWnd->Show(true);
 }
 
-bool CUIGameCustom::ShowPdaMenu()  // ShowPdaMenu() Here was fatal error if pda hide
+bool CUIGameCustom::ShowPdaMenu()
 {
     HideActorMenu();
     if (!PdaMenu->IsShown())

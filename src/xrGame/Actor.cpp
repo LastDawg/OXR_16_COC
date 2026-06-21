@@ -1262,7 +1262,7 @@ void CActor::UpdateCL()
     }
 	luabind::functor<bool> funct;
 
-    if (Device.dwPrecacheFrame == 0)
+    if (Device.dwPrecacheFrame == 0) // Стереть если потребуется, в предыдущем пакете правок быть не должно
     {
 	    if (GEnv.ScriptEngine->functor("new_utils.devices_check_surge", funct))
             funct();

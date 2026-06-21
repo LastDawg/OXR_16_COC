@@ -122,7 +122,7 @@ bool CUIGameSP::IR_UIOnKeyboardPress(int dik)
     {
     case kACTIVE_JOBS:
     {
-        if (!psActorFlags.test(AF_3D_PDA) && !pActor->inventory_disabled())
+        if (!psActorFlags.test(AF_3D_PDA) && !pActor->inventory_disabled() && Device.dwPrecacheFrame == 0)
         {
             luabind::functor<bool> funct;
             if (GEnv.ScriptEngine->functor("pda.pda_use", funct))

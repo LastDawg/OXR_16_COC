@@ -380,9 +380,12 @@ void CPda::UpdateCL()
                 if (!m_bPowerSaving)
                 {
                     luabind::functor<void> funct;
-                    if (GEnv.ScriptEngine->functor("pda.on_low_battery", funct))
-                        funct();
-                    m_bPowerSaving = true;
+                    if (Device.dwPrecacheFrame == 0)
+                    {
+                        if (GEnv.ScriptEngine->functor("pda.on_low_battery", funct))
+                            funct();
+                        m_bPowerSaving = true;
+                    }
                 }
             }
 
@@ -438,8 +441,11 @@ void CPda::UpdateCL()
     }
     luabind::functor<bool> funct;
 
-    if (GEnv.ScriptEngine->functor("pda.check_surge", funct))
-        funct();
+    if (Device.dwPrecacheFrame == 0)
+    {
+        if (GEnv.ScriptEngine->functor("pda.check_surge", funct))
+            funct();
+    }
 }
 
 void CPda::UpdatePower()

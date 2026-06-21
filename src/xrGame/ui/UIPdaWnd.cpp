@@ -393,12 +393,15 @@ void CUIPdaWnd::SetActiveSubdialog(const shared_str& section)
     }
 
     luabind::functor<CUIDialogWndEx*> functor;
-    if (GEnv.ScriptEngine->functor("pda.set_active_subdialog", functor))
+    if (Device.dwPrecacheFrame == 0)
     {
-        if (CUIDialogWndEx* scriptWnd = functor(section.c_str()))
+        if (GEnv.ScriptEngine->functor("pda.set_active_subdialog", functor))
         {
-            scriptWnd->SetHolder(CurrentDialogHolder());
-            m_pActiveDialog = scriptWnd;
+            if (CUIDialogWndEx* scriptWnd = functor(section.c_str()))
+            {
+                scriptWnd->SetHolder(CurrentDialogHolder());
+                m_pActiveDialog = scriptWnd;
+            }
         }
     }
 

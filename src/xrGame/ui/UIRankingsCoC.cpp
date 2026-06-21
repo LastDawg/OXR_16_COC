@@ -41,47 +41,50 @@ void CUIRankingsCoC::Update()
     //    return;
 
     luabind::functor<bool> functorCanShow;
-    if (GEnv.ScriptEngine->functor("pda.coc_rankings_can_show", functorCanShow))
+    if (Device.dwPrecacheFrame == 0)
     {
-        if (functorCanShow(m_index))
+        if (GEnv.ScriptEngine->functor("pda.coc_rankings_can_show", functorCanShow))
         {
-            if (!ParentHasMe())
+            if (functorCanShow(m_index))
             {
-                luabind::functor<pcstr> functorSetName;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_name", functorSetName))
-                    SetName(functorSetName(m_index));
-
-                luabind::functor<pcstr> functorSetDescription;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_description", functorSetDescription))
-                    SetDescription(functorSetDescription(m_index));
-                luabind::functor<pcstr> functorSetHint;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_hint", functorSetHint))
-                    SetHint(functorSetHint(m_index));
-
-                luabind::functor<pcstr> functorSetIcon;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_icon", functorSetIcon))
-                    SetIcon(functorSetIcon(m_index));
-
-                /*
-                luabind::functor<pcstr> functorShowBorder;
-                if (GEnv.ScriptEngine->functor("pda.coc_rankings_show_border", functorShowBorder))
+                if (!ParentHasMe())
                 {
-                    if (functorShowBorder(m_index))
-                    {
-                        if (!m_border->IsShown())
-                            m_border->Show(true);
-                    }
-                    else
-                    {
-                        if (m_border->IsShown())
-                            m_border->Show(false);
-                    }
-                }
-                */
+                    luabind::functor<pcstr> functorSetName;
+                    if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_name", functorSetName))
+                        SetName(functorSetName(m_index));
 
-                m_parent->AddWindow(this, false);
-                if (!IsShown())
-                    Show(true);
+                    luabind::functor<pcstr> functorSetDescription;
+                    if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_description", functorSetDescription))
+                        SetDescription(functorSetDescription(m_index));
+                    luabind::functor<pcstr> functorSetHint;
+                    if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_hint", functorSetHint))
+                        SetHint(functorSetHint(m_index));
+
+                    luabind::functor<pcstr> functorSetIcon;
+                    if (GEnv.ScriptEngine->functor("pda.coc_rankings_set_icon", functorSetIcon))
+                        SetIcon(functorSetIcon(m_index));
+
+                    /*
+                    luabind::functor<pcstr> functorShowBorder;
+                    if (GEnv.ScriptEngine->functor("pda.coc_rankings_show_border", functorShowBorder))
+                    {
+                        if (functorShowBorder(m_index))
+                        {
+                            if (!m_border->IsShown())
+                                m_border->Show(true);
+                        }
+                        else
+                        {
+                            if (m_border->IsShown())
+                                m_border->Show(false);
+                        }
+                    }
+                    */
+
+                    m_parent->AddWindow(this, false);
+                    if (!IsShown())
+                        Show(true);
+                }
             }
         }
         else
