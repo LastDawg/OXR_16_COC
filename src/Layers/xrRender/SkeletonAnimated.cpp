@@ -721,71 +721,93 @@ void CKinematicsAnimated::Load(const char* N, IReader* data, u32 dwFlags)
 {
     inherited::Load(N, data, dwFlags);
 
-    // Globals
+    // Сброс параметров
     blend_instances = nullptr;
     m_Partition = nullptr;
     Update_LastTime = 0;
 
+#ifdef DEBUG
+    Msg("* [LOAD] Visual: [%s]", N);
+#endif
+
     const auto loadOMF = [&](LPCSTR _path)
     {
         string_path fn;
-        if (!FS.exist(fn, "$level$", _path))
+        if (!FS.exist(fn, "$level$", _path) && !FS.exist(fn, "$game_meshes$", _path))
         {
-            if (!FS.exist(fn, "$game_meshes$", _path))
-            {
 #ifdef _EDITOR
-                Msg("! Can't find motion file '%s'.", nm);
-                return;
+            Msg("! [OXR-ERROR] Can't find motion file '%s'.", _path);
+            return;
 #else
-                xrDebug::Fatal(DEBUG_INFO, "Can't find motion file '%s'\nsection '%s'\nmodel '%s'", _path, current_player_hud_sect.c_str(), N);
+            xrDebug::Fatal(DEBUG_INFO, "Can't find motion file '%s'\nsection '%s'\nmodel '%s'", _path, current_player_hud_sect.c_str(), N);
 #endif
-            }
         }
 
-        // Check compatibility
+        u32 current_slot = (u32)m_Motions.size();
         m_Motions.push_back(SMotionsSlot());
+      
+        bool bAlreadyLoaded = g_pMotionsContainer->has(_path);
+
+        if (!bAlreadyLoaded)
+        {
+            Msg("~ [OMF] Loading: %s", _path);
+            FlushLog(); 
+        }
+
         bool create_res = true;
-        if (!g_pMotionsContainer->has(_path)) //optimize fs operations
+        if (!g_pMotionsContainer->has(_path)) 
         {
             IReader* MS = FS.r_open(fn);
-            create_res = m_Motions.back().motions.create(_path, MS, bones);
-            FS.r_close(MS);
+            if (MS)
+            {
+                create_res = m_Motions.back().motions.create(_path, MS, bones);
+                FS.r_close(MS);
+            }
         }
-        if (create_res)
-            m_Motions.back().motions.create(_path, NULL, bones);
         else
         {
-            m_Motions.pop_back();
-            Msg("! error in model [%s]. Unable to load motion file '%s', section '%s'.", N, _path, current_player_hud_sect.c_str());
+            create_res = m_Motions.back().motions.create(_path, NULL, bones);
         }
+
+        if (!create_res)
+        {
+            Msg("[ERROR] Failed to create motions for [%s]", _path);
+            m_Motions.pop_back();
+        }
+#ifdef DEBUG
+        else
+        {
+            CPartition* pd = m_Motions.back().motions.partition();
+            u32 b_count = (pd && pd->count() > 0) ? (u32)pd->part(0).bones.size() : 0;
+            Msg("  |  [OK] Bones in partition[0]: %u", b_count);
+        }
+#endif
     };
 
-    // Load animation
     if (data->find_chunk(OGF_S_MOTION_REFS))
     {
         string_path items_nm;
         data->r_stringZ(items_nm, sizeof(items_nm));
+        
         u32 set_cnt = _GetItemCount(items_nm);
-        R_ASSERT2(set_cnt < MAX_ANIM_SLOT, make_string("section '%s'\nmodel '%s'", current_player_hud_sect.c_str(), N).c_str());
-        m_Motions.reserve(set_cnt);
+        m_Motions.reserve(set_cnt + 5); 
+        
         string_path nm;
         for (u32 k = 0; k < set_cnt; ++k)
         {
             _GetItem(items_nm, k, nm);
-            if (strstr(nm, "\\*.omf"))
+            
+            if (strchr(nm, '*')) 
             {
                 FS_FileSet fset;
                 FS.file_list(fset, "$game_meshes$", FS_ListFiles, nm);
                 FS.file_list(fset, "$level$", FS_ListFiles, nm);
 
-                if (fset.size())
+                if (!fset.empty())
                 {
-                    m_Motions.reserve(fset.size() - 1);
-
-                    for (FS_FileSet::iterator it = fset.begin(); it != fset.end(); it++)
-                        loadOMF((*it).name.c_str());
+                    m_Motions.reserve(m_Motions.size() + fset.size());
+                    for (auto& it : fset) loadOMF(it.name.c_str());
                 }
-
                 continue;
             }
 
@@ -793,28 +815,28 @@ void CKinematicsAnimated::Load(const char* N, IReader* data, u32 dwFlags)
             loadOMF(nm);
         }
     }
+    // Обработка MOTION_REFS2
     else if (data->find_chunk(OGF_S_MOTION_REFS2))
     {
         u32 set_cnt = data->r_u32();
         m_Motions.reserve(set_cnt);
+
         string_path nm;
         for (u32 k = 0; k < set_cnt; ++k)
         {
             data->r_stringZ(nm, sizeof(nm));
-            if (strstr(nm, "\\*.omf"))
+            
+            if (strchr(nm, '*')) 
             {
                 FS_FileSet fset;
                 FS.file_list(fset, "$game_meshes$", FS_ListFiles, nm);
                 FS.file_list(fset, "$level$", FS_ListFiles, nm);
 
-                if (fset.size())
+                if (!fset.empty())
                 {
-                    m_Motions.reserve(fset.size() - 1);
-
-                    for (FS_FileSet::iterator it = fset.begin(); it != fset.end(); it++)
-                        loadOMF((*it).name.c_str());
+                    m_Motions.reserve(m_Motions.size() + fset.size());
+                    for (auto& it : fset) loadOMF(it.name.c_str());
                 }
-
                 continue;
             }
             xr_strcat(nm, ".omf");
@@ -831,10 +853,31 @@ void CKinematicsAnimated::Load(const char* N, IReader* data, u32 dwFlags)
 
     R_ASSERT2(m_Motions.size(), make_string("section '%s'\nmodel '%s'", current_player_hud_sect.c_str(), N).c_str());
 
-    m_Partition = m_Motions[0].motions.partition();
-    m_Partition->load(this, N);
+    // ФИНАЛИЗАЦИЯ ПАРТИЦИЙ
+    m_Partition = nullptr;
 
-    // initialize motions
+    for (int i = int(m_Motions.size()) - 1; i >= 0; --i)
+    {
+        CPartition* pd = m_Motions[i].motions.partition();
+        if (pd && pd->count() > 0 && !pd->part(0).bones.empty())
+        {
+            m_Partition = pd;
+#ifdef DEBUG
+            Msg("Master Partition set from Slot [%d] (%s), bones: %u", i, m_Motions[i].motions.id().c_str(), (u32)pd->part(0).bones.size());
+#endif
+            break;
+        }
+    }
+
+    if (!m_Partition)
+    {
+        Msg("  !! [WARNING] No valid partition found! Fallback to Slot [0].");
+        m_Partition = m_Motions[0].motions.partition();
+    }
+
+    if (m_Partition)
+        m_Partition->load(this, N);
+
     for (auto &m_it : m_Motions)
     {
         SMotionsSlot& MS = m_it;
@@ -846,11 +889,10 @@ void CKinematicsAnimated::Load(const char* N, IReader* data, u32 dwFlags)
         }
     }
 
-    // Init blend pool
     IBlend_Startup();
-
-    //.	if (motions.cycle()->size()<2)
-    //.		Msg("* WARNING: model '%s' has only one motion. Candidate for SkeletonRigid???",N);
+#ifdef DEBUG
+    Msg("Visual [%s] loaded successfully. Total slots: %u", N, (u32)m_Motions.size());
+#endif
 }
 
 void CKinematicsAnimated::LL_BuldBoneMatrixDequatize(const CBoneData* bd, u8 channel_mask, SKeyTable& keys)

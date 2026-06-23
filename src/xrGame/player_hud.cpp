@@ -697,6 +697,17 @@ void player_hud::load(const shared_str& player_hud_sect)
     if (player_hud_sect == m_sect_name)
         return;
 
+    // 1. Сначала отцепляем предметы от рук, чтобы движок не пытался их рендерить
+    m_attached_items[0] = nullptr;
+    m_attached_items[1] = nullptr;
+
+    // 2. Теперь безопасно удаляем объекты из пула
+    for (auto& it : m_pool)
+    {
+        xr_delete(it.second);
+    }
+    m_pool.clear();
+
     m_sect_name = player_hud_sect;
     const bool b_reload = m_model != nullptr;
 
@@ -937,6 +948,13 @@ u32 player_hud::anim_play(u16 part, const MotionID& M, BOOL bMixIn, const CMotio
 
     if (override_part != u16(-1))
         part_id = override_part;
+
+#ifdef DEBUG
+    if (M.valid())
+    {
+        Msg("* [HUD-DEBUG] Playing Anim: Slot[%d] ID[%d]. PartID: %d", M.slot, M.idx, part);
+    }
+#endif
 
     for (u8 pid = 0; pid < 3; ++pid)
     {
