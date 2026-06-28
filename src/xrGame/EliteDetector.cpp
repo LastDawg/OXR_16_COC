@@ -9,8 +9,13 @@
 
 constexpr cpcstr AF_SIGN = "af_sign";
 
-CEliteDetector::CEliteDetector() { m_artefacts.m_af_rank = 3; }
+CEliteDetector::CEliteDetector()
+{ 
+    m_artefacts.m_af_rank = 3; 
+}
+
 CEliteDetector::~CEliteDetector() {}
+
 void CEliteDetector::CreateUI()
 {
     R_ASSERT(NULL == m_ui);
@@ -18,7 +23,18 @@ void CEliteDetector::CreateUI()
     ui().construct(this);
 }
 
-CUIArtefactDetectorElite& CEliteDetector::ui() { return *((CUIArtefactDetectorElite*)m_ui); }
+void CEliteDetector::ResetUI()
+{
+    if (m_ui)
+        ui().Clear();
+}
+
+
+CUIArtefactDetectorElite& CEliteDetector::ui() 
+{ 
+    return *((CUIArtefactDetectorElite*)m_ui); 
+}
+
 void CEliteDetector::UpdateAf()
 {
     ui().Clear();

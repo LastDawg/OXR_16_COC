@@ -59,6 +59,8 @@ void CHudTuner::UpdateValues()
     if (current_hud_item)
     {
         current_hud_item->m_measures = new_measures;
+        // Запоминаем текущие правки для этой секции в памяти
+        session_cache[current_hud_item->m_sect_name] = new_measures; 
     }
 }
 
@@ -86,11 +88,27 @@ void CHudTuner::on_tool_frame()
     };
 
 
-    auto hud_item = g_player_hud->attached_item(current_hud_idx);
+auto hud_item = g_player_hud->attached_item(current_hud_idx);
     if (current_hud_item != hud_item)
     {
         current_hud_item = hud_item;
-        ResetToDefaultValues();
+        
+        if (current_hud_item)
+        {
+            // Проверяем, есть ли у нас в памяти уже настроенные данные для этой пушки
+            auto it = session_cache.find(current_hud_item->m_sect_name);
+            if (it != session_cache.end())
+            {
+                // Если есть — берем их из памяти
+                new_measures = it->second;
+                current_hud_item->m_measures = new_measures;
+            }
+            else
+            {
+                // Если нет — загружаем стандартные из LTX
+                ResetToDefaultValues();
+            }
+        }
     }
 
     if (ImGui::Begin(tool_name(), &get_open_state(), get_default_window_flags()))
@@ -151,34 +169,58 @@ void CHudTuner::on_tool_frame()
 
                 ImGuiIO& io = ImGui::GetIO();
 
-                if (ImGui::Button("Copy formatted values to clipboard"))
+if (ImGui::Button("Copy formatted values to clipboard"))
                 {
+                    // --- 1. Стандартная логика (Копирование в буфер обмена) ---
                     ImGui::LogToClipboard();
                     xr_sprintf(selectable, "[%s]\n", m_sect_name.c_str());
                     ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "hands_position%s = %f,%f,%f\n", (is_16x9) ? "_16x9" : "", new_measures.m_hands_attach[0].x, new_measures.m_hands_attach[0].y, new_measures.m_hands_attach[0].z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "hands_orientation%s = %f,%f,%f\n", (is_16x9) ? "_16x9" : "", new_measures.m_hands_attach[1].x, new_measures.m_hands_attach[1].y, new_measures.m_hands_attach[1].z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "aim_hud_offset_pos%s = %f,%f,%f\n", (is_16x9) ? "_16x9" : "", new_measures.m_hands_offset[0][1].x, new_measures.m_hands_offset[0][1].y, new_measures.m_hands_offset[0][1].z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "aim_hud_offset_rot%s = %f,%f,%f\n", (is_16x9) ? "_16x9" : "", new_measures.m_hands_offset[1][1].x, new_measures.m_hands_offset[1][1].y, new_measures.m_hands_offset[1][1].z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "gl_hud_offset_pos%s = %f,%f,%f\n", (is_16x9) ? "_16x9" : "", new_measures.m_hands_offset[0][2].x, new_measures.m_hands_offset[0][2].y, new_measures.m_hands_offset[0][2].z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "gl_hud_offset_rot%s = %f,%f,%f\n", (is_16x9) ? "_16x9" : "", new_measures.m_hands_offset[1][2].x, new_measures.m_hands_offset[1][2].y, new_measures.m_hands_offset[1][2].z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "item_position = %f,%f,%f\n", new_measures.m_item_attach[0].x, new_measures.m_item_attach[0].y, new_measures.m_item_attach[0].z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "item_orientation = %f,%f,%f\n", new_measures.m_item_attach[1].x, new_measures.m_item_attach[1].y, new_measures.m_item_attach[1].z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "fire_point = %f,%f,%f\n", new_measures.m_fire_point_offset.x, new_measures.m_fire_point_offset.y, new_measures.m_fire_point_offset.z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "fire_point = %f,%f,%f\n", new_measures.m_fire_point2_offset.x, new_measures.m_fire_point2_offset.y, new_measures.m_fire_point2_offset.z);
-                    ImGui::LogText("%s", selectable);
-                    xr_sprintf(selectable, "shell_point = %f,%f,%f\n", new_measures.m_shell_point_offset.x, new_measures.m_shell_point_offset.y, new_measures.m_shell_point_offset.z);
-                    ImGui::LogText("%s", selectable);
+                    
+                    bool is_16x9 = UI().is_widescreen();
+                    const char* s = is_16x9 ? "_16x9" : "";
+
+                    // Функция-хелпер для форматирования строк (чтобы не дублировать код для файла и буфера)
+                    auto LogValue = [&](const char* name, const char* suffix, Fvector& v) {
+                        string128 line;
+                        xr_sprintf(line, "%s%s = %f,%f,%f\n", name, suffix, v.x, v.y, v.z);
+                        ImGui::LogText("%s", line);
+                    };
+
+                    LogValue("hands_position", s, new_measures.m_hands_attach[0]);
+                    LogValue("hands_orientation", s, new_measures.m_hands_attach[1]);
+                    LogValue("aim_hud_offset_pos", s, new_measures.m_hands_offset[0][1]);
+                    LogValue("aim_hud_offset_rot", s, new_measures.m_hands_offset[1][1]);
+                    LogValue("gl_hud_offset_pos", s, new_measures.m_hands_offset[0][2]);
+                    LogValue("gl_hud_offset_rot", s, new_measures.m_hands_offset[1][2]);
+                    LogValue("item_position", "", new_measures.m_item_attach[0]);
+                    LogValue("item_orientation", "", new_measures.m_item_attach[1]);
+                    LogValue("fire_point", "", new_measures.m_fire_point_offset);
+                    LogValue("fire_point2", "", new_measures.m_fire_point2_offset);
+                    LogValue("shell_point", "", new_measures.m_shell_point_offset);
+                    
                     ImGui::LogFinish();
+
+                    string_path file_path;
+                    FS.update_path(file_path, "$app_data_root$", "player_hud_tune.ltx");
+
+                    FILE* F = fopen(file_path, "a"); // Открываем для дозаписи
+                    if (F)
+                    {
+                        fprintf(F, "[%s] ; Сохранено: %f\n", m_sect_name.c_str(), Device.fTimeGlobal);
+                        fprintf(F, "hands_position%s    = %f,%f,%f\n", s, new_measures.m_hands_attach[0].x, new_measures.m_hands_attach[0].y, new_measures.m_hands_attach[0].z);
+                        fprintf(F, "hands_orientation%s = %f,%f,%f\n", s, new_measures.m_hands_attach[1].x, new_measures.m_hands_attach[1].y, new_measures.m_hands_attach[1].z);
+                        fprintf(F, "aim_hud_offset_pos%s = %f,%f,%f\n", s, new_measures.m_hands_offset[0][1].x, new_measures.m_hands_offset[0][1].y, new_measures.m_hands_offset[0][1].z);
+                        fprintf(F, "aim_hud_offset_rot%s = %f,%f,%f\n", s, new_measures.m_hands_offset[1][1].x, new_measures.m_hands_offset[1][1].y, new_measures.m_hands_offset[1][1].z);
+                        fprintf(F, "gl_hud_offset_pos%s  = %f,%f,%f\n", s, new_measures.m_hands_offset[0][2].x, new_measures.m_hands_offset[0][2].y, new_measures.m_hands_offset[0][2].z);
+                        fprintf(F, "gl_hud_offset_rot%s  = %f,%f,%f\n", s, new_measures.m_hands_offset[1][2].x, new_measures.m_hands_offset[1][2].y, new_measures.m_hands_offset[1][2].z);
+                        fprintf(F, "item_position       = %f,%f,%f\n", new_measures.m_item_attach[0].x, new_measures.m_item_attach[0].y, new_measures.m_item_attach[0].z);
+                        fprintf(F, "item_orientation    = %f,%f,%f\n", new_measures.m_item_attach[1].x, new_measures.m_item_attach[1].y, new_measures.m_item_attach[1].z);
+                        fprintf(F, "fire_point          = %f,%f,%f\n", new_measures.m_fire_point_offset.x, new_measures.m_fire_point_offset.y, new_measures.m_fire_point_offset.z);
+                        fprintf(F, "fire_point2         = %f,%f,%f\n", new_measures.m_fire_point2_offset.x, new_measures.m_fire_point2_offset.y, new_measures.m_fire_point2_offset.z);
+                        fprintf(F, "shell_point         = %f,%f,%f\n", new_measures.m_shell_point_offset.x, new_measures.m_shell_point_offset.y, new_measures.m_shell_point_offset.z);
+                        fprintf(F, "\n");
+                        fclose(F);
+                    }
                 }
 
                 ImGui::NewLine();
@@ -267,6 +309,12 @@ void CHudTuner::on_tool_frame()
 
             if (ImGui::Button("Reset to default values"))
             {
+                if (current_hud_item)
+                {
+                    // Удаляем пушку из кэша сессии
+                    auto it = session_cache.find(current_hud_item->m_sect_name);
+                    if (it != session_cache.end()) session_cache.erase(it);
+                }
                 ResetToDefaultValues();
             }
         }

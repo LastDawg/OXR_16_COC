@@ -149,6 +149,7 @@
     <ClCompile Include="gl_rendertarget_accum_direct.cpp" />
     <ClCompile Include="gl_rendertarget_build_textures.cpp" />
     <ClCompile Include="gl_rendertarget_phase_combine.cpp" />
+    <ClCompile Include="gl_rendertarget_phase_FXAA.cpp" />	
     <ClCompile Include="gl_rendertarget_phase_flip.cpp" />
     <ClCompile Include="..\xrRender\Animation.cpp" />
     <ClCompile Include="..\xrRender\Blender.cpp" />
@@ -188,7 +189,8 @@
 	<ClCompile Include="..\xrRender\rendertarget_phase_hud_effects.cpp" />		
     <ClCompile Include="..\xrRenderPC_GL\blender_hud_bleeding.cpp" />
     <ClCompile Include="..\xrRenderPC_GL\blender_hud_blood.cpp" />
-    <ClCompile Include="..\xrRenderPC_GL\blender_hud_stamina.cpp" />		
+    <ClCompile Include="..\xrRenderPC_GL\blender_hud_stamina.cpp" />	
+    <ClCompile Include="..\xrRenderPC_GL\blender_fxaa.cpp" />		
     <ClCompile Include="..\xrRender\ResourceManager.cpp" />
     <ClCompile Include="..\xrRender\ResourceManager_Loader.cpp" />
     <ClCompile Include="..\xrRender\ResourceManager_Reset.cpp" />
@@ -314,7 +316,8 @@
 	<ClInclude Include="..\xrRenderPC_GL\blender_hud_mask.h" />	
     <ClInclude Include="..\xrRenderPC_GL\blender_hud_bleeding.h" />
     <ClInclude Include="..\xrRenderPC_GL\blender_hud_blood.h" />
-    <ClInclude Include="..\xrRenderPC_GL\blender_hud_stamina.h" />		
+    <ClInclude Include="..\xrRenderPC_GL\blender_hud_stamina.h" />	
+    <ClInclude Include="..\xrRenderPC_GL\blender_fxaa.h" />		
     <ClInclude Include="..\xrRender\Animation.h" />
     <ClInclude Include="..\xrRender\Blender.h" />
     <ClInclude Include="..\xrRender\Blender_CLSID.h" />

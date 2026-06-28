@@ -30,6 +30,10 @@ protected:
     float m_torch_inertion_speed_max;
     float m_torch_inertion_speed_min;
 
+	float m_fDecayRate;
+    float m_fPassiveDecayRate;
+    bool m_bTorchModeEnabled;
+
 private:
     inline bool can_use_dynamic_lights();
 
@@ -51,15 +55,22 @@ public:
 
     virtual void UpdateCL();
 
+    void UpdatePower();
     void Switch();
     void Switch(bool light_on);
     bool torch_active() const;
     u32 m_NightVisionType;
 
+    shared_str m_sShaderNightVisionSect;
+    float m_fNightVisionLumFactor;
+
     virtual bool can_be_attached() const;
 
     // CAttachableItem
     virtual void enable(bool value);
+
+    shared_str m_NightVisionSect;
+    bool m_bNightVisionEnabled; 
 
 protected:
     HUD_SOUND_COLLECTION m_sounds;

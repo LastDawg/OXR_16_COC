@@ -110,7 +110,7 @@ void CRenderTarget::phase_combine()
             std::max(envdesc.ambient.z * 2.f, minamb),
             0
         };
-        ambclr.mul(ps_r2_sun_lumscale_amb);
+        ambclr.mul(ps_r2_sun_lumscale_amb + g_pGamePersistent->devices_shader_data.nightvision_lum_factor);
 
         Fvector4 envclr = envdesc.env_color;
         envclr.x *= 2 * ps_r2_sun_lumscale_hemi;
@@ -295,6 +295,13 @@ void CRenderTarget::phase_combine()
             phase_hud_mask();
     }
 
+    // FXAA
+    if (r2_aa_mode == 2)
+    {
+        phase_fxaa();
+        RCache.set_Stencil(FALSE);
+    }
+
 	// Hud Effects
     if (!_menu_pp && g_pGamePersistent->GetActor())
     {
@@ -415,6 +422,7 @@ void CRenderTarget::phase_combine()
         RCache.set_c("m_current", m_current);
         RCache.set_c("m_previous", m_previous);
         RCache.set_c("m_blur", m_blur_scale.x, m_blur_scale.y, 0.f, 0.f);
+        RCache.set_c("r_color_drag", ps_rcol, ps_gcol, ps_bcol, ps_saturation);
         Fvector3 dof;
         g_pGamePersistent->GetCurrentDof(dof);
         RCache.set_c("dof_params", dof.x, dof.y, dof.z, ps_r2_dof_sky);

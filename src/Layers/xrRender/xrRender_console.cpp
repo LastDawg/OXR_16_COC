@@ -25,6 +25,13 @@
 
 namespace xray::render::RENDER_NAMESPACE
 {
+u32 r2_aa_mode = 1;
+xr_token r2_aa_mode_token[] = {   
+    {"opt_noaa", 1}, 
+    {"opt_fxaa", 2}, 
+    {0, 0}
+};
+
 u32 ps_Preset = 2;
 const xr_token qpreset_token[] =
 {
@@ -125,6 +132,17 @@ Flags32 ps_r__common_flags = { RFLAG_ACTOR_SHADOW }; // All renders
 
 //int ps_r__Supersample = 1;
 int ps_r__LightSleepFrames = 10;
+
+// Colour adv
+
+float ps_rcol = 1;
+float ps_gcol = 1;
+float ps_bcol = 1;
+float ps_saturation = 0;
+//float ps_r2_tnmp_exposure   = 7.0f; // r2-only
+//float ps_r2_tnmp_gamma      = .25f; // r2-only
+//float ps_r2_img_exposure    = 1.0f; // r2-only
+//float ps_r2_img_gamma       = 1.0f; // r2-only
 
 // Raindrops
 float ps_r2_rain_drops_intensity = 0.00025f;
@@ -767,8 +785,8 @@ void xrRender_initconsole()
     //CMD4(CCC_Float, "r__geometry_lod_pow", &ps_r__LOD_Power, 0, 2);
 
     CMD4(CCC_Float, "r__detail_density", &ps_current_detail_density/*&ps_r__Detail_density*/, 0.1f, 0.99f);
-    CMD4(CCC_detail_radius, "r__detail_radius", &ps_r__detail_radius, 49, 300);
-    CMD4(CCC_Float, "r__detail_height", &ps_r__Detail_height, 1, 2);
+    CMD4(CCC_detail_radius, "r__detail_radius", &ps_r__detail_radius, 49, 500);
+    CMD4(CCC_Float, "r__detail_height", &ps_r__Detail_height, 0.5f, 3.0f);
 
 #ifdef DEBUG
     CMD4(CCC_Float, "r__detail_l_ambient", &ps_r__Detail_l_ambient, .5f, .95f);
@@ -946,6 +964,7 @@ void xrRender_initconsole()
     CMD3(CCC_Mask, "r2_detail_bump", &ps_r2_ls_flags, R2FLAG_DETAIL_BUMP);
 
     CMD3(CCC_Token, "r2_sun_quality", &ps_r_sun_quality, qsun_quality_token);
+    CMD3(CCC_Token, "r2_aa_mode", &r2_aa_mode, r2_aa_mode_token);
 
     // Raindrops
     CMD3(CCC_Mask, "r2_raindrops", &ps_r2_rain_drops_flags, R2FLAG_RAIN_DROPS);
@@ -963,6 +982,14 @@ void xrRender_initconsole()
     CMD3(CCC_Token, "r3_water_refl", &ps_r_water_reflection, qwater_reflection_quality_token);
     CMD3(CCC_Mask, "r3_water_refl_half_depth", &ps_r2_ls_flags_ext, R3FLAGEXT_SSR_HALF_DEPTH);
     CMD3(CCC_Mask, "r3_water_refl_jitter", &ps_r2_ls_flags_ext, R3FLAGEXT_SSR_JITTER);
+
+    // Colour adv
+	CMD4(CCC_Float, "r_color_r",    &ps_rcol, 0.0f, 2.55f);
+    CMD4(CCC_Float, "r_color_g",    &ps_gcol, 0.0f, 2.55f);
+    CMD4(CCC_Float, "r_color_b",    &ps_bcol, 0.0f, 2.55f);
+    CMD4(CCC_Float, "r_saturation", &ps_saturation, -1.0f, +1.0f);
+//    CMD4(CCC_Float, "r__exposure",  &ps_r2_img_exposure, 0.5f, 4.0f);
+//    CMD4(CCC_Float, "r__gamma",     &ps_r2_img_gamma, 0.5f, 2.2f);
 
     //CMD3(CCC_Mask, "r3_msaa", &ps_r2_ls_flags, R3FLAG_MSAA);
     CMD3(CCC_Token, "r3_msaa", &ps_r3_msaa, qmsaa_token);

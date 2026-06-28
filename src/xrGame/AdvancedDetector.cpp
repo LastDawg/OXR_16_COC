@@ -5,7 +5,11 @@
 #include "player_hud.h"
 #include "game_object_space.h"
 
-CAdvancedDetector::CAdvancedDetector() { m_artefacts.m_af_rank = 2; }
+CAdvancedDetector::CAdvancedDetector() 
+{ 
+    m_artefacts.m_af_rank = 2; 
+}
+
 CAdvancedDetector::~CAdvancedDetector() {}
 void CAdvancedDetector::CreateUI()
 {
@@ -14,7 +18,17 @@ void CAdvancedDetector::CreateUI()
     ui().construct(this);
 }
 
-CUIArtefactDetectorAdv& CAdvancedDetector::ui() { return *((CUIArtefactDetectorAdv*)m_ui); }
+void CAdvancedDetector::ResetUI()
+{
+    if (m_ui)
+        ui().SetValue(0.0f, Fvector().set(0, 0, 0));
+}
+
+CUIArtefactDetectorAdv& CAdvancedDetector::ui() 
+{ 
+    return *((CUIArtefactDetectorAdv*)m_ui); 
+}
+
 void CAdvancedDetector::UpdateAf()
 {
     ui().SetValue(0.0f, Fvector().set(0, 0, 0));

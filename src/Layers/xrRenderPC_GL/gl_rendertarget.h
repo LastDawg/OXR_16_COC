@@ -37,6 +37,7 @@ public:
     IBlender* b_hud_bleeding{};
     IBlender* b_nightvision{};
     IBlender* b_pp_bloom{};
+    IBlender* b_fxaa{};
 
 #ifdef DEBUG
     struct dbg_line_t
@@ -132,6 +133,9 @@ private:
     ref_shader s_hud_blood;
     ref_shader s_hud_power;
     ref_shader s_hud_bleeding;
+    ref_shader s_nightvision;
+    ref_shader s_pp_bloom;
+    ref_shader s_fxaa;
 
     //	generate min/max
     ref_shader s_create_minmax_sm;
@@ -147,6 +151,8 @@ private:
     ref_geom g_accum_spot;
     ref_geom g_accum_omnipart;
     ref_geom g_accum_volumetric;
+
+    ref_geom g_fxaa;
 
     VertexStagingBuffer g_accum_point_vb;
     IndexStagingBuffer g_accum_point_ib;
@@ -287,6 +293,7 @@ public:
     void phase_hud_blood();
     void phase_hud_power();
     void phase_hud_bleeding();
+    void phase_fxaa();
 
     //	Generates min/max sm
     void create_minmax_SM(CBackend& cmd_list);

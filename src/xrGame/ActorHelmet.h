@@ -48,6 +48,9 @@ public:
     bool m_b_HasGlass;
     u32 m_NightVisionType;
 
+    shared_str m_sShaderNightVisionSect;
+    float m_fNightVisionLumFactor;
+
     void ReloadBonesProtection();
     void AddBonesProtection(LPCSTR bones_section);
 

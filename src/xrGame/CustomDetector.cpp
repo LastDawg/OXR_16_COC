@@ -126,7 +126,20 @@ void CCustomDetector::OnStateSwitch(u32 S, u32 oldState)
     case eShowing:
     {
         g_player_hud->attach_item(this);
-        m_sounds.PlaySound("sndShow", Fvector().set(0, 0, 0), this, true, false);
+
+        // По умолчанию включаем экран
+        float initial_factor = 1.f;
+
+        // Но если в анимации есть метки — выключаем его (ждем метку)
+        if (CurrentAnimHasMarks())
+            initial_factor = 0.f;
+
+        g_pGamePersistent->devices_shader_data.pda_display_factor = initial_factor;
+
+		if (!IsUsingCondition() || (IsUsingCondition() && GetCondition() > 0.0))
+            TurnDetectorInternal(true);
+
+        m_sounds.PlaySound(m_bFastAnimMode ? "sndShowFast" : "sndShow", Fvector().set(0, 0, 0), this, true, false);
         PlayHUDMotion(m_bFastAnimMode ? "anm_show_fast" : "anm_show", "anim_show", FALSE /*TRUE*/, this, GetState());
         SetPending(TRUE);
     }
@@ -135,7 +148,7 @@ void CCustomDetector::OnStateSwitch(u32 S, u32 oldState)
     {
         if (oldState != eHiding)
         {
-            m_sounds.PlaySound("sndHide", Fvector().set(0, 0, 0), this, true, false);
+            m_sounds.PlaySound(m_bFastAnimMode ? "sndHideFast" : "sndHide", Fvector().set(0, 0, 0), this, true, false);
             PlayHUDMotion(m_bFastAnimMode ? "anm_hide_fast" : "anm_hide", "anim_show", FALSE/*TRUE*/, this, GetState());
             SetPending(TRUE);
         }
@@ -158,8 +171,6 @@ void CCustomDetector::OnAnimationEnd(u32 state)
     case eShowing:
     {
         SwitchState(eIdle);
-        if (IsUsingCondition() && m_fDecayRate > 0.f)
-            this->SetCondition(-m_fDecayRate);
     }
     break;
     case eHiding:
@@ -202,11 +213,14 @@ void CCustomDetector::Load(LPCSTR section)
 
     m_fAfDetectRadius = pSettings->read_if_exists<float>(section, "af_radius", 30.0f);
     m_fAfVisRadius = pSettings->read_if_exists<float>(section, "af_vis_radius", 2.0f);
-    m_fDecayRate = READ_IF_EXISTS(pSettings, r_float, section, "decay_rate", 0.f); //Alundaio
+    m_fDecayRate = READ_IF_EXISTS(pSettings, r_float, section, "power_decay_rate", 0.f); // Alundaio
+    m_fPassiveDecayRate = READ_IF_EXISTS(pSettings, r_float, section, "passive_decay_rate", 0.f);
     m_artefacts.load(section, "af");
 
     m_sounds.LoadSound(section, "snd_draw", "sndShow");
     m_sounds.LoadSound(section, "snd_holster", "sndHide");
+    m_sounds.LoadSound(section, "snd_draw_fast", "sndShowFast");
+    m_sounds.LoadSound(section, "snd_holster_fast", "sndHideFast");
 }
 
 void CCustomDetector::shedule_Update(u32 dt)
@@ -283,12 +297,89 @@ void CCustomDetector::UpdateCL()
         return;
 
     UpdateVisibility();
+    UpdatePower();
+
     if (!IsWorking())
         return;
     UpfateWork();
 }
 
-void CCustomDetector::OnH_A_Chield() { inherited::OnH_A_Chield(); }
+void CCustomDetector::OnMotionMark(u32 state, const motion_marks& M)
+{
+    inherited::OnMotionMark(state, M);
+
+    // Работаем только если включен bool в конфиге
+    if (!CurrentAnimHasMarks()) return;
+
+    if (state == eShowing)
+    {
+        g_pGamePersistent->devices_shader_data.pda_display_factor = 1.f;
+    }
+    else if (state == eHiding)
+    {
+        g_pGamePersistent->devices_shader_data.pda_display_factor = 0.f;
+    }
+}
+
+bool CCustomDetector::CurrentAnimHasMarks()
+{
+    if (!HudItemData()) return false;
+    
+    IKinematicsAnimated* ka = smart_cast<IKinematicsAnimated*>(HudItemData()->m_model);
+    if (!ka) return false;
+
+    // Получаем текущую играемую анимацию
+    for (u16 i = 0; i < ka->partitions().count(); ++i)
+    {
+        CBlend* B = ka->LL_PartBlend(i, 0);
+        if (B)
+        {
+            CMotionDef* md = ka->LL_GetMotionDef(B->motionID);
+            if (md && !md->marks.empty()) 
+                return true; // Метки найдены
+        }
+    }
+    return false;
+}
+
+void CCustomDetector::UpdatePower()
+{
+	if (IsUsingCondition())
+    {
+        if (m_bWorking && GetCondition() <= 0.0)
+            TurnDetectorInternal(false);
+        else if (!m_bWorking && (GetState() == eIdle) && GetCondition() > 0.0)
+            TurnDetectorInternal(true);
+    }
+
+    if (m_bWorking && IsUsingCondition() && m_fDecayRate > 0.f)
+        this->ChangeCondition(-m_fDecayRate * Device.fTimeDelta);
+
+    if (!m_bWorking && IsUsingCondition() && m_fPassiveDecayRate > 0.f)
+        this->ChangeCondition(-m_fPassiveDecayRate * Device.fTimeDelta);
+
+    if (ParentIsActor() && m_bWorking)
+    {
+        // Если мы в простое ИЛИ если метки не используются — управляем яркостью как обычно
+        if (GetState() == eIdle || !CurrentAnimHasMarks())
+        {
+            if (!IsUsingCondition() || GetCondition() >= 0.01f)
+                g_pGamePersistent->devices_shader_data.pda_display_factor = 1.f;
+            else
+            {
+                g_pGamePersistent->devices_shader_data.pda_display_factor = 0.f;
+                ResetUI();
+            }
+        }
+    }
+}
+
+
+void CCustomDetector::OnH_A_Chield() 
+{ 
+    inherited::OnH_A_Chield(); 
+}
+
 void CCustomDetector::OnH_B_Independent(bool just_before_destroy)
 {
     inherited::OnH_B_Independent(just_before_destroy);
@@ -315,18 +406,22 @@ void CCustomDetector::OnMoveToRuck(const SInvItemPlace& prev)
     StopCurrentAnimWithoutCallback();
 }
 
-void CCustomDetector::OnMoveToSlot(const SInvItemPlace& prev) { inherited::OnMoveToSlot(prev); }
+void CCustomDetector::OnMoveToSlot(const SInvItemPlace& prev) 
+{ 
+    inherited::OnMoveToSlot(prev); 
+}
+
 void CCustomDetector::TurnDetectorInternal(bool b)
 {
     m_bWorking = b;
+
     if (b && m_ui == NULL)
-    {
         CreateUI();
-    }
-    else
+
+    /*else
     {
-        //.		xr_delete			(m_ui);
-    }
+        xr_delete(m_ui);
+    }*/
 
     UpdateNightVisionMode(b);
 }
@@ -346,4 +441,18 @@ bool CAfList::feel_touch_contact(IGameObject* O)
             res = false;
     }
     return res;
+}
+
+bool CCustomDetector::install_upgrade_impl(LPCSTR section, bool test)
+{
+    // Msg("Detector Upgrade");
+    bool result = inherited::install_upgrade_impl(section, test);
+
+    result |= process_if_exists(section, "af_radius", &CInifile::r_float, m_fAfDetectRadius, test);
+    result |= process_if_exists(section, "af_vis_radius", &CInifile::r_float, m_fAfVisRadius, test);
+    result |= process_if_exists(section, "passive_decay_rate", &CInifile::r_float, m_fPassiveDecayRate, test);
+    result |= process_if_exists(section, "power_decay_rate", &CInifile::r_float, m_fDecayRate, test);
+    result |= process_if_exists(section, "inv_weight", &CInifile::r_float, m_weight, test);
+
+    return result;
 }

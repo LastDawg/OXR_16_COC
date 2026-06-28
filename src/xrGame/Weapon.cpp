@@ -2259,6 +2259,11 @@ void CWeapon::modify_holder_params(float& range, float& fov) const
 bool CWeapon::render_item_ui_query()
 {
     bool b_is_active_item = (m_pInventory->ActiveItem() == this);
+    
+    // Если тюнер активен, возвращаем false. 
+    if (GamePersistent().GetHudTuner().is_active())
+        return false;
+
     bool res = b_is_active_item && IsZoomed() && ZoomHideCrosshair() && ZoomTexture() && !IsRotatingToZoom();
     return res;
 }
@@ -2325,7 +2330,15 @@ float CWeapon::Weight() const
     return res;
 }
 
-bool CWeapon::show_crosshair() { return !IsPending() && (!IsZoomed() || !ZoomHideCrosshair()); }
+bool CWeapon::show_crosshair() 
+{ 
+    // Если активен тюнер худа — всегда возвращаем true, чтобы видеть точку центра
+    if (GamePersistent().GetHudTuner().is_active())
+        return true;
+
+    return !IsPending() && (!IsZoomed() || !ZoomHideCrosshair()); 
+}
+
 bool CWeapon::show_indicators() { return !(IsZoomed() && ZoomTexture()); }
 float CWeapon::GetConditionToShow() const
 {

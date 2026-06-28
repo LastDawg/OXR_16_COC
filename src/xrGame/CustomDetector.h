@@ -163,11 +163,18 @@ protected:
     virtual void UpfateWork();
     virtual void UpdateAf(){};
     virtual void CreateUI(){};
+    virtual void ResetUI(){};
+    virtual void UpdatePower();
+    bool CurrentAnimHasMarks();
+    virtual void OnMotionMark(u32 state, const motion_marks& M);
 
     bool m_bWorking;
     float m_fAfVisRadius;
     float m_fDecayRate; //Alundaio
+    float m_fPassiveDecayRate;
     CAfList m_artefacts;
+
+    virtual bool install_upgrade_impl(LPCSTR section, bool test);
 };
 
 class CZoneList : public CDetectList<CCustomZone>

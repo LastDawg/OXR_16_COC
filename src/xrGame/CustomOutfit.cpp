@@ -23,6 +23,7 @@ CCustomOutfit::CCustomOutfit()
 
     m_b_HasGlass = false;
     m_NightVisionType = 0;
+    m_fNightVisionLumFactor = 0.0f;
 }
 
 bool CCustomOutfit::net_Spawn(CSE_Abstract* DC)
@@ -125,7 +126,9 @@ void CCustomOutfit::Load(LPCSTR section)
     m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", true));
 
     m_b_HasGlass = !!READ_IF_EXISTS(pSettings, r_bool, section, "has_glass", FALSE);
-    m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, section, "night_vision_type", 0);
+	m_sShaderNightVisionSect = READ_IF_EXISTS(pSettings, r_string, section, "shader_nightvision_sect", "shader_nightvision_default");
+	m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, m_sShaderNightVisionSect, "shader_nightvision_type", 0);
+	m_fNightVisionLumFactor = READ_IF_EXISTS(pSettings, r_float, m_sShaderNightVisionSect, "shader_nightvision_lum_factor", 0.0f);
 }
 
 void CCustomOutfit::ReloadBonesProtection()
@@ -433,6 +436,15 @@ bool CCustomOutfit::install_upgrade_impl(LPCSTR section, bool test)
     }
     result |= result2;
 
+	result2 = process_if_exists_set(section, "shader_nightvision_sect", &CInifile::r_string, str, test);
+    if (result2 && !test)
+    {
+        m_sShaderNightVisionSect._set(str);
+        m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, m_sShaderNightVisionSect, "shader_nightvision_type", 0);
+        m_fNightVisionLumFactor = READ_IF_EXISTS(pSettings, r_float, m_sShaderNightVisionSect, "shader_nightvision_lum_factor", 0.0f);
+    }
+    result |= result2;
+
     result2 = process_if_exists_set(section, "bones_koeff_protection", &CInifile::r_string, str, test);
     if (result2 && !test)
     {
@@ -451,8 +463,7 @@ bool CCustomOutfit::install_upgrade_impl(LPCSTR section, bool test)
     }
 
     result |= process_if_exists(section, "additional_inventory_weight", &CInifile::r_float, m_additional_weight, test);
-    result |=
-        process_if_exists(section, "additional_inventory_weight2", &CInifile::r_float, m_additional_weight2, test);
+    result |= process_if_exists(section, "additional_inventory_weight2", &CInifile::r_float, m_additional_weight2, test);
 
     result |= process_if_exists(section, "health_restore_speed", &CInifile::r_float, m_fHealthRestoreSpeed, test);
     result |= process_if_exists(section, "radiation_restore_speed", &CInifile::r_float, m_fRadiationRestoreSpeed, test);
@@ -468,8 +479,6 @@ bool CCustomOutfit::install_upgrade_impl(LPCSTR section, bool test)
 
     result |= process_if_exists(section, "artefact_count", &CInifile::r_u32, m_artefact_count, test);
     clamp(m_artefact_count, (u32)0, (u32)5);
-
-    result |= process_if_exists(section, "night_vision_type", &CInifile::r_u32, m_NightVisionType, test);
 
     return result;
 }

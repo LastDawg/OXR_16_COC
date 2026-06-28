@@ -16,6 +16,7 @@ CHelmet::CHelmet()
     m_boneProtection = xr_new<SBoneProtections>();
     m_b_HasGlass = false;
     m_NightVisionType = 0;
+    m_fNightVisionLumFactor = 0.0f;
 }
 
 CHelmet::~CHelmet() 
@@ -79,7 +80,9 @@ void CHelmet::Load(LPCSTR section)
     m_flags.set(FUsingCondition, READ_IF_EXISTS(pSettings, r_bool, section, "use_condition", true));
 
     m_b_HasGlass = !!READ_IF_EXISTS(pSettings, r_bool, section, "has_glass", FALSE);
-    m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, section, "night_vision_type", 0);
+	m_sShaderNightVisionSect = READ_IF_EXISTS(pSettings, r_string, section, "shader_nightvision_sect", "shader_nightvision_default");
+	m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, m_sShaderNightVisionSect, "shader_nightvision_type", 0);
+	m_fNightVisionLumFactor = READ_IF_EXISTS(pSettings, r_float, m_sShaderNightVisionSect, "shader_nightvision_lum_factor", 0.0f);
 }
 
 void CHelmet::ReloadBonesProtection()
@@ -211,6 +214,15 @@ bool CHelmet::install_upgrade_impl(LPCSTR section, bool test)
     }
     result |= result2;
 
+	result2 = process_if_exists_set(section, "shader_nightvision_sect", &CInifile::r_string, str, test);
+	if (result2 && !test)
+	{
+		m_sShaderNightVisionSect._set(str);
+		m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, m_sShaderNightVisionSect, "shader_nightvision_type", 0);
+		m_fNightVisionLumFactor = READ_IF_EXISTS(pSettings, r_float, m_sShaderNightVisionSect, "shader_nightvision_lum_factor", 0.0f);
+	}
+	result |= result2;
+
     result |= process_if_exists(section, "health_restore_speed", &CInifile::r_float, m_fHealthRestoreSpeed, test);
     result |= process_if_exists(section, "radiation_restore_speed", &CInifile::r_float, m_fRadiationRestoreSpeed, test);
     result |= process_if_exists(section, "satiety_restore_speed", &CInifile::r_float, m_fSatietyRestoreSpeed, test);
@@ -239,8 +251,6 @@ bool CHelmet::install_upgrade_impl(LPCSTR section, bool test)
     {
         result |= process_if_exists(section, "hit_fraction_actor", &CInifile::r_float, m_boneProtection->m_fHitFrac, test);
     }
-
-    result |= process_if_exists(section, "night_vision_type", &CInifile::r_u32, m_NightVisionType, test);
 
     return result;
 }

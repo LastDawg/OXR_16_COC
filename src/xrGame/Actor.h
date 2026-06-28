@@ -815,6 +815,7 @@ public:
     bool GetNightVisionStatus() { return m_bNightVisionOn; }
     void SetNightVisionAllowed(bool bAllow) { m_bNightVisionAllow = bAllow; }
     CNightVisionEffector* GetNightVision() { return m_night_vision; }
+    bool m_bTorchNightVision;
 
 	float GetDevicesPsyFactor() { return m_fDevicesPsyFactor; }
     void SetDevicesPsyFactor(float psy_factor) { m_fDevicesPsyFactor = psy_factor; }

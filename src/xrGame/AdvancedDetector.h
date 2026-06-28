@@ -15,6 +15,7 @@ public:
 protected:
     virtual void UpdateAf();
     virtual void CreateUI();
+    virtual void ResetUI();
     CUIArtefactDetectorAdv& ui();
 };
 

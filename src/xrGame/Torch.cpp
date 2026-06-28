@@ -47,6 +47,7 @@ CTorch::CTorch()
     m_torch_inertion_speed_min = TORCH_INERTION_SPEED_MIN;
 
     m_NightVisionType = 0;
+    m_fNightVisionLumFactor = 0.0f;
 }
 
 CTorch::~CTorch()
@@ -63,12 +64,31 @@ void CTorch::OnMoveToSlot(const SInvItemPlace& prev)
     {
         owner->attach(this->cast_inventory_item());
     }
+
+    if (m_pInventory && (prev.type == eItemPlaceSlot))
+    {
+        CActor* pActor = smart_cast<CActor*>(H_Parent());
+        if (pActor)
+        {
+            if (pActor->GetNightVisionStatus())
+                pActor->SwitchNightVision(true, false);
+        }
+    }
 }
 void CTorch::OnMoveToRuck(const SInvItemPlace& prev)
 {
     if (prev.type == eItemPlaceSlot)
     {
         Switch(false);
+    }
+
+    if (m_pInventory && (prev.type == eItemPlaceSlot))
+    {
+        CActor* pActor = smart_cast<CActor*>(H_Parent());
+        if (pActor)
+        {
+            pActor->SwitchNightVision(false);
+        }
     }
 }
 
@@ -101,7 +121,20 @@ void CTorch::Load(LPCSTR section)
     if (pSettings->line_exist(section, "snd_turn_off"))
         m_sounds.LoadSound(section, "snd_turn_off", "sndTurnOff", false, SOUND_TYPE_ITEM_USING);
 
-    m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, section, "night_vision_type", 0);
+	m_fDecayRate = READ_IF_EXISTS(pSettings, r_float, section, "power_decay_rate", 0.f);
+    m_fPassiveDecayRate = READ_IF_EXISTS(pSettings, r_float, section, "passive_decay_rate", 0.f);
+
+    m_bTorchModeEnabled   = READ_IF_EXISTS(pSettings, r_bool, section, "torch_allowed", true);
+    m_bNightVisionEnabled = READ_IF_EXISTS(pSettings, r_bool, section, "night_vision_allowed", false);
+
+    if (pSettings->line_exist(section, "nightvision_sect"))
+        m_NightVisionSect = pSettings->r_string(section, "nightvision_sect");
+    else
+        m_NightVisionSect = "";
+
+	m_sShaderNightVisionSect = READ_IF_EXISTS(pSettings, r_string, section, "shader_nightvision_sect", "shader_nightvision_default");
+	m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, m_sShaderNightVisionSect, "shader_nightvision_type", 0);
+	m_fNightVisionLumFactor = READ_IF_EXISTS(pSettings, r_float, m_sShaderNightVisionSect, "shader_nightvision_lum_factor", 0.0f);
 
 	// Disabling shift by x and z axes for 1st render,
     // because we don't have dynamic lighting in it.
@@ -114,9 +147,14 @@ void CTorch::Load(LPCSTR section)
 
 void CTorch::Switch()
 {
+    if (!m_bTorchModeEnabled)   
+        return;
+
     if (OnClient())
         return;
+
     bool bActive = !m_switched_on;
+
     Switch(bActive);
 }
 
@@ -158,7 +196,10 @@ void CTorch::Switch(bool light_on)
         pVisual->CalculateBones(TRUE);
     }
 }
-bool CTorch::torch_active() const { return (m_switched_on); }
+bool CTorch::torch_active() const 
+{ 
+    return (m_switched_on); 
+}
 
 bool CTorch::net_Spawn(CSE_Abstract* DC)
 {
@@ -256,6 +297,8 @@ void CTorch::OnH_B_Independent(bool just_before_destroy)
 void CTorch::UpdateCL()
 {
     inherited::UpdateCL();
+
+    UpdatePower();
 
     if (!m_switched_on)
         return;
@@ -421,7 +464,14 @@ bool CTorch::can_be_attached() const
 void CTorch::afterDetach()
 {
     inherited::afterDetach();
+
     Switch(false);
+
+    CActor* pActor = smart_cast<CActor*>(H_Parent());
+    if (pActor)
+    {
+        pActor->SwitchNightVision(false);
+    }
 }
 
 void CTorch::enable(bool value)
@@ -432,6 +482,31 @@ void CTorch::enable(bool value)
         Switch(false);
 }
 
+void CTorch::UpdatePower()
+{
+    CActor* pActor = smart_cast<CActor*>(H_Parent());
+
+    if (IsUsingCondition())
+    {
+        fBrightness = this->GetCondition();
+    }
+
+    if (m_switched_on && IsUsingCondition() && GetCondition() > 0.0)
+        this->ChangeCondition(-m_fDecayRate * Device.fTimeDelta);
+
+    if (!m_switched_on && IsUsingCondition() && GetCondition() > 0.0 && pActor && !pActor->m_bTorchNightVision)
+        this->ChangeCondition(-m_fPassiveDecayRate * Device.fTimeDelta);
+
+    if (IsUsingCondition() && GetCondition() <= 0.0 && pActor && pActor->m_bTorchNightVision)
+        pActor->SwitchNightVision(false);
+
+    if (pActor && pActor->m_bTorchNightVision)
+        this->ChangeCondition(-m_fDecayRate * Device.fTimeDelta);
+
+    if (IsUsingCondition() && GetCondition() <= 0.0)
+        Switch(false);
+}
+
 bool CTorch::install_upgrade_impl(LPCSTR section, bool test)
 {
     LPCSTR str;
@@ -439,18 +514,33 @@ bool CTorch::install_upgrade_impl(LPCSTR section, bool test)
     // Msg("Torch Upgrade");
     bool result = inherited::install_upgrade_impl(section, test);
 
-    //result |= process_if_exists(section, "passive_decay_rate", &CInifile::r_float, m_fPassiveDecayRate, test);
-    //result |= process_if_exists(section, "power_decay_rate", &CInifile::r_float, m_fDecayRate, test);
-    result |= process_if_exists(section, "inv_weight", &CInifile::r_float, m_weight, test);
-    result |= process_if_exists(section, "night_vision_type", &CInifile::r_u32, m_NightVisionType, test);
+    bool result2 = process_if_exists_set(section, "nightvision_sect", &CInifile::r_string, str, test);
+    if (result2 && !test)
+    {
+        m_NightVisionSect._set(str);
+    }
+    result |= result2;
 
-    //bool value = m_bTorchModeEnabled;
-    //bool result2 = process_if_exists_set(section, "torch_allowed", &CInifile::r_bool, value, test);
-    //if (result2 && !test)
-    //{
-        //m_bTorchModeEnabled = !!value;
-    //}
-    //result |= result2;
+	result2 = process_if_exists_set(section, "shader_nightvision_sect", &CInifile::r_string, str, test);
+    if (result2 && !test)
+    {
+        m_sShaderNightVisionSect._set(str);
+        m_NightVisionType = READ_IF_EXISTS(pSettings, r_u32, m_sShaderNightVisionSect, "shader_nightvision_type", 0);
+        m_fNightVisionLumFactor = READ_IF_EXISTS(pSettings, r_float, m_sShaderNightVisionSect, "shader_nightvision_lum_factor", 0.0f);
+    }
+    result |= result2;
+
+    result |= process_if_exists(section, "passive_decay_rate", &CInifile::r_float, m_fPassiveDecayRate, test);
+    result |= process_if_exists(section, "power_decay_rate", &CInifile::r_float, m_fDecayRate, test);
+    result |= process_if_exists(section, "inv_weight", &CInifile::r_float, m_weight, test);
+
+    bool value = m_bTorchModeEnabled;
+    bool result3 = process_if_exists_set(section, "torch_allowed", &CInifile::r_bool, value, test);
+    if (result3 && !test)
+    {
+        m_bTorchModeEnabled = !!value;
+    }
+    result |= result3;
 
     return result;
 }

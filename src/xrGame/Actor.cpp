@@ -118,6 +118,8 @@ float psCursorIntensityStep = 0.5f;
 
 int psActorSleepTime = 1;
 
+ENGINE_API extern int ps_r__ShaderNVG;
+
 CActor::CActor() : CEntityAlive(), current_ik_cam_shift(0)
 {
     encyclopedia_registry = xr_new<CEncyclopediaRegistryWrapper>();
@@ -236,6 +238,7 @@ CActor::CActor() : CEntityAlive(), current_ik_cam_shift(0)
     m_night_vision = NULL;
     m_bNightVisionAllow = true;
     m_bNightVisionOn = false;
+    m_bTorchNightVision = false;
 
     m_fDevicesPsyFactor = 0.0f;
 }
@@ -2340,12 +2343,16 @@ void CActor::SwitchNightVision(bool vision_on, bool use_sounds, bool send_event)
             if (m_bNightVisionOn && !bIsActiveNow)
             {
                 m_night_vision->Start(pHelmet->m_NightVisionSect, this, use_sounds);
+
+				if (ps_r__ShaderNVG)
+                    g_pGamePersistent->devices_shader_data.nightvision_lum_factor = pHelmet->m_fNightVisionLumFactor;
             }
         }
         else
         {
             m_night_vision->OnDisabled(this, use_sounds);
             m_bNightVisionOn = false;
+            g_pGamePersistent->devices_shader_data.nightvision_lum_factor = 0.0f;
         }
     }
     else
@@ -2358,18 +2365,45 @@ void CActor::SwitchNightVision(bool vision_on, bool use_sounds, bool send_event)
                 if (m_bNightVisionOn && !bIsActiveNow)
                 {
                     m_night_vision->Start(pOutfit->m_NightVisionSect, this, use_sounds);
+
+                    if (ps_r__ShaderNVG)
+						g_pGamePersistent->devices_shader_data.nightvision_lum_factor = pOutfit->m_fNightVisionLumFactor;
                 }
             }
             else
             {
                 m_night_vision->OnDisabled(this, use_sounds);
                 m_bNightVisionOn = false;
+                g_pGamePersistent->devices_shader_data.nightvision_lum_factor = 0.0f;
             }
+        }
+    }
+    CTorch* pTorch = smart_cast<CTorch*>(inventory().ItemFromSlot(TORCH_SLOT));
+    if (pTorch && pTorch->m_NightVisionSect.size() && pTorch->m_bNightVisionEnabled)
+    {
+        if (m_bNightVisionAllow)
+        {
+            if (m_bNightVisionOn && !bIsActiveNow)
+            {
+                m_night_vision->Start(pTorch->m_NightVisionSect, this, use_sounds);
+                m_bTorchNightVision = true;
+
+                if (ps_r__ShaderNVG)
+				    g_pGamePersistent->devices_shader_data.nightvision_lum_factor = pTorch->m_fNightVisionLumFactor;
+            }
+        }
+        else
+        {
+            m_night_vision->OnDisabled(this, use_sounds);
+            m_bNightVisionOn = false;
+            m_bTorchNightVision = false;
+            g_pGamePersistent->devices_shader_data.nightvision_lum_factor = 0.0f;
         }
     }
     if (!m_bNightVisionOn && bIsActiveNow)
     {
         m_night_vision->Stop(100000.0f, use_sounds);
+        m_bTorchNightVision = false;
     }
     if (send_event)
     {

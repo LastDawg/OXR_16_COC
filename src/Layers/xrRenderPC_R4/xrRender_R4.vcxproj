@@ -219,7 +219,8 @@
     <ClInclude Include="..\xrRenderPC_R4\blender_hud_bleeding.h" />
     <ClInclude Include="..\xrRenderPC_R4\blender_hud_blood.h" />
     <ClInclude Include="..\xrRenderPC_R4\blender_blur.h" />	
-    <ClInclude Include="..\xrRenderPC_R4\blender_hud_stamina.h" />		
+    <ClInclude Include="..\xrRenderPC_R4\blender_hud_stamina.h" />	
+    <ClInclude Include="..\xrRenderPC_R4\blender_fxaa.h" />		
     <ClInclude Include="..\xrRender_R2\r2.h" />
     <ClInclude Include="..\xrRender_R2\r2_rendertarget_wallmarks.h" />
     <ClInclude Include="..\xrRender_R2\r2_R_sun_support.h" />
@@ -342,6 +343,7 @@
     <ClCompile Include="..\xrRenderPC_R4\blender_nightvision.cpp" />
     <ClCompile Include="..\xrRenderPC_R4\blender_pp_bloom.cpp" />	
     <ClCompile Include="..\xrRenderPC_R4\blender_hud_stamina.cpp" />		
+    <ClCompile Include="..\xrRenderPC_R4\blender_fxaa.cpp" />		
 	<ClCompile Include="..\xrRenderPC_R4\blender_hud_mask.cpp" />		
     <ClCompile Include="..\xrRender\ResourceManager.cpp" />
     <ClCompile Include="..\xrRender\ResourceManager_Loader.cpp" />
@@ -439,6 +441,7 @@
     <ClCompile Include="r2_test_hw.cpp" />
     <ClCompile Include="r4_rendertarget_accum_direct.cpp" />
     <ClCompile Include="r4_rendertarget_phase_combine.cpp" />
+    <ClCompile Include="r4_rendertarget_phase_FXAA.cpp" />	
     <ClCompile Include="r4_rendertarget_phase_hdao.cpp" />
     <ClCompile Include="r4_shaders.cpp" />
     <ClCompile Include="R_Backend_LOD.cpp" />

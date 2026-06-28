@@ -12,6 +12,8 @@ public:
 private:
     pcstr tool_name() const override { return "Hud Tuner"; }
 
+    xr_map<shared_str, hud_item_measures> session_cache;
+
     void ResetToDefaultValues();
     void UpdateValues();
 

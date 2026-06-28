@@ -30,6 +30,9 @@ extern ECORE_API u32 ps_r_water_reflection; //	=	0;
 extern ECORE_API const xr_token qsun_quality_token[];
 extern ECORE_API const xr_token qwater_reflection_quality_token[];
 
+extern ECORE_API u32 r2_aa_mode;
+extern ECORE_API xr_token r2_aa_mode_token[];
+
 extern ECORE_API u32 ps_r3_msaa; //	=	0;
 extern ECORE_API const xr_token qmsaa_token[];
 
@@ -160,6 +163,12 @@ extern ECORE_API float ps_r2_dof_kernel_size; //	7.0f
 extern ECORE_API float ps_r3_dyn_wet_surf_near; // 10.0f
 extern ECORE_API float ps_r3_dyn_wet_surf_far; // 30.0f
 extern ECORE_API int ps_r3_dyn_wet_surf_sm_res; // 256
+
+// Colour adv
+extern ECORE_API float ps_rcol;
+extern ECORE_API float ps_gcol; 
+extern ECORE_API float ps_bcol; 
+extern ECORE_API float ps_saturation;
 
 // Raindrops
 extern ECORE_API float ps_r2_rain_drops_intensity;

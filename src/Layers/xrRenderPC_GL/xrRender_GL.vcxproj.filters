@@ -531,6 +531,9 @@
     <ClCompile Include="gl_rendertarget_phase_combine.cpp">
       <Filter>Core_Target</Filter>
     </ClCompile>
+    <ClCompile Include="gl_rendertarget_phase_FXAA.cpp">
+      <Filter>Core_Target</Filter>
+    </ClCompile>	
     <ClCompile Include="..\xrRenderGL\Blender_Recorder_GL.cpp">
       <Filter>Refactored\Execution &amp; 3D\Shaders\Blender</Filter>
     </ClCompile>
@@ -624,6 +627,9 @@
     <ClCompile Include="..\xrRenderPC_GL\blender_hud_stamina.cpp">
       <Filter>Shading templates</Filter>
     </ClCompile>
+    <ClCompile Include="..\xrRenderPC_GL\blender_fxaa.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>	
     <ClCompile Include="..\xrRenderPC_GL\blender_hud_bleeding.cpp">
       <Filter>Shading templates</Filter>
     </ClCompile>		
@@ -1154,6 +1160,9 @@
     <ClInclude Include="..\xrRenderPC_GL\blender_hud_stamina.h">
       <Filter>Shading templates</Filter>
     </ClInclude>
+    <ClInclude Include="..\xrRenderPC_GL\blender_fxaa.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>	
     <ClInclude Include="..\xrRenderPC_GL\blender_hud_bleeding.h">
       <Filter>Shading templates</Filter>
     </ClInclude>		

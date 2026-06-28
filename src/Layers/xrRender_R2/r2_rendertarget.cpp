@@ -25,11 +25,13 @@
     #include "Layers/xrRenderPC_R4/blender_hud_stamina.h"
     #include "Layers/xrRenderPC_R4/blender_hud_bleeding.h"
     #include "Layers/xrRenderPC_R4/blender_blur.h"
+    #include "Layers/xrRenderPC_R4/blender_fxaa.h"
 #else
     #include "Layers/xrRenderPC_GL/blender_hud_mask.h"
     #include "Layers/xrRenderPC_GL/blender_hud_blood.h"
     #include "Layers/xrRenderPC_GL/blender_hud_stamina.h"
     #include "Layers/xrRenderPC_GL/blender_hud_bleeding.h"
+    #include "Layers/xrRenderPC_GL/blender_fxaa.h"
 #endif
 
 namespace xray::render::RENDER_NAMESPACE
@@ -389,6 +391,11 @@ CRenderTarget::CRenderTarget()
         CBlender_pp_bloom b_pp_bloom;
         s_pp_bloom.create(&b_pp_bloom, "r3" DELIMITER "pp_bloom");
     }
+    {
+        CBlender_FXAA b_fxaa;
+        s_fxaa.create(&b_fxaa, "r3" DELIMITER "fxaa");
+        g_fxaa.create(FVF::F_V, RImplementation.Vertex.Buffer(), RImplementation.QuadIB);
+    }
     #else
     {
         CBlender_hud_mask b_hud_mask;
@@ -405,6 +412,11 @@ CRenderTarget::CRenderTarget()
     {
         CBlender_hud_mask b_hud_bleeding;
         s_hud_bleeding.create(&b_hud_bleeding, "r2" DELIMITER "hud_bleeding");
+    }
+    {
+        CBlender_FXAA b_fxaa;
+        s_fxaa.create(&b_fxaa, "r2" DELIMITER "fxaa");
+        g_fxaa.create(FVF::F_V, RImplementation.Vertex.Buffer(), RImplementation.QuadIB);
     }
     #endif
     //s_hud_mask.create(b_hud_mask, "r2\\hud_mask"); 

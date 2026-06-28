@@ -68,6 +68,9 @@ public:
     bool m_b_HasGlass;
     u32 m_NightVisionType;
 
+    shared_str m_sShaderNightVisionSect;
+    float m_fNightVisionLumFactor;
+
     virtual u32 ef_equipment_type() const;
     virtual bool BonePassBullet(int boneID);
     const shared_str& GetFullIconName() const { return m_full_icon_name; }
