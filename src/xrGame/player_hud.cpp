@@ -239,164 +239,205 @@ void attachable_hud_item::render(u32 context_id, IRenderable* root)
 bool attachable_hud_item::render_item_ui_query() const { return m_parent_hud_item->render_item_3d_ui_query(); }
 void attachable_hud_item::render_item_ui() const { m_parent_hud_item->render_item_3d_ui(); }
 
+float CalculateHudAspectX(float x, bool source_is_16x9)
+{
+    float current_aspect = Device.fASPECT;
+    if (current_aspect < 0.1f) current_aspect = 1.333f;
+
+    float target_aspect  = 16.0f / 9.0f; // 1.777
+    float square_aspect  = 4.0f / 3.0f;  // 1.333
+
+    if (source_is_16x9)
+        return x * (current_aspect / target_aspect);
+    else
+        return x * (current_aspect / square_aspect);
+}
+
+Fvector SafeLoadVector(const shared_str& sect, const char* base_name, bool is_16x9, const CInifile* config = pSettings)
+{
+    Fvector res = { 0.f, 0.f, 0.f };
+    string128 name_normal, name_16x9;
+    xr_strcpy(name_normal, base_name);
+    xr_sprintf(name_16x9, "%s_16x9", base_name);
+
+    bool has_normal = config->line_exist(sect, name_normal);
+    bool has_16x9   = config->line_exist(sect, name_16x9);
+
+    if (is_16x9)
+    {
+        if (has_16x9) 
+        {
+            return config->r_fvector3(sect, name_16x9);
+        }
+        else if (has_normal)
+        {
+            res = config->r_fvector3(sect, name_normal);
+            res.x = CalculateHudAspectX(res.x, false); 
+            return res;
+        }
+    }
+    else
+    {
+        if (has_normal) 
+        {
+            return config->r_fvector3(sect, name_normal);
+        }
+        else if (has_16x9)
+        {
+            res = config->r_fvector3(sect, name_16x9);
+            res.x = CalculateHudAspectX(res.x, true);
+            return res;
+        }
+    }
+
+    return res;
+}
+
 Fmatrix hud_item_measures::load(const shared_str& sect_name, IKinematics* K)
 {
     const bool is_16x9 = UICore::is_widescreen();
-    string64 _prefix;
-    xr_sprintf(_prefix, "%s", is_16x9 ? "_16x9" : "");
-    string128 val_name;
+    m_prop_flags.set(e_16x9_mode_now, is_16x9);
 
-    strconcat(val_name, "hands_position", _prefix);
-    m_hands_attach[0] = pSettings->r_fvector3(sect_name, val_name);
-    strconcat(val_name, "hands_orientation", _prefix);
-    m_hands_attach[1] = pSettings->r_fvector3(sect_name, val_name);
+    // Безопасная загрузка рук
+    m_hands_attach[0] = SafeLoadVector(sect_name, "hands_position", is_16x9);
+    m_hands_attach[1] = SafeLoadVector(sect_name, "hands_orientation", is_16x9);
 
-    m_item_attach[0] = pSettings->r_fvector3(sect_name, "item_position");
-    m_item_attach[1] = pSettings->r_fvector3(sect_name, "item_orientation");
+    m_item_attach[0] = READ_IF_EXISTS(pSettings, r_fvector3, sect_name, "item_position", Fvector().set(0,0,0));
+    m_item_attach[1] = READ_IF_EXISTS(pSettings, r_fvector3, sect_name, "item_orientation", Fvector().set(0,0,0));
 
     Fmatrix attach_offset;
     update(attach_offset);
 
+    // Загрузка костей (fire, shell)
     shared_str bone_name;
     m_prop_flags.set(e_fire_point, pSettings->line_exist(sect_name, "fire_bone"));
-    if (m_prop_flags.test(e_fire_point))
-    {
+    if (m_prop_flags.test(e_fire_point)) {
         bone_name = pSettings->r_string(sect_name, "fire_bone");
         m_fire_bone = K->LL_BoneID(bone_name);
         m_fire_point_offset = pSettings->r_fvector3(sect_name, "fire_point");
     }
-    else
-        m_fire_point_offset = {};
 
     m_prop_flags.set(e_fire_point2, pSettings->line_exist(sect_name, "fire_bone2"));
-    if (m_prop_flags.test(e_fire_point2))
-    {
+    if (m_prop_flags.test(e_fire_point2)) {
         bone_name = pSettings->r_string(sect_name, "fire_bone2");
         m_fire_bone2 = K->LL_BoneID(bone_name);
         m_fire_point2_offset = pSettings->r_fvector3(sect_name, "fire_point2");
     }
-    else
-        m_fire_point2_offset = {};
 
     m_prop_flags.set(e_shell_point, pSettings->line_exist(sect_name, "shell_bone"));
-    if (m_prop_flags.test(e_shell_point))
-    {
+    if (m_prop_flags.test(e_shell_point)) {
         bone_name = pSettings->r_string(sect_name, "shell_bone");
         m_shell_bone = K->LL_BoneID(bone_name);
         m_shell_point_offset = pSettings->r_fvector3(sect_name, "shell_point");
     }
-    else
-        m_shell_point_offset = {};
 
-    m_hands_offset[0][0] = {};
-    m_hands_offset[1][0] = {};
+    // Загрузка прицеливания (Aim)
+    m_hands_offset[0][0] = {0,0,0}; // Idle
+    m_hands_offset[1][0] = {0,0,0};
 
-    strconcat(val_name, "aim_hud_offset_pos", _prefix);
-    m_hands_offset[0][1] = pSettings->r_fvector3(sect_name, val_name);
-    strconcat(val_name, "aim_hud_offset_rot", _prefix);
-    m_hands_offset[1][1] = pSettings->r_fvector3(sect_name, val_name);
+    m_hands_offset[0][1] = SafeLoadVector(sect_name, "aim_hud_offset_pos", is_16x9);
+    m_hands_offset[1][1] = SafeLoadVector(sect_name, "aim_hud_offset_rot", is_16x9);
 
-    strconcat(val_name, "gl_hud_offset_pos", _prefix);
-    m_hands_offset[0][2] = pSettings->r_fvector3(sect_name, val_name);
-    strconcat(val_name, "gl_hud_offset_rot", _prefix);
-    m_hands_offset[1][2] = pSettings->r_fvector3(sect_name, val_name);
+    // Подствольник (GL)
+    m_hands_offset[0][2] = SafeLoadVector(sect_name, "gl_hud_offset_pos", is_16x9);
+    m_hands_offset[1][2] = SafeLoadVector(sect_name, "gl_hud_offset_rot", is_16x9);
 
-    if (READ_IF_EXISTS(pSettings, r_bool, sect_name, "hud_collision_enabled", false))
+    // Коллизия (Collision)
+    if (READ_IF_EXISTS(pSettings, r_bool, sect_name, "hud_collision_enabled", false)) 
     {
-        strconcat(sizeof(val_name), val_name, "hud_collision_offset_pos", _prefix);
-        if (pSettings->line_exist(sect_name, val_name))
-            m_collision_offset[0] = pSettings->r_fvector3(sect_name, val_name);
-        else 
-            m_collision_offset[0] = pSettings->r_fvector3(sect_name, "hud_collision_offset_pos");
-
-        strconcat(sizeof(val_name), val_name, "hud_collision_offset_rot", _prefix);
-        if (pSettings->line_exist(sect_name, val_name))
-            m_collision_offset[1] = pSettings->r_fvector3(sect_name, val_name);
-        else 
-            m_collision_offset[1] = pSettings->r_fvector3(sect_name, "hud_collision_offset_rot");
+        m_collision_offset[0] = SafeLoadVector(sect_name, "hud_collision_offset_pos", is_16x9);
+        m_collision_offset[1] = SafeLoadVector(sect_name, "hud_collision_offset_rot", is_16x9);
     }
-    else
-    {
-        // Коллизия отключена или параметры не прописаны
-        m_collision_offset[0].set(0.f, 0.f, 0.f);
-        m_collision_offset[1].set(0.f, 0.f, 0.f);
-    }
-
-    R_ASSERT2(pSettings->line_exist(sect_name, "fire_point") == pSettings->line_exist(sect_name, "fire_bone"),
-        sect_name.c_str());
-    R_ASSERT2(pSettings->line_exist(sect_name, "fire_point2") == pSettings->line_exist(sect_name, "fire_bone2"),
-        sect_name.c_str());
-    R_ASSERT2(pSettings->line_exist(sect_name, "shell_point") == pSettings->line_exist(sect_name, "shell_bone"),
-        sect_name.c_str());
 
     load_inertion_params(sect_name);
-    m_prop_flags.set(e_16x9_mode_now, is_16x9);
-
     return attach_offset;
 }
 
 Fmatrix hud_item_measures::load_monolithic(const shared_str& sect_name, IKinematics* K, CHudItem* owner)
 {
-    m_item_attach[0] = pSettings->r_fvector3(sect_name, "position");
-    m_item_attach[1] = pSettings->r_fvector3(sect_name, "orientation");
+    const bool is_16x9 = UICore::is_widescreen();
+    m_prop_flags.set(e_16x9_mode_now, is_16x9);
+
+    // 1. Позиция и ориентация предмета (используем SafeLoadVector для авто-аспекта)
+    m_item_attach[0] = SafeLoadVector(sect_name, "position", is_16x9);
+    m_item_attach[1] = SafeLoadVector(sect_name, "orientation", is_16x9);
 
     Fmatrix attach_offset;
     update(attach_offset);
 
-    // fire bone
+    // 2. Работа с костями оружия
     if (auto* wpn = smart_cast<CWeapon*>(owner))
     {
-        cpcstr fire_bone = pSettings->r_string(sect_name, "fire_bone");
-        m_fire_bone = K->LL_BoneID(fire_bone);
-        if (m_fire_bone >= K->LL_BoneCount())
-            xrDebug::Fatal(DEBUG_INFO, "There is no '%s' bone for weapon '%s'.", fire_bone, sect_name.c_str());
+        // Безопасный поиск кости огня
+        if (pSettings->line_exist(sect_name, "fire_bone")) 
+        {
+            cpcstr fire_bone_name = pSettings->r_string(sect_name, "fire_bone");
+            m_fire_bone = K->LL_BoneID(fire_bone_name);
+            if (m_fire_bone == BI_NONE) {
+                Msg("! [HUD-SAFE] Bone [%s] not found in [%s]. Using root bone.", fire_bone_name, sect_name.c_str());
+                m_fire_bone = K->LL_GetBoneRoot();
+            }
+        }
+        else {
+            m_fire_bone = K->LL_GetBoneRoot();
+        }
+
         m_fire_bone2 = m_fire_bone;
         m_shell_bone = m_fire_bone;
 
-        m_fire_point_offset = pSettings->r_fvector3(sect_name, "fire_point");
-        m_fire_point2_offset = pSettings->read_if_exists<Fvector3>(sect_name, "fire_point2", m_fire_point_offset);
+        m_fire_point_offset = READ_IF_EXISTS(pSettings, r_fvector3, sect_name, "fire_point", Fvector().set(0,0,0));
+        m_fire_point2_offset = READ_IF_EXISTS(pSettings, r_fvector3, sect_name, "fire_point2", m_fire_point_offset);
 
         if (pSettings->line_exist(owner->object().cNameSect(), "shell_particles"))
-            m_shell_point_offset = pSettings->r_fvector3(sect_name, "shell_point");
+            m_shell_point_offset = READ_IF_EXISTS(pSettings, r_fvector3, sect_name, "shell_point", Fvector().set(0,0,0));
         else
             m_shell_point_offset.set(0, 0, 0);
 
-        m_hands_offset[0][0] = {};
-        m_hands_offset[1][0] = {};
+        m_hands_offset[0][0] = {0,0,0};
+        m_hands_offset[1][0] = {0,0,0};
 
         if (wpn->IsZoomEnabled())
         {
-            const auto load_zoom_offsets = [&](pcstr prefix, Fvector3& position, Fvector3& rotation)
+            // Умная лямбда для загрузки зум-оффсетов (позиция + вращение)
+            auto load_zoom_safe = [&](const char* prefix, int idx) 
             {
-                string256 full_name;
-                position = pSettings->r_fvector3(sect_name, strconcat(full_name, prefix, "zoom_offset"));
-                rotation.x = pSettings->r_float(sect_name, strconcat(full_name, prefix, "zoom_rotate_x"));
-                rotation.y = pSettings->r_float(sect_name, strconcat(full_name, prefix, "zoom_rotate_y"));
-                rotation.z = pSettings->read_if_exists<float>(sect_name, strconcat(full_name, prefix, "zoom_rotate_z"), 0.f);
+                string256 pos_name;
+                strconcat(sizeof(pos_name), pos_name, prefix, "zoom_offset");
+                
+                // Загружаем позицию с авто-скейлом X под 21:9 / 4:3
+                m_hands_offset[0][idx] = SafeLoadVector(sect_name, pos_name, is_16x9);
+
+                // Загружаем ротацию (в монолите это 3 отдельных флоата)
+                // Проверяем наличие _16x9 суффикса и для них
+                auto GetRot = [&](const char* axis) {
+                    string128 rot_name;
+                    xr_sprintf(rot_name, "%szoom_rotate_%s%s", prefix, axis, is_16x9 ? "_16x9" : "");
+                    if (!pSettings->line_exist(sect_name, rot_name))
+                        xr_sprintf(rot_name, "%szoom_rotate_%s", prefix, axis);
+                    return READ_IF_EXISTS(pSettings, r_float, sect_name, rot_name, 0.f);
+                };
+
+                m_hands_offset[1][idx].x = GetRot("x");
+                m_hands_offset[1][idx].y = GetRot("y");
+                m_hands_offset[1][idx].z = GetRot("z");
             };
-            load_zoom_offsets("", m_hands_offset[0][1], m_hands_offset[1][1]);
+
+            load_zoom_safe("", 1); // Обычный прицел
             if (smart_cast<CWeaponMagazinedWGrenade*>(wpn))
             {
-                load_zoom_offsets("grenade_", m_hands_offset[0][2], m_hands_offset[1][2]);
+                load_zoom_safe("grenade_", 2); // Прицел подствольника
                 if (wpn->GrenadeLauncherAttachable())
-                    load_zoom_offsets("grenade_normal_", m_hands_offset[0][1], m_hands_offset[1][1]);
+                    load_zoom_safe("grenade_normal_", 1);
             }
         }
     }
     else
     {
-        m_fire_bone  = BI_NONE;
-        m_fire_bone2 = BI_NONE;
-        m_shell_bone = BI_NONE;
-
-        m_fire_point_offset  = {};
-        m_fire_point2_offset = {};
-        m_shell_point_offset = {};
+        m_fire_bone = m_fire_bone2 = m_shell_bone = BI_NONE;
+        m_fire_point_offset = m_fire_point2_offset = m_shell_point_offset = {};
     }
 
     load_inertion_params(sect_name);
-    m_prop_flags.set(e_16x9_mode_now, UICore::is_widescreen());
-
     return attach_offset;
 }
 

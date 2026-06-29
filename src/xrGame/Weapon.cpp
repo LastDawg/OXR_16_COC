@@ -1678,6 +1678,16 @@ void CWeapon::OnZoomIn()
 
 void CWeapon::OnZoomOut()
 {
+    if (GetState() == eFire)
+    {
+        m_fLR_ShootingFactor = 0.f;
+        m_fUD_ShootingFactor = 0.f;
+        m_fBACKW_ShootingFactor = 0.f; 
+
+        FireEnd();
+        StopShooting();
+    }
+
     m_zoom_params.m_bIsZoomModeNow = false;
     m_fRTZoomFactor = GetZoomFactor(); // store current
     m_zoom_params.m_fCurrentZoomFactor = 1.f;
