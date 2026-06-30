@@ -22,7 +22,7 @@ public:
 
     virtual bool EqualTo(CUICellItem* itm);
     virtual void UpdateItemText();
-    CUIDragItem* CreateDragItem();
+    virtual CUIDragItem* CreateDragItem(bool bRotate = false);
     virtual bool IsHelper();
     virtual void SetIsHelper(bool is_helper);
     bool IsHelperOrHasHelperChild();
@@ -53,7 +53,7 @@ public:
 
     u32 CalculateAmmoCount();
     virtual bool EqualTo(CUICellItem* itm);
-    virtual CUIDragItem* CreateDragItem();
+    virtual CUIDragItem* CreateDragItem(bool bRotate = false);
     CWeaponAmmo* object() { return (CWeaponAmmo*)m_pData; }
 
     pcstr GetDebugType() override { return "CUIAmmoCellItem"; }
@@ -75,7 +75,7 @@ public:
 protected:
     CUIStatic* m_addons[eMaxAddon];
     Fvector2 m_addon_offset[eMaxAddon];
-    void CreateIcon(eAddonType);
+    void CreateIcon(eAddonType, const shared_str& sAddonName);
     void DestroyIcon(eAddonType);
     void RefreshOffset();
     CUIStatic* GetIcon(eAddonType);
@@ -93,7 +93,7 @@ public:
 
     CWeapon* object() { return (CWeapon*)m_pData; }
     virtual void OnAfterChild(CUIDragDropListEx* parent_list);
-    virtual CUIDragItem* CreateDragItem();
+    virtual CUIDragItem* CreateDragItem(bool bRotate = false);
     virtual bool EqualTo(CUICellItem* itm);
     CUIStatic* get_addon_static(u32 idx) { return m_addons[idx]; }
 

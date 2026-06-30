@@ -2,10 +2,26 @@
 #include "weaponBM16.h"
 
 CWeaponBM16::~CWeaponBM16() {}
+
 void CWeaponBM16::Load(LPCSTR section)
 {
     inherited::Load(section);
     m_sounds.LoadSound(section, "snd_reload_1", "sndReload1", true, m_eSoundShot);
+
+    if (pSettings->line_exist(section, "snd_reload_misfire"))
+        m_sounds.LoadSound(section, "snd_reload_misfire", "sndReloadMisfire", true, m_eSoundReload);
+}
+
+void CWeaponBM16::OnStateSwitch(u32 S, u32 oldState)
+{
+    inherited::OnStateSwitch(S, oldState);
+
+    switch (S)
+    {
+    case eUnMisfire:
+        switch2_Unmis();
+        break;
+    }
 }
 
 void CWeaponBM16::PlayReloadSound()
@@ -73,8 +89,7 @@ void CWeaponBM16::PlayAnimBore()
 void CWeaponBM16::PlayAnimReload()
 {
     bool b_both = HaveCartridgeInInventory(2);
-
-    VERIFY(GetState() == eReload);
+    VERIFY(GetState() == eReload || GetState() == eUnMisfire);
 
     if ((m_magazine.size() == 1 || !b_both) &&
         (m_set_next_ammoType_on_reload == undefined_ammo_type || m_ammoType == m_set_next_ammoType_on_reload))
@@ -168,4 +183,49 @@ void CWeaponBM16::PlayAnimSprintEnd()
         SprintType = false;
         SwitchState(eIdle);
     }
+}
+
+void CWeaponBM16::switch2_Unmis()
+{
+    VERIFY(GetState() == eUnMisfire);
+
+    if (m_sounds.FindSoundItem("sndReloadMisfire", false))
+        PlaySound("sndReloadMisfire", get_LastFP());
+    else
+        PlayReloadSound();
+
+    PlayAnimUnMisfire();
+    SetPending(TRUE);
+}
+
+void CWeaponBM16::PlayAnimUnMisfire()
+{
+    if (isHUDAnimationExist("anm_reload_misfire"))
+        PlayHUDMotion("anm_reload_misfire", true, this, GetState());
+    else
+        PlayAnimReload();
+}
+
+
+void CWeaponBM16::Reload()
+{
+    if (IsMisfire())
+    {
+        SwitchState(eUnMisfire);
+    }
+    else
+    {
+        inherited::Reload();
+    }
+}
+
+void CWeaponBM16::OnAnimationEnd(u32 state)
+{
+    if (state == eUnMisfire)
+    {
+        bMisfire = false;
+        SwitchState(eIdle);
+        return;
+    }
+    inherited::OnAnimationEnd(state);
 }

@@ -1105,7 +1105,14 @@ void CWeapon::EnableActorNVisnAfterZoom()
     }
 }
 
-bool CWeapon::need_renderable() { return !(IsZoomed() && ZoomTexture() && !IsRotatingToZoom()); }
+bool CWeapon::need_renderable() 
+{ 
+    if (GamePersistent().GetHudTuner().is_active())
+        return true;
+
+    return !(IsZoomed() && ZoomTexture() && !IsRotatingToZoom()); 
+}
+
 void CWeapon::renderable_Render(u32 context_id, IRenderable* root)
 {
     ScopeLock lock{ &render_lock };
@@ -1117,10 +1124,14 @@ void CWeapon::renderable_Render(u32 context_id, IRenderable* root)
     RenderLight();
 
     //если мы в режиме снайперки, то сам HUD рисовать не надо
+    bool bRenderHudModel = true;
     if (IsZoomed() && !IsRotatingToZoom() && ZoomTexture())
-        RenderHud(FALSE);
-    else
-        RenderHud(TRUE);
+    {
+        if (!GamePersistent().GetHudTuner().is_active())
+            bRenderHudModel = false;
+    }
+
+    RenderHud(bRenderHudModel);
 
     inherited::renderable_Render(context_id, root);
 }
@@ -1639,13 +1650,19 @@ void CWeapon::UpdateAddonsVisibility()
 void CWeapon::InitAddons() {}
 float CWeapon::CurrentZoomFactor()
 {
+    if (GamePersistent().GetHudTuner().is_active())
+        return 1.1f;
+
     return IsScopeAttached() ? m_zoom_params.m_fScopeZoomFactor : m_zoom_params.m_fIronSightZoomFactor;
 };
 void GetZoomData(const float scope_factor, float& delta, float& min_zoom_factor);
 void CWeapon::OnZoomIn()
 {
     m_zoom_params.m_bIsZoomModeNow = true;
-    if (m_zoom_params.m_bUseDynamicZoom)
+
+    if (GamePersistent().GetHudTuner().is_active())
+        m_zoom_params.m_fCurrentZoomFactor = 1.1f;
+    else if (m_zoom_params.m_bUseDynamicZoom)
         SetZoomFactor(m_fRTZoomFactor);
     else
         m_zoom_params.m_fCurrentZoomFactor = CurrentZoomFactor();

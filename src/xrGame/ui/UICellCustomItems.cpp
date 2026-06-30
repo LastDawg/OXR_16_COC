@@ -7,6 +7,7 @@
 
 #define INV_GRID_WIDTHF 50.0f
 #define INV_GRID_HEIGHTF 50.0f
+#define INV_BACKGR_ICON_NAME "__bgr_icon"
 
 namespace detail
 {
@@ -106,12 +107,12 @@ bool CUIInventoryCellItem::IsHelperOrHasHelperChild()
     return std::count_if(m_childs.begin(), m_childs.end(), ::detail::is_helper_pred()) > 0 || IsHelper();
 }
 
-CUIDragItem* CUIInventoryCellItem::CreateDragItem()
+CUIDragItem* CUIInventoryCellItem::CreateDragItem(bool bRotate)
 {
     if (IsHelperOrHasHelperChild())
         return nullptr;
 
-    CUIDragItem* i = inherited::CreateDragItem();
+    CUIDragItem* i = inherited::CreateDragItem(bRotate);
 
     for (const SIconLayer* layer : m_layers)
     {
@@ -302,7 +303,11 @@ bool CUIAmmoCellItem::EqualTo(CUICellItem* itm)
     return ((object()->cNameSect() == ci->object()->cNameSect()));
 }
 
-CUIDragItem* CUIAmmoCellItem::CreateDragItem() { return IsHelper() ? NULL : inherited::CreateDragItem(); }
+CUIDragItem* CUIAmmoCellItem::CreateDragItem(bool bRotate) 
+{ 
+    return IsHelper() ? NULL : inherited::CreateDragItem(bRotate);
+}
+
 u32 CUIAmmoCellItem::CalculateAmmoCount()
 {
     xr_vector<CUICellItem*>::iterator it = m_childs.begin();
@@ -368,7 +373,7 @@ bool CUIWeaponCellItem::is_launcher()
     return object()->GrenadeLauncherAttachable() && object()->IsGrenadeLauncherAttached();
 }
 
-void CUIWeaponCellItem::CreateIcon(eAddonType t)
+void CUIWeaponCellItem::CreateIcon(eAddonType t, const shared_str& sAddonName)
 {
     if (m_addons[t])
         return;
@@ -376,6 +381,12 @@ void CUIWeaponCellItem::CreateIcon(eAddonType t)
     m_addons[t]->SetAutoDelete(true);
     AttachChild(m_addons[t]);
     m_addons[t]->SetShader(InventoryUtilities::GetEquipmentIconsShader());
+
+    bool bIconToBackground = READ_IF_EXISTS(pSettings, r_bool, sAddonName, "inv_icon_to_back", false);
+    if (bIconToBackground)
+    {
+        m_addons[t]->SetWindowName(INV_BACKGR_ICON_NAME);
+    }
 
     u32 color = GetTextureColor();
     m_addons[t]->SetTextureColor(color);
@@ -402,6 +413,39 @@ void CUIWeaponCellItem::RefreshOffset()
 
 void CUIWeaponCellItem::Draw()
 {
+    bool bBackgrIconsFound = false;
+    for (auto it = m_ChildWndList.begin(); m_ChildWndList.end() != it; ++it)
+    {
+        CUIStatic* pStatic = (CUIStatic*)(*it);
+        if (pStatic->WindowName().equal(INV_BACKGR_ICON_NAME))
+        {
+            bBackgrIconsFound = true;
+            pStatic->TextureOn();
+        }
+        else
+        {
+            pStatic->TextureOff();
+        }
+    }
+    if (bBackgrIconsFound == true)
+    {
+        TextureOff();
+        inherited::Draw();
+        TextureOn();
+    }
+
+    for (auto it = m_ChildWndList.begin(); m_ChildWndList.end() != it; ++it)
+    {
+        CUIStatic* pStatic = (CUIStatic*)(*it);
+        if (pStatic->WindowName().equal(INV_BACKGR_ICON_NAME))
+        {
+            pStatic->TextureOff();
+        }
+        else
+        {
+            pStatic->TextureOn();
+        }
+    }
     inherited::Draw();
 
     if (m_upgrade && m_upgrade->IsShown())
@@ -421,7 +465,7 @@ void CUIWeaponCellItem::Update()
         {
             if (!GetIcon(eSilencer) || bForceReInitAddons)
             {
-                CreateIcon(eSilencer);
+                CreateIcon(eSilencer, object()->GetSilencerName());
                 RefreshOffset();
                 InitAddon(GetIcon(eSilencer), object()->GetSilencerName().c_str(), m_addon_offset[eSilencer], Heading());
             }
@@ -439,7 +483,7 @@ void CUIWeaponCellItem::Update()
         {
             if (!GetIcon(eScope) || bForceReInitAddons)
             {
-                CreateIcon(eScope);
+                CreateIcon(eScope, object()->GetScopeName());
                 RefreshOffset();
                 InitAddon(GetIcon(eScope), object()->GetScopeName().c_str(), m_addon_offset[eScope], Heading());
             }
@@ -457,7 +501,7 @@ void CUIWeaponCellItem::Update()
         {
             if (!GetIcon(eLauncher) || bForceReInitAddons)
             {
-                CreateIcon(eLauncher);
+                CreateIcon(eLauncher, object()->GetGrenadeLauncherName());
                 RefreshOffset();
                 InitAddon(
                     GetIcon(eLauncher), object()->GetGrenadeLauncherName().c_str(), m_addon_offset[eLauncher], Heading());
@@ -559,17 +603,24 @@ void CUIWeaponCellItem::InitAddon(CUIStatic* s, LPCSTR section, Fvector2 addon_o
     }
 }
 
-CUIDragItem* CUIWeaponCellItem::CreateDragItem()
+CUIDragItem* CUIWeaponCellItem::CreateDragItem(bool bRotate)
 {
-    CUIDragItem* i = inherited::CreateDragItem();
+    CUIDragItem* i = inherited::CreateDragItem(bRotate);
     CUIStatic* s = NULL;
+
+    if (bRotate)
+    {
+        i->wnd()->EnableHeading(true);
+        i->wnd()->SetHeading(90.0f * (PI / 180.0f));
+        i->wnd()->SetHeadingPivot(Fvector2().set(0.0f, 0.0f), Fvector2().set(0.0f, i->wnd()->GetWndSize().y), true);
+    }
 
     if (GetIcon(eSilencer))
     {
         s = xr_new<CUIStatic>("Silencer");
         s->SetAutoDelete(true);
         s->SetShader(InventoryUtilities::GetEquipmentIconsShader());
-        InitAddon(s, object()->GetSilencerName().c_str(), m_addon_offset[eSilencer], false);
+        InitAddon(s, object()->GetSilencerName().c_str(), m_addon_offset[eSilencer], bRotate);
         s->SetTextureColor(i->wnd()->GetTextureColor());
         i->wnd()->AttachChild(s);
     }
@@ -579,7 +630,7 @@ CUIDragItem* CUIWeaponCellItem::CreateDragItem()
         s = xr_new<CUIStatic>("Scope");
         s->SetAutoDelete(true);
         s->SetShader(InventoryUtilities::GetEquipmentIconsShader());
-        InitAddon(s, object()->GetScopeName().c_str(), m_addon_offset[eScope], false);
+        InitAddon(s, object()->GetScopeName().c_str(), m_addon_offset[eScope], bRotate);
         s->SetTextureColor(i->wnd()->GetTextureColor());
         i->wnd()->AttachChild(s);
     }
@@ -589,7 +640,7 @@ CUIDragItem* CUIWeaponCellItem::CreateDragItem()
         s = xr_new<CUIStatic>("Grenade launcher");
         s->SetAutoDelete(true);
         s->SetShader(InventoryUtilities::GetEquipmentIconsShader());
-        InitAddon(s, object()->GetGrenadeLauncherName().c_str(), m_addon_offset[eLauncher], false);
+        InitAddon(s, object()->GetGrenadeLauncherName().c_str(), m_addon_offset[eLauncher], bRotate);
         s->SetTextureColor(i->wnd()->GetTextureColor());
         i->wnd()->AttachChild(s);
     }
